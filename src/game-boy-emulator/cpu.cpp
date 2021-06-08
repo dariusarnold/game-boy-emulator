@@ -29,7 +29,7 @@ void Cpu::print_registers() const {
     fmt::print("{}\n", registers);
 }
 
-void Cpu::xor_x(uint8_t value) {
+void Cpu::xor8(uint8_t value) {
     registers.a ^= value;
     if (registers.a == 0) {
         set_zero_flag(BitValues::Active);
@@ -84,55 +84,55 @@ Cpu::Cpu() {
         return 8;
     };
     instructions[opcodes::LD_BC_NN] = [&]() {
-        this->ld_x(registers.bc);
+        this->ld16(registers.bc);
         return 12;
     };
     instructions[opcodes::LD_DE_NN] = [&]() {
-        this->ld_x(registers.de);
+        this->ld16(registers.de);
         return 12;
     };
     instructions[opcodes::LD_HL_NN] = [&]() {
-        this->ld_x(registers.hl);
+        this->ld16(registers.hl);
         return 12;
     };
     instructions[opcodes::LD_SP_NN] = [&]() {
-        this->ld_x(registers.sp);
+        this->ld16(registers.sp);
         return 12;
     };
     instructions[opcodes::XOR_A] = [&]() {
-        this->xor_x(this->registers.a);
+        this->xor8(this->registers.a);
         return 4;
     };
     instructions[opcodes::XOR_B] = [&]() {
-        this->xor_x(this->registers.b);
+        this->xor8(this->registers.b);
         return 4;
     };
     instructions[opcodes::XOR_C] = [&]() {
-        this->xor_x(this->registers.c);
+        this->xor8(this->registers.c);
         return 4;
     };
     instructions[opcodes::XOR_D] = [&]() {
-        this->xor_x(this->registers.d);
+        this->xor8(this->registers.d);
         return 4;
     };
     instructions[opcodes::XOR_E] = [&]() {
-        this->xor_x(this->registers.e);
+        this->xor8(this->registers.e);
         return 4;
     };
     instructions[opcodes::XOR_H] = [&]() {
-        this->xor_x(this->registers.h);
+        this->xor8(this->registers.h);
         return 4;
     };
     instructions[opcodes::XOR_L] = [&]() {
-        this->xor_x(this->registers.l);
+        this->xor8(this->registers.l);
         return 4;
     };
     instructions[opcodes::XOR_HL] = [&]() {
-        this->xor_x(this->read_memory(this->registers.hl));
+        this->xor8(this->read_memory(this->registers.hl));
         return 8;
     };
     instructions[opcodes::XOR_N] = [&]() {
-        this->xor_x(this->registers.a);
+        this->xor8(this->registers.a);
         return 8;
     };
 }
@@ -149,7 +149,7 @@ void Cpu::write_memory(uint16_t address, uint8_t value) {
     ram.mem[address] = value;
 }
 
-void Cpu::ld_x(uint16_t& input) {
+void Cpu::ld16(uint16_t& input) {
     registers.pc++;
     // read low byte
     uint16_t data = 0;

@@ -134,13 +134,13 @@ private:
      * Common function for all XOR instructions.
      * XORs input against value of a and stores result in a. Sets zero flag if a is zero after XOR.
      */
-    void xor_x(uint8_t input);
+    void xor8(uint8_t input);
 
     /**
      * Common function for all 16 byte loads (LD).
      * Is passed the register into which to load the immediate value.
      */
-    void ld_x(uint16_t& input);
+    void ld16(uint16_t& input);
 
     void ldd_hl();
 

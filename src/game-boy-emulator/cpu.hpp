@@ -78,8 +78,8 @@ struct Ram {
 
 
 class Cpu {
-    Registers registers;
-    Ram ram;
+    Registers registers = {0};
+    Ram ram = {0};
     // Number of cycles since execution start
     size_t cycles = 0;
 

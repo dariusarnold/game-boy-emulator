@@ -27,6 +27,6 @@ enum class BitValues : uint8_t { Active = 1, Inactive = 0 };
  * Cast enum value to integral value of underlying type.
  */
 template <typename Enum>
-auto as_integral(Enum e) -> typename std::underlying_type_t<Enum> {
+constexpr auto as_integral(Enum e) -> typename std::underlying_type_t<Enum> {
     return static_cast<typename std::underlying_type_t<Enum>>(e);
 }

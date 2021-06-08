@@ -129,6 +129,7 @@ private:
     void set_zero_flag(BitValues value);
     void set_subtract_flag(BitValues value);
     void set_half_carry_flag(BitValues value);
+    void set_carry_flag(BitValues value);
 
     /**
      * Common function for all XOR instructions.

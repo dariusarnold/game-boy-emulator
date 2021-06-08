@@ -34,6 +34,9 @@ void Cpu::xor8(uint8_t value) {
     if (registers.a == 0) {
         set_zero_flag(BitValues::Active);
     }
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+    set_carry_flag(BitValues::Inactive);
     registers.pc++;
 }
 
@@ -205,4 +208,8 @@ void Cpu::set_half_carry_flag(BitValues value) {
 
 void Cpu::set_zero_flag(BitValues value) {
     bitmanip::set(registers.f, as_integral(registers::flags::zero), value);
+}
+
+void Cpu::set_carry_flag(BitValues value) {
+    bitmanip::set(registers.f, as_integral(registers::flags::carry), value);
 }

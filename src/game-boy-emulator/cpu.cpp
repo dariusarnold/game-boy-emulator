@@ -29,19 +29,10 @@ void Cpu::print_registers() const {
     fmt::print("{}\n", registers);
 }
 
-
-void Cpu::set_zero_flag() {
-    bitmanip::set(registers.f, as_integral(registers::flags::zero));
-}
-
-void Cpu::clear_zero_flag() {
-    bitmanip::unset(registers.f, as_integral(registers::flags::zero));
-}
-
 void Cpu::xor_x(uint8_t value) {
     registers.a ^= value;
     if (registers.a == 0) {
-        set_zero_flag();
+        set_zero_flag(BitValues::Active);
     }
     registers.pc++;
 }
@@ -177,17 +168,41 @@ void Cpu::ldd_hl() {
 }
 
 void Cpu::inc8(uint8_t& input) {
+    bool bit_3_before = bitmanip::is_bit_set(input, 3);
     input++;
-    if (input == 0) set_zero_flag();
+    bool bit_3_after = bitmanip::is_bit_set(input, 3);
+    if (bit_3_after != bit_3_before) {
+        set_half_carry_flag(BitValues::Active);
+    } else  {
+        set_half_carry_flag(BitValues::Inactive);
+    }
+    if (input == 0) set_zero_flag(BitValues::Active);
+    set_subtract_flag(BitValues::Inactive);
     registers.pc++;
 }
 
 void Cpu::inc16(uint16_t& input) {
+    bool bit_11_before = bitmanip::is_bit_set(input, 3);
     input++;
-    if (input == 0) set_subtract_flag(BitValues::Active);
+    bool bit_11_after = bitmanip::is_bit_set(input, 3);
+    if (bit_11_after != bit_11_before) {
+        set_half_carry_flag(BitValues::Active);
+    } else {
+        set_half_carry_flag(BitValues::Inactive);
+    }
+    set_subtract_flag(BitValues::Inactive);
+    if (input == 0) set_zero_flag(BitValues::Active);
     registers.pc++;
 }
 
 void Cpu::set_subtract_flag(BitValues value) {
     bitmanip::set(registers.f, as_integral(registers::flags::subtract), value);
+}
+
+void Cpu::set_half_carry_flag(BitValues value) {
+    bitmanip::set(registers.f, as_integral(registers::flags::half_carry), value);
+}
+
+void Cpu::set_zero_flag(BitValues value) {
+    bitmanip::set(registers.f, as_integral(registers::flags::zero), value);
 }

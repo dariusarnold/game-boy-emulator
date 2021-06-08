@@ -18,3 +18,22 @@ TEST_CASE("Setting bit value to 0") {
         x = 0xFF;
     }
 }
+
+TEST_CASE("Check if bit is set") {
+    uint8_t x = 0xFF;
+    auto i = GENERATE(range(0, 8));
+    CHECK(bitmanip::is_bit_set(x, i));
+}
+
+TEST_CASE("Check if bit is unset") {
+    uint8_t x = 0x00;
+    auto i = GENERATE(range(0, 8));
+    CHECK_FALSE(bitmanip::is_bit_set(x, i));
+}
+
+TEST_CASE("Check if bit is set in 2 byte int") {
+    uint16_t x = 0b0010'0000'0000'1000;
+    CHECK(bitmanip::is_bit_set(x, 3));
+    CHECK(bitmanip::is_bit_set(x, 13));
+    CHECK_FALSE(bitmanip::is_bit_set(x, 0));
+}

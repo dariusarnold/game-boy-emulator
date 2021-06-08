@@ -124,15 +124,11 @@ private:
     void write_memory(uint16_t address, uint8_t value);
 
     /**
-     * Sets zero flag in register f to 1 (active)
+     * Sets bit flag in flag register f
      */
-    void set_zero_flag();
-    /**
-     * Resets zero flag in register f to 0 (active)
-     */
-    void clear_zero_flag();
-
+    void set_zero_flag(BitValues value);
     void set_subtract_flag(BitValues value);
+    void set_half_carry_flag(BitValues value);
 
     /**
      * Common function for all XOR instructions.

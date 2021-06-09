@@ -80,12 +80,27 @@ Cpu::Cpu() {
         return 4;
     };
 
-    instructions[opcodes::INC_BC] = [&]() {this->inc16(this->registers.bc); return 8;};
-    instructions[opcodes::INC_DE] = [&]() {this->inc16(this->registers.de); return 8;};
-    instructions[opcodes::INC_HL] = [&]() {this->inc16(this->registers.hl); return 8;};
-    instructions[opcodes::INC_SP] = [&]() {this->inc16(this->registers.sp); return 8;};
+    instructions[opcodes::INC_BC] = [&]() {
+        this->inc16(this->registers.bc);
+        return 8;
+    };
+    instructions[opcodes::INC_DE] = [&]() {
+        this->inc16(this->registers.de);
+        return 8;
+    };
+    instructions[opcodes::INC_HL] = [&]() {
+        this->inc16(this->registers.hl);
+        return 8;
+    };
+    instructions[opcodes::INC_SP] = [&]() {
+        this->inc16(this->registers.sp);
+        return 8;
+    };
 
-    instructions[opcodes::INC_HL_INDIRECT] = [&]() { this->inc8(this->read_memory(this->registers.hl)); return 12;};
+    instructions[opcodes::INC_HL_INDIRECT] = [&]() {
+        this->inc8(this->read_memory(this->registers.hl));
+        return 12;
+    };
 
     instructions[opcodes::LDD_HL_A] = [&]() {
         this->ldd_hl();
@@ -150,7 +165,7 @@ uint8_t Cpu::read_memory(u_int16_t address) const {
 }
 
 uint8_t& Cpu::read_memory(u_int16_t address) {
-    return ram.mem[address];;
+    return ram.mem[address];
 }
 
 void Cpu::write_memory(uint16_t address, uint8_t value) {
@@ -181,7 +196,7 @@ void Cpu::inc8(uint8_t& input) {
     bool bit_3_after = bitmanip::is_bit_set(input, 3);
     if (bit_3_after != bit_3_before) {
         set_half_carry_flag(BitValues::Active);
-    } else  {
+    } else {
         set_half_carry_flag(BitValues::Inactive);
     }
     if (input == 0) set_zero_flag(BitValues::Active);

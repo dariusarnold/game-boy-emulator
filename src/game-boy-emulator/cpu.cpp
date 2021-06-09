@@ -3,7 +3,7 @@
 
 
 bool Cpu::step() {
-    uint8_t opcode = ram.mem[registers.pc];
+    uint8_t opcode = read_memory(registers.pc);
     auto instruction = instructions.find(opcode);
     if (instruction == instructions.end()) {
         fmt::print("Encountered unsupported opcode {:02x}\n", opcode);
@@ -161,10 +161,10 @@ void Cpu::ld16(uint16_t& input) {
     registers.pc++;
     // read low byte
     uint16_t data = 0;
-    data += ram.mem[registers.pc];
+    data += read_memory(registers.pc);
     // read high byte
     registers.pc++;
-    data += ram.mem[registers.pc] << 8;
+    data += read_memory(registers.pc) << 8;
     input = data;
     registers.pc++;
 }

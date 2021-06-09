@@ -25,6 +25,9 @@ namespace opcodes {
     // Test bit, set zero flag
     constexpr OpCode BIT_0B = 0x40;
     constexpr OpCode BIT_7A = 0x7F;
+    // Reset 1 bit in register
+    constexpr OpCode RES_0B = 0x80;
+    constexpr OpCode RES_7A = 0xAF;
     // Increment 1 byte register
     constexpr OpCode INC_A = 0x3C;
     constexpr OpCode INC_B = 0x04;

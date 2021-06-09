@@ -244,6 +244,11 @@ void Cpu::test_bit(uint8_t value, u_int8_t position) {
     set_half_carry_flag(BitValues::Active);
 }
 
+
+void Cpu::reset_bit(uint8_t& value, uint8_t position) {
+    bitmanip::unset(value, position);
+}
+
 uint8_t& Cpu::op_code_to_register(uint8_t opcode) {
     switch (opcode % 8) {
     case 0:
@@ -283,6 +288,10 @@ uint8_t Cpu::cb(uint8_t op_code) {
         if (was_indirect_access(op_code)) {
             return 12;
         }
+        return 4;
+    } else if (op_code >= opcodes::RES_0B && op_code <= opcodes::RES_7A) {
+        // Reset bit instruction
+        reset_bit(op_code_to_register(op_code), internal::op_code_to_bit(op_code));
         return 4;
     }
     // TODO implement further CB instructions

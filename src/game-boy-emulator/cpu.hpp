@@ -143,14 +143,47 @@ private:
      */
     void ld16(uint16_t& input);
 
+    /**
+     * Save value of a to address pointed at by hl, decrement hl.
+     */
     void ldd_hl();
 
     /**
      * Common function for all 2 byte increment instructions.
      */
     void inc16(uint16_t& input);
+
     /**
      * Common function for all 1 byte increment instructions.
      */
     void inc8(uint8_t& input);
+
+    /**
+     * Handle second byte of two byte instruction codes beginning with prefix cb
+     * @param op_code second byte of opcode
+     */
+    uint8_t cb(uint8_t op_code);
+
+    /**
+     * Common function for all bit test instructions.
+     * Test if bit at position in value is set and sets zero flag accordingly.
+     * @param value
+     * @param position
+     */
+    void test_bit(uint8_t value, u_int8_t position);
+
+    /**
+     * Convert second byte of cb opcodes to the register, upon which this instruction operators
+     * @param opcode
+     * @return
+     */
+    uint8_t& op_code_to_register(uint8_t opcode);
 };
+
+namespace internal {
+/**
+ * Resolve second byte of CB opcodes to bit position on which this instructions operates.
+ */
+    uint8_t op_code_to_bit(uint8_t opcode);
+}
+

@@ -20,6 +20,11 @@ namespace opcodes {
     }
 
     constexpr OpCode NOP = 0x00;
+    // 2 byte opcode for extended instructions
+    constexpr OpCode CB = 0xCB;
+    // Test bit, set zero flag
+    constexpr OpCode BIT_0B = 0x40;
+    constexpr OpCode BIT_7A = 0x7F;
     // Increment 1 byte register
     constexpr OpCode INC_A = 0x3C;
     constexpr OpCode INC_B = 0x04;

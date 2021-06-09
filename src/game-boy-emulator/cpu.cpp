@@ -46,6 +46,11 @@ Cpu::Cpu() {
         return 4;
     };
 
+    instructions[opcodes::CB] = [&]() {
+        this->registers.pc++;
+        return this->cb(read_memory(registers.pc));
+    };
+
     instructions[opcodes::INC_A] = [&]() {
         this->inc8(this->registers.a);
         return 4;
@@ -212,4 +217,79 @@ void Cpu::set_zero_flag(BitValues value) {
 
 void Cpu::set_carry_flag(BitValues value) {
     bitmanip::set(registers.f, as_integral(registers::flags::carry), value);
+}
+
+void Cpu::test_bit(uint8_t value, u_int8_t position) {
+    if (bitmanip::is_bit_set(value, position)) {
+        set_zero_flag(BitValues::Active);
+    } else {
+        set_zero_flag(BitValues::Inactive);
+    }
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Active);
+}
+
+uint8_t& Cpu::op_code_to_register(uint8_t opcode) {
+    switch (opcode % 8) {
+    case 0:
+        return registers.b;
+    case 1:
+        return registers.c;
+    case 2:
+        return registers.d;
+    case 3:
+        return registers.e;
+    case 4:
+        return registers.h;
+    case 5:
+        return registers.l;
+    case 6:
+        return read_memory(registers.hl);
+    case 7:
+        return registers.a;
+    default:
+        throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", opcode));
+    }
+}
+
+/**
+ * Check if second byte of CB opcode did indirect memory access
+ * @return True if RAM was accessed, else false
+ */
+bool was_indirect_access(uint8_t opcode) {
+    return opcode % 8 == 6;
+}
+
+uint8_t Cpu::cb(uint8_t op_code) {
+    if (op_code >= opcodes::BIT_0B && op_code <= opcodes::BIT_7A) {
+        // Set bit instruction
+        test_bit(op_code_to_register(op_code), internal::op_code_to_bit(op_code));
+        registers.pc++;
+        if (was_indirect_access(op_code)) {
+            return 12;
+        }
+        return 4;
+    }
+    // TODO implement further CB instructions
+    return 0;
+}
+
+uint8_t internal::op_code_to_bit(uint8_t opcode) {
+    // Divide by lowest opcode which is regular (part of a 4x16 block in op table)
+    // to handle opcodes for BIT, RES and SET instructions in the same way by projecting
+    // them all to 0x00..0x3F
+    opcode %= 0x40;
+    // higher nibble
+    // |
+    // | | 0 1 2 3 4 5 6 7 8 9 A B C D E F ->lower nibble
+    // v |---------------------------------
+    // 0x| 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1
+    // 1x| 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3
+    // 2x| 4 4 4 4 4 4 5 5 5 5 5 5 5 5 5 5
+    // 3x| 6 6 6 6 6 6 7 7 7 7 7 7 7 7 7 7
+    //
+    // First map higher nibble 0x -> 0, 1x -> 2, 2x -> 4, 3x -> 6
+    // Then add 1 if we are in the right half of the table
+    return ((opcode & 0xF0) >> constants::NIBBLE_SIZE) * 2 +
+           ((opcode & 0x0F) / constants::BYTE_SIZE);
 }

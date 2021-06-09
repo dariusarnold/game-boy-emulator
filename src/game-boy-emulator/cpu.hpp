@@ -162,7 +162,7 @@ private:
      * Handle second byte of two byte instruction codes beginning with prefix cb
      * @param op_code second byte of opcode
      */
-    uint8_t cb(uint8_t op_code);
+    uint8_t cb(opcodes::OpCode op_code);
 
     /**
      * Common function for all bit test instructions.
@@ -182,13 +182,13 @@ private:
      * @param opcode
      * @return
      */
-    uint8_t& op_code_to_register(uint8_t opcode);
+    uint8_t& op_code_to_register(opcodes::OpCode opcode);
 };
 
 namespace internal {
 /**
  * Resolve second byte of CB opcodes to bit position on which this instructions operates.
  */
-    uint8_t op_code_to_bit(uint8_t opcode);
+    uint8_t op_code_to_bit(opcodes::OpCode opcode);
 }
 

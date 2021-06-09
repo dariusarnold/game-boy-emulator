@@ -3,13 +3,13 @@
 
 
 bool Cpu::step() {
-    uint8_t opcode = read_memory(registers.pc);
+    auto opcode = opcodes::OpCode{read_memory(registers.pc)};
     auto instruction = instructions.find(opcode);
     if (instruction == instructions.end()) {
-        fmt::print("Encountered unsupported opcode {:02x}\n", opcode);
+        fmt::print("Encountered unsupported opcode {:02x}\n", opcode.value);
         return false;
     }
-    fmt::print("Executing {:02x}\n", opcode);
+    fmt::print("Executing {:02x}\n", opcode.value);
     cycles += instruction->second();
     return true;
 }
@@ -48,7 +48,7 @@ Cpu::Cpu() {
 
     instructions[opcodes::CB] = [&]() {
         this->registers.pc++;
-        return this->cb(read_memory(registers.pc));
+        return this->cb(opcodes::OpCode{read_memory(registers.pc)});
     };
 
     instructions[opcodes::INC_A] = [&]() {
@@ -249,8 +249,8 @@ void Cpu::reset_bit(uint8_t& value, uint8_t position) {
     bitmanip::unset(value, position);
 }
 
-uint8_t& Cpu::op_code_to_register(uint8_t opcode) {
-    switch (opcode % 8) {
+uint8_t& Cpu::op_code_to_register(opcodes::OpCode opcode) {
+    switch (opcode.value % 8) {
     case 0:
         return registers.b;
     case 1:
@@ -268,7 +268,7 @@ uint8_t& Cpu::op_code_to_register(uint8_t opcode) {
     case 7:
         return registers.a;
     default:
-        throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", opcode));
+        throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", opcode.value));
     }
 }
 
@@ -276,12 +276,12 @@ uint8_t& Cpu::op_code_to_register(uint8_t opcode) {
  * Check if second byte of CB opcode did indirect memory access
  * @return True if RAM was accessed, else false
  */
-bool was_indirect_access(uint8_t opcode) {
-    return opcode % 8 == 6;
+bool was_indirect_access(opcodes::OpCode opcode) {
+    return opcode.value % 8 == 6;
 }
 
-uint8_t Cpu::cb(uint8_t op_code) {
-    if (op_code >= opcodes::BIT_0B && op_code <= opcodes::BIT_7A) {
+uint8_t Cpu::cb(opcodes::OpCode op_code) {
+    if (op_code.value >= opcodes::BIT_0B.value && op_code.value <= opcodes::BIT_7A.value) {
         // Set bit instruction
         test_bit(op_code_to_register(op_code), internal::op_code_to_bit(op_code));
         registers.pc++;
@@ -289,7 +289,7 @@ uint8_t Cpu::cb(uint8_t op_code) {
             return 12;
         }
         return 4;
-    } else if (op_code >= opcodes::RES_0B && op_code <= opcodes::RES_7A) {
+    } else if (op_code.value >= opcodes::RES_0B.value && op_code.value <= opcodes::RES_7A.value) {
         // Reset bit instruction
         reset_bit(op_code_to_register(op_code), internal::op_code_to_bit(op_code));
         return 4;
@@ -298,11 +298,11 @@ uint8_t Cpu::cb(uint8_t op_code) {
     return 0;
 }
 
-uint8_t internal::op_code_to_bit(uint8_t opcode) {
+uint8_t internal::op_code_to_bit(opcodes::OpCode opcode) {
     // Divide by lowest opcode which is regular (part of a 4x16 block in op table)
     // to handle opcodes for BIT, RES and SET instructions in the same way by projecting
     // them all to 0x00..0x3F
-    opcode %= 0x40;
+    opcode.value %= 0x40;
     // higher nibble
     // |
     // | | 0 1 2 3 4 5 6 7 8 9 A B C D E F ->lower nibble
@@ -314,6 +314,6 @@ uint8_t internal::op_code_to_bit(uint8_t opcode) {
     //
     // First map higher nibble 0x -> 0, 1x -> 2, 2x -> 4, 3x -> 6
     // Then add 1 if we are in the right half of the table
-    return ((opcode & 0xF0) >> constants::NIBBLE_SIZE) * 2 +
-           ((opcode & 0x0F) / constants::BYTE_SIZE);
+    return ((opcode.value & 0xF0) >> constants::NIBBLE_SIZE) * 2 +
+           ((opcode.value & 0x0F) / constants::BYTE_SIZE);
 }

@@ -143,8 +143,14 @@ private:
     void xor8(uint8_t input);
 
     /**
+     * Common function for all 8 byte loads (LD).
+     * @param input Reference to register into which to load the immediate value
+     */
+    void ld8(uint8_t& input);
+
+    /**
      * Common function for all 16 byte loads (LD).
-     * Is passed the register into which to load the immediate value.
+     * @param input Reference to register into which to load the immediate value
      */
     void ld16(uint16_t& input);
 

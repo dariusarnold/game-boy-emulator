@@ -106,6 +106,34 @@ Cpu::Cpu() {
         this->ldd_hl();
         return 8;
     };
+    instructions[opcodes::LD_B_N] = [&]() {
+        this->ld8(registers.b);
+        return 8;
+    };
+    instructions[opcodes::LD_C_N] = [&]() {
+      this->ld8(registers.c);
+      return 8;
+    };
+    instructions[opcodes::LD_D_N] = [&]() {
+      this->ld8(registers.d);
+      return 8;
+    };
+    instructions[opcodes::LD_E_N] = [&]() {
+      this->ld8(registers.e);
+      return 8;
+    };
+    instructions[opcodes::LD_A_N] = [&]() {
+      this->ld8(registers.a);
+      return 8;
+    };
+    instructions[opcodes::LD_L_N] = [&]() {
+      this->ld8(registers.l);
+      return 8;
+    };
+    instructions[opcodes::LD_H_N] = [&]() {
+      this->ld8(registers.h);
+      return 8;
+    };
     instructions[opcodes::LD_BC_NN] = [&]() {
         this->ld16(registers.bc);
         return 12;
@@ -198,6 +226,13 @@ void Cpu::ld16(uint16_t& input) {
     registers.pc++;
     data += read_memory(registers.pc) << 8;
     input = data;
+    registers.pc++;
+}
+
+void Cpu::ld8(uint8_t& input) {
+    registers.pc++;
+    const auto immediate = read_memory(registers.pc);
+    input = immediate;
     registers.pc++;
 }
 

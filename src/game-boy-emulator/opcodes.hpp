@@ -46,11 +46,20 @@ namespace opcodes {
     constexpr OpCode INC_DE{0x13};
     constexpr OpCode INC_HL{0x23};
     constexpr OpCode INC_SP{0x33};
+    // Load 2 byte immediate to register
     constexpr OpCode LD_BC_NN{0x01};
     constexpr OpCode LD_DE_NN{0x11};
     constexpr OpCode LD_HL_NN{0x21};
     constexpr OpCode LD_SP_NN{0x31};
     constexpr OpCode LDD_HL_A{0x32};
+    // Load 1 byte immediate to register
+    constexpr OpCode LD_C_N{0x0E};
+    constexpr OpCode LD_E_N{0x1E};
+    constexpr OpCode LD_L_N{0x2E};
+    constexpr OpCode LD_A_N{0x3E};
+    constexpr OpCode LD_B_N{0x06};
+    constexpr OpCode LD_D_N{0x16};
+    constexpr OpCode LD_H_N{0x26};
     // 1 byte xor, store in A
     constexpr OpCode XOR_A{0xAF};
     constexpr OpCode XOR_B{0xA8};

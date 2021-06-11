@@ -257,9 +257,9 @@ bool Cpu::is_flag_set(registers::flags flag) const {
 
 void Cpu::test_bit(uint8_t value, u_int8_t position) {
     if (bitmanip::is_bit_set(value, position)) {
-        set_zero_flag(BitValues::Active);
-    } else {
         set_zero_flag(BitValues::Inactive);
+    } else {
+        set_zero_flag(BitValues::Active);
     }
     set_subtract_flag(BitValues::Inactive);
     set_half_carry_flag(BitValues::Active);

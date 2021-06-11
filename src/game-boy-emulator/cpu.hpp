@@ -132,6 +132,11 @@ private:
     void set_carry_flag(BitValues value);
 
     /**
+     * Return true if flag is set, otherwise return false.
+     */
+    [[nodiscard]] bool is_flag_set(registers::flags flag) const;
+
+    /**
      * Common function for all XOR instructions.
      * XORs input against value of a and stores result in a. Sets zero flag if a is zero after XOR.
      */
@@ -190,6 +195,12 @@ private:
      * @return
      */
     uint8_t& op_code_to_register(opcodes::OpCode opcode);
+
+    /**
+     * Common function for all jumps.
+     * @param is_condition_met if true read immediate value and set stackpointer to it.
+     */
+    void jump_r(bool is_condition_met);
 };
 
 namespace internal {

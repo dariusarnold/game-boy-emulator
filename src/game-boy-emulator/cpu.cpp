@@ -192,16 +192,16 @@ Cpu::Cpu() {
         return 8;
     };
     instructions[opcodes::JR_NC] = [&] {
-      this->jump_r(!is_flag_set(registers::flags::carry));
-      return 8;
+        this->jump_r(!is_flag_set(registers::flags::carry));
+        return 8;
     };
     instructions[opcodes::JR_Z] = [&] {
-      this->jump_r(is_flag_set(registers::flags::zero));
-      return 8;
+        this->jump_r(is_flag_set(registers::flags::zero));
+        return 8;
     };
     instructions[opcodes::JR_NZ] = [&] {
-      this->jump_r(!is_flag_set(registers::flags::zero));
-      return 8;
+        this->jump_r(!is_flag_set(registers::flags::zero));
+        return 8;
     };
 }
 

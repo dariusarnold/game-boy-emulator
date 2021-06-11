@@ -23,6 +23,9 @@ namespace opcodes {
     // Reset 1 bit in register
     constexpr OpCode RES_0B{0x80};
     constexpr OpCode RES_7A{0xAF};
+    // Set 1 bit in register
+    constexpr OpCode SET_0B{0xC0};
+    constexpr OpCode SET_7A{0xFF};
     // Increment 1 byte register
     constexpr OpCode INC_A{0x3C};
     constexpr OpCode INC_B{0x04};

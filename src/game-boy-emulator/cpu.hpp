@@ -178,6 +178,13 @@ private:
     void reset_bit(uint8_t& value, uint8_t position);
 
     /**
+     * Common function for all bit set instructionso
+     * @param value
+     * @param position
+     */
+    void set_bit(uint8_t& value, uint8_t position);
+
+    /**
      * Convert second byte of cb opcodes to the register, upon which this instruction operators
      * @param opcode
      * @return

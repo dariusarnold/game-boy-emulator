@@ -249,6 +249,10 @@ void Cpu::reset_bit(uint8_t& value, uint8_t position) {
     bitmanip::unset(value, position);
 }
 
+void Cpu::set_bit(uint8_t& value, uint8_t position) {
+    bitmanip::set(value, position);
+}
+
 uint8_t& Cpu::op_code_to_register(opcodes::OpCode opcode) {
     switch (opcode.value % 8) {
     case 0:
@@ -292,6 +296,11 @@ uint8_t Cpu::cb(opcodes::OpCode op_code) {
     } else if (op_code.value >= opcodes::RES_0B.value && op_code.value <= opcodes::RES_7A.value) {
         // Reset bit instruction
         reset_bit(op_code_to_register(op_code), internal::op_code_to_bit(op_code));
+        return 4;
+    } else if (op_code.value >= opcodes::SET_0B.value && op_code.value <= opcodes::SET_7A) {
+        // Set bit instruction
+        set_bit(op_code_to_register(op_code), internal::op_code_to_bit(op_code));
+        registers.pc++;
         return 4;
     }
     // TODO implement further CB instructions

@@ -20,9 +20,8 @@ namespace constants {
 } // namespace constants
 
 
-namespace registers {
-    enum class flags : uint8_t { zero = 7, subtract = 6, half_carry = 5, carry = 4 };
-}
+enum class flags : uint8_t { zero = 7, subtract = 6, half_carry = 5, carry = 4 };
+
 
 enum class BitValues : uint8_t { Active = 1, Inactive = 0 };
 

@@ -1,9 +1,15 @@
 #pragma once
 
+#include "bitmanipulation.hpp"
 #include "constants.h"
+#include "facades/register.hpp"
+#include "facades/flag.hpp"
+#include "facades/incrementpc.hpp"
 #include "mmu.hpp"
 #include "opcodes.hpp"
+
 #include "fmt/format.h"
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -82,7 +88,7 @@ class Cpu {
      * Function which modifies CPU state according to the instruction and returns the number of
      * cycles.
      */
-    using Instruction = std::function<uint8_t()>;
+    using Instruction = std::function<int()>;
     // Assigns executable function to opcode
     std::unordered_map<opcodes::OpCode, Instruction> instructions;
 
@@ -108,6 +114,50 @@ public:
     void print_registers() const;
 
 private:
+    template <typename T>
+    MutableRegister<T> make_mutable_register() {
+        if constexpr (std::is_same_v<T, A>) {
+            return MutableRegister<A>{registers.a};
+        } else if constexpr (std::is_same_v<T, B>) {
+            return MutableRegister<T>{registers.b};
+        } else if constexpr (std::is_same_v<T, C>) {
+            return MutableRegister<T>{registers.c};
+        } else if constexpr (std::is_same_v<T, D>) {
+            return MutableRegister<T>{registers.d};
+        } else if constexpr (std::is_same_v<T, E>) {
+            return MutableRegister<T>{registers.e};
+        } else if constexpr (std::is_same_v<T, F>) {
+            return MutableRegister<T>{registers.f};
+        } else if constexpr (std::is_same_v<T, H>) {
+            return MutableRegister<T>{registers.h};
+        } else if constexpr (std::is_same_v<T, L>) {
+            return MutableRegister<T>{registers.l};
+        } else if constexpr (std::is_same_v<T, SP>) {
+            return MutableRegister<T>{registers.sp};
+        } else if constexpr (std::is_same_v<T, PC>) {
+            return MutableRegister<T>{registers.pc};
+        } else if constexpr (std::is_same_v<T, AF>) {
+            return MutableRegister<T>{registers.af};
+        } else if constexpr (std::is_same_v<T, BC>) {
+            return MutableRegister<T>{registers.bc};
+        } else if constexpr (std::is_same_v<T, DE>) {
+            return MutableRegister<T>{registers.de};
+        } else if constexpr (std::is_same_v<T, HL>) {
+            return MutableRegister<T>{registers.hl};
+        }
+    }
+
+    template <flags f>
+    MutableFlag<f> make_mutable_flag() {
+        static_assert(f == flags::zero or f == flags::half_carry or f == flags::carry or
+                      f == flags::subtract);
+        return MutableFlag<f>{registers.f};
+    }
+
+    IncrementPC make_pc_incrementer() {
+        return IncrementPC{make_mutable_register<PC>()};
+    }
+
     /**
      * Sets bit flag in flag register f
      */
@@ -119,7 +169,7 @@ private:
     /**
      * Return true if flag is set, otherwise return false.
      */
-    [[nodiscard]] bool is_flag_set(registers::flags flag) const;
+    [[nodiscard]] bool is_flag_set(flags flag) const;
 
     /**
      * Common function for all XOR instructions.
@@ -143,16 +193,6 @@ private:
      * Save value of a to address pointed at by hl, decrement hl.
      */
     void ldd_hl();
-
-    /**
-     * Common function for all 2 byte increment instructions.
-     */
-    void inc16(uint16_t& input);
-
-    /**
-     * Common function for all 1 byte increment instructions.
-     */
-    void inc8(uint8_t& input);
 
     /**
      * Handle second byte of two byte instruction codes beginning with prefix cb
@@ -194,9 +234,8 @@ private:
 };
 
 namespace internal {
-/**
- * Resolve second byte of CB opcodes to bit position on which this instructions operates.
- */
+    /**
+     * Resolve second byte of CB opcodes to bit position on which this instructions operates.
+     */
     uint8_t op_code_to_bit(opcodes::OpCode opcode);
-}
-
+} // namespace internal

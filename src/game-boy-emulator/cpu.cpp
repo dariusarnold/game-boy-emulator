@@ -1,5 +1,6 @@
 #include "cpu.hpp"
 #include "bitmanipulation.hpp"
+#include "instructions/increment.hpp"
 
 
 bool Cpu::step() {
@@ -52,56 +53,83 @@ Cpu::Cpu() {
     };
 
     instructions[opcodes::INC_A] = [&]() {
-        this->inc8(this->registers.a);
-        return 4;
+        Increment<A> ib{make_mutable_register<A>(), make_mutable_flag<flags::zero>(),
+                             make_mutable_flag<flags::subtract>(),
+                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
     instructions[opcodes::INC_B] = [&]() {
-        this->inc8(this->registers.b);
-        return 4;
+        Increment<B> ib{make_mutable_register<B>(), make_mutable_flag<flags::zero>(),
+                             make_mutable_flag<flags::subtract>(),
+                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
     instructions[opcodes::INC_C] = [&]() {
-        this->inc8(this->registers.c);
-        return 4;
+        Increment<C> ib{make_mutable_register<C>(), make_mutable_flag<flags::zero>(),
+                             make_mutable_flag<flags::subtract>(),
+                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
     instructions[opcodes::INC_D] = [&]() {
-        this->inc8(this->registers.d);
-        return 4;
+        Increment<D> ib{make_mutable_register<D>(), make_mutable_flag<flags::zero>(),
+                             make_mutable_flag<flags::subtract>(),
+                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
     instructions[opcodes::INC_E] = [&]() {
-        this->inc8(this->registers.e);
-        return 4;
+        Increment<E> ib{make_mutable_register<E>(), make_mutable_flag<flags::zero>(),
+                             make_mutable_flag<flags::subtract>(),
+                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
     instructions[opcodes::INC_H] = [&]() {
-        this->inc8(this->registers.h);
-        return 4;
+        Increment<H> ib{make_mutable_register<H>(), make_mutable_flag<flags::zero>(),
+                             make_mutable_flag<flags::subtract>(),
+                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
     instructions[opcodes::INC_L] = [&]() {
-        this->inc8(this->registers.l);
-        return 4;
+        Increment<L> ib{make_mutable_register<L>(), make_mutable_flag<flags::zero>(),
+                             make_mutable_flag<flags::subtract>(),
+                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
 
     instructions[opcodes::INC_BC] = [&]() {
-        this->inc16(this->registers.bc);
-        return 8;
+        Increment<BC> ib{make_mutable_register<BC>(), make_mutable_flag<flags::zero>(),
+                           make_mutable_flag<flags::subtract>(),
+                           make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
     instructions[opcodes::INC_DE] = [&]() {
-        this->inc16(this->registers.de);
-        return 8;
+        Increment<DE> ib{make_mutable_register<DE>(), make_mutable_flag<flags::zero>(),
+                            make_mutable_flag<flags::subtract>(),
+                            make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+      return ib.execute();
     };
     instructions[opcodes::INC_HL] = [&]() {
-        this->inc16(this->registers.hl);
-        return 8;
+        Increment<HL> ib{make_mutable_register<HL>(), make_mutable_flag<flags::zero>(),
+                            make_mutable_flag<flags::subtract>(),
+                            make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+      return ib.execute();
     };
     instructions[opcodes::INC_SP] = [&]() {
-        this->inc16(this->registers.sp);
-        return 8;
+        Increment<SP> ib{make_mutable_register<SP>(), make_mutable_flag<flags::zero>(),
+                            make_mutable_flag<flags::subtract>(),
+                            make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+      return ib.execute();
     };
 
     instructions[opcodes::INC_HL_INDIRECT] = [&]() {
         auto x = this->mmu.read_memory(this->registers.hl);
-        this->inc8(x);
+        // TODO this is a workaround, there should be an Increment_Byte__Indirect to avoid passing
+        // a fake template type
+        Increment<L> ib{MutableRegister<L>{x}, make_mutable_flag<flags::zero>(),
+                             make_mutable_flag<flags::subtract>(),
+                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        auto cycles = ib.execute() + 8;
         this->mmu.write_memory(this->registers.hl, x);
-        return 12;
+        return cycles;
     };
 
     instructions[opcodes::LDD_HL_A] = [&]() {
@@ -190,19 +218,19 @@ Cpu::Cpu() {
     };
 
     instructions[opcodes::JR_C] = [&]() {
-        this->jump_r(is_flag_set(registers::flags::carry));
+        this->jump_r(is_flag_set(flags::carry));
         return 8;
     };
     instructions[opcodes::JR_NC] = [&]() {
-        this->jump_r(!is_flag_set(registers::flags::carry));
+        this->jump_r(!is_flag_set(flags::carry));
         return 8;
     };
     instructions[opcodes::JR_Z] = [&]() {
-        this->jump_r(is_flag_set(registers::flags::zero));
+        this->jump_r(is_flag_set(flags::zero));
         return 8;
     };
     instructions[opcodes::JR_NZ] = [&]() {
-        this->jump_r(!is_flag_set(registers::flags::zero));
+        this->jump_r(!is_flag_set(flags::zero));
         return 8;
     };
     instructions[opcodes::LDH_C_A] = [&]() {
@@ -265,51 +293,23 @@ void Cpu::ldd_hl() {
     registers.pc++;
 }
 
-void Cpu::inc8(uint8_t& input) {
-    bool bit_3_before = bitmanip::is_bit_set(input, 3);
-    input++;
-    bool bit_3_after = bitmanip::is_bit_set(input, 3);
-    if (bit_3_after != bit_3_before) {
-        set_half_carry_flag(BitValues::Active);
-    } else {
-        set_half_carry_flag(BitValues::Inactive);
-    }
-    if (input == 0) set_zero_flag(BitValues::Active);
-    set_subtract_flag(BitValues::Inactive);
-    registers.pc++;
-}
-
-void Cpu::inc16(uint16_t& input) {
-    bool bit_11_before = bitmanip::is_bit_set(input, 3);
-    input++;
-    bool bit_11_after = bitmanip::is_bit_set(input, 3);
-    if (bit_11_after != bit_11_before) {
-        set_half_carry_flag(BitValues::Active);
-    } else {
-        set_half_carry_flag(BitValues::Inactive);
-    }
-    set_subtract_flag(BitValues::Inactive);
-    if (input == 0) set_zero_flag(BitValues::Active);
-    registers.pc++;
-}
-
 void Cpu::set_subtract_flag(BitValues value) {
-    bitmanip::set(registers.f, as_integral(registers::flags::subtract), value);
+    bitmanip::set(registers.f, as_integral(flags::subtract), value);
 }
 
 void Cpu::set_half_carry_flag(BitValues value) {
-    bitmanip::set(registers.f, as_integral(registers::flags::half_carry), value);
+    bitmanip::set(registers.f, as_integral(flags::half_carry), value);
 }
 
 void Cpu::set_zero_flag(BitValues value) {
-    bitmanip::set(registers.f, as_integral(registers::flags::zero), value);
+    bitmanip::set(registers.f, as_integral(flags::zero), value);
 }
 
 void Cpu::set_carry_flag(BitValues value) {
-    bitmanip::set(registers.f, as_integral(registers::flags::carry), value);
+    bitmanip::set(registers.f, as_integral(flags::carry), value);
 }
 
-bool Cpu::is_flag_set(registers::flags flag) const {
+bool Cpu::is_flag_set(flags flag) const {
     return bitmanip::is_bit_set(registers.f, as_integral(flag));
 }
 

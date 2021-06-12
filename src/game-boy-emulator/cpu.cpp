@@ -218,32 +218,31 @@ Cpu::Cpu() {
         return 12;
     };
     instructions[opcodes::LD_HL_A] = [&]() {
-        this->save_value_to_address_hl(this->registers.a);
-        return 8;
+        return this->save_value_to_address(this->registers.hl, this->registers.a);
     };
     instructions[opcodes::LD_HL_B] = [&]() {
-        this->save_value_to_address_hl(this->registers.b);
-        return 8;
+        return this->save_value_to_address(this->registers.hl, this->registers.b);
     };
     instructions[opcodes::LD_HL_C] = [&]() {
-        this->save_value_to_address_hl(this->registers.c);
-        return 8;
+        return this->save_value_to_address(this->registers.hl, this->registers.c);
     };
     instructions[opcodes::LD_HL_D] = [&]() {
-        this->save_value_to_address_hl(this->registers.d);
-        return 8;
+        return this->save_value_to_address(this->registers.hl, this->registers.d);
     };
     instructions[opcodes::LD_HL_E] = [&]() {
-        this->save_value_to_address_hl(this->registers.e);
-        return 8;
+        return this->save_value_to_address(this->registers.hl, this->registers.e);
     };
     instructions[opcodes::LD_HL_H] = [&]() {
-        this->save_value_to_address_hl(this->registers.h);
-        return 8;
+        return this->save_value_to_address(this->registers.hl, this->registers.h);
     };
     instructions[opcodes::LD_HL_L] = [&]() {
-        this->save_value_to_address_hl(this->registers.l);
-        return 8;
+        return this->save_value_to_address(this->registers.hl, this->registers.l);
+    };
+    instructions[opcodes::LD_A_BC] = [&]() {
+        return this->save_value_to_address(this->registers.bc, this->registers.a);
+    };
+    instructions[opcodes::LD_A_DE] = [&]() {
+        return this->save_value_to_address(this->registers.de, this->registers.a);
     };
 }
 
@@ -434,9 +433,10 @@ void Cpu::jump_r(bool condition_met) {
     }
 }
 
-void Cpu::save_value_to_address_hl(uint8_t value) {
+int Cpu::save_value_to_address(uint16_t address, uint8_t value) {
     mmu.write_memory(registers.hl, value);
     registers.pc++;
+    return 8;
 }
 
 uint8_t internal::op_code_to_bit(opcodes::OpCode opcode) {

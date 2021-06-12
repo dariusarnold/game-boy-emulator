@@ -190,7 +190,7 @@ private:
      * Save value to address pointed at by register hl and increment program counter
      * @param value
      */
-    void save_value_to_address_hl(uint8_t value);
+    int save_value_to_address(uint16_t address, uint8_t value);
 };
 
 namespace internal {

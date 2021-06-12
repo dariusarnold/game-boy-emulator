@@ -169,23 +169,16 @@ private:
     void test_bit(uint8_t value, u_int8_t position);
 
     /**
-     * Common function for all bit reset instructions.
-     */
-    void reset_bit(uint8_t& value, uint8_t position);
-
-    /**
-     * Common function for all bit set instructionso
-     * @param value
-     * @param position
-     */
-    void set_bit(uint8_t& value, uint8_t position);
-
-    /**
      * Convert second byte of cb opcodes to the register, upon which this instruction operators
      * @param opcode
      * @return
      */
-    uint8_t& op_code_to_register(opcodes::OpCode opcode);
+    uint8_t op_code_to_register(opcodes::OpCode opcode);
+
+    /**
+     * Write value to register specified by the opcode. Used for the second byte of CB instruction.
+     */
+    void write_to_destionation(opcodes::OpCode destination, uint8_t value);
 
     /**
      * Common function for all jumps.

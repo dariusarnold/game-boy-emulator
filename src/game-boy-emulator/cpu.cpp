@@ -98,7 +98,9 @@ Cpu::Cpu() {
     };
 
     instructions[opcodes::INC_HL_INDIRECT] = [&]() {
-        this->inc8(this->mmu.read_memory(this->registers.hl));
+        auto x = this->mmu.read_memory(this->registers.hl);
+        this->inc8(x);
+        this->mmu.write_memory(this->registers.hl, x);
         return 12;
     };
 
@@ -288,16 +290,7 @@ void Cpu::test_bit(uint8_t value, u_int8_t position) {
     set_half_carry_flag(BitValues::Active);
 }
 
-
-void Cpu::reset_bit(uint8_t& value, uint8_t position) {
-    bitmanip::unset(value, position);
-}
-
-void Cpu::set_bit(uint8_t& value, uint8_t position) {
-    bitmanip::set(value, position);
-}
-
-uint8_t& Cpu::op_code_to_register(opcodes::OpCode opcode) {
+uint8_t Cpu::op_code_to_register(opcodes::OpCode opcode) {
     switch (opcode.value % 8) {
     case 0:
         return registers.b;
@@ -320,6 +313,29 @@ uint8_t& Cpu::op_code_to_register(opcodes::OpCode opcode) {
     }
 }
 
+void Cpu::write_to_destionation(opcodes::OpCode destination, uint8_t value) {
+    switch (destination.value % 8) {
+    case 0:
+        registers.b = value;
+    case 1:
+        registers.c = value;
+    case 2:
+        registers.d = value;
+    case 3:
+        registers.e = value;
+    case 4:
+        registers.h = value;
+    case 5:
+        registers.l = value;
+    case 6:
+        mmu.write_memory(registers.hl, value);
+    case 7:
+        registers.a = value;
+    default:
+        throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", destination.value));
+    }
+}
+
 /**
  * Check if second byte of CB opcode did indirect memory access
  * @return True if RAM was accessed, else false
@@ -339,12 +355,16 @@ uint8_t Cpu::cb(opcodes::OpCode op_code) {
         return 4;
     } else if (op_code.value >= opcodes::RES_0B.value && op_code.value <= opcodes::RES_7A.value) {
         // Reset bit instruction
-        reset_bit(op_code_to_register(op_code), internal::op_code_to_bit(op_code));
+        auto val = op_code_to_register(op_code);
+        bitmanip::unset(val, internal::op_code_to_bit(op_code));
+        write_to_destionation(op_code, val);
         registers.pc++;
         return 4;
     } else if (op_code.value >= opcodes::SET_0B.value && op_code.value <= opcodes::SET_7A.value) {
         // Set bit instruction
-        set_bit(op_code_to_register(op_code), internal::op_code_to_bit(op_code));
+        auto val = op_code_to_register(op_code);
+        bitmanip::set(val, internal::op_code_to_bit(op_code));
+        write_to_destionation(op_code, val);
         registers.pc++;
         return 4;
     }

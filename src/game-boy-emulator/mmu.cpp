@@ -1,7 +1,7 @@
 #include "mmu.hpp"
 
 
-uint8_t& Mmu::read_memory(u_int16_t address) {
+uint8_t Mmu::read_memory(u_int16_t address) {
     return ram[address];
 }
 

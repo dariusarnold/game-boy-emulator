@@ -12,7 +12,7 @@ public:
     /**
      * Read memory value from address.
      */
-    [[nodiscard]] uint8_t& read_memory(u_int16_t address);
+    [[nodiscard]] uint8_t read_memory(u_int16_t address);
 
     /**
      * Write value to ram at address.

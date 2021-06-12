@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept>
+
 
 inline consteval uint8_t operator"" _u8(unsigned long long x) {
     return x > std::numeric_limits<uint8_t>::max()

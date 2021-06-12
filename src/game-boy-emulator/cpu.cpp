@@ -3,7 +3,7 @@
 
 
 bool Cpu::step() {
-    auto opcode = opcodes::OpCode{read_memory(registers.pc)};
+    auto opcode = opcodes::OpCode{mmu.read_memory(registers.pc)};
     auto instruction = instructions.find(opcode);
     if (instruction == instructions.end()) {
         fmt::print("Encountered unsupported opcode {:02x}\n", opcode.value);
@@ -15,7 +15,7 @@ bool Cpu::step() {
 }
 
 void Cpu::set_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom) {
-    std::copy(boot_rom.begin(), boot_rom.end(), ram.mem.begin());
+    mmu.map_boot_rom(boot_rom);
 }
 
 void Cpu::run() {
@@ -48,7 +48,7 @@ Cpu::Cpu() {
 
     instructions[opcodes::CB] = [&]() {
         this->registers.pc++;
-        return this->cb(opcodes::OpCode{read_memory(registers.pc)});
+        return this->cb(opcodes::OpCode{mmu.read_memory(registers.pc)});
     };
 
     instructions[opcodes::INC_A] = [&]() {
@@ -98,7 +98,7 @@ Cpu::Cpu() {
     };
 
     instructions[opcodes::INC_HL_INDIRECT] = [&]() {
-        this->inc8(this->read_memory(this->registers.hl));
+        this->inc8(this->mmu.read_memory(this->registers.hl));
         return 12;
     };
 
@@ -179,7 +179,7 @@ Cpu::Cpu() {
         return 4;
     };
     instructions[opcodes::XOR_HL] = [&]() {
-        this->xor8(this->read_memory(this->registers.hl));
+        this->xor8(this->mmu.read_memory(this->registers.hl));
         return 8;
     };
     instructions[opcodes::XOR_N] = [&]() {
@@ -205,39 +205,27 @@ Cpu::Cpu() {
     };
 }
 
-uint8_t Cpu::read_memory(u_int16_t address) const {
-    return ram.mem[address];
-}
-
-uint8_t& Cpu::read_memory(u_int16_t address) {
-    return ram.mem[address];
-}
-
-void Cpu::write_memory(uint16_t address, uint8_t value) {
-    ram.mem[address] = value;
-}
-
 void Cpu::ld16(uint16_t& input) {
     registers.pc++;
     // read low byte
     uint16_t data = 0;
-    data += read_memory(registers.pc);
+    data += mmu.read_memory(registers.pc);
     // read high byte
     registers.pc++;
-    data += read_memory(registers.pc) << 8;
+    data += mmu.read_memory(registers.pc) << 8;
     input = data;
     registers.pc++;
 }
 
 void Cpu::ld8(uint8_t& input) {
     registers.pc++;
-    const auto immediate = read_memory(registers.pc);
+    const auto immediate = mmu.read_memory(registers.pc);
     input = immediate;
     registers.pc++;
 }
 
 void Cpu::ldd_hl() {
-    write_memory(registers.hl, registers.a);
+    mmu.write_memory(registers.hl, registers.a);
     registers.hl--;
     registers.pc++;
 }
@@ -324,7 +312,7 @@ uint8_t& Cpu::op_code_to_register(opcodes::OpCode opcode) {
     case 5:
         return registers.l;
     case 6:
-        return read_memory(registers.hl);
+        return mmu.read_memory(registers.hl);
     case 7:
         return registers.a;
     default:
@@ -370,7 +358,7 @@ void Cpu::jump_r(bool condition_met) {
         // For C++20 this is defined behaviour since signed integers are twos complement
         // On older standards this is implementation defined
         // https://stackoverflow.com/questions/13150449/efficient-unsigned-to-signed-cast-avoiding-implementation-defined-behavior
-        auto immediate = static_cast<int8_t>(read_memory(registers.pc));
+        auto immediate = static_cast<int8_t>(mmu.read_memory(registers.pc));
         // We need to increment here, otherwise the jump is off by one address
         registers.pc++;
         registers.pc += immediate;

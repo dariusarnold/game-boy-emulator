@@ -1,8 +1,9 @@
 #pragma once
 
 #include "constants.h"
-#include "fmt/format.h"
+#include "mmu.hpp"
 #include "opcodes.hpp"
+#include "fmt/format.h"
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -71,15 +72,9 @@ struct fmt::formatter<Registers> {
     }
 };
 
-
-struct Ram {
-    std::array<uint8_t, constants::RAM_SIZE> mem;
-};
-
-
 class Cpu {
     Registers registers = {0};
-    Ram ram = {0};
+    Mmu mmu;
     // Number of cycles since execution start
     size_t cycles = 0;
 
@@ -113,16 +108,6 @@ public:
     void print_registers() const;
 
 private:
-    /**
-     * Read memory value from address.
-     */
-    [[nodiscard]] uint8_t read_memory(u_int16_t address) const;
-    [[nodiscard]] uint8_t& read_memory(u_int16_t address);
-    /**
-     * Write value to ram at address
-     */
-    void write_memory(uint16_t address, uint8_t value);
-
     /**
      * Sets bit flag in flag register f
      */

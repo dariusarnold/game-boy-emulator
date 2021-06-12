@@ -6,6 +6,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/opcodes.hpp
         game-boy-emulator/bitmanipulation.cpp
         game-boy-emulator/bitmanipulation.hpp
+        game-boy-emulator/mmu.cpp
+        game-boy-emulator/mmu.hpp
         )
 target_include_directories(game_boy_emulator_library PUBLIC
         game-boy-emulator

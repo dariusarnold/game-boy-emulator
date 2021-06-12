@@ -9,3 +9,9 @@ TEST_CASE("MMU is zero initialized") {
     CHECK(m.read_memory(address) == 0x00);
 }
 
+TEST_CASE("Reading word from mmu") {
+    Mmu m;
+    m.write_memory(0x00, 0xAB);
+    m.write_memory(0x01, 0xCD);
+    CHECK(m.read_memory_word(0x00) == 0xCDAB);
+}

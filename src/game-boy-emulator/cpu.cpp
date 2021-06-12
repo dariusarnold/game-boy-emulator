@@ -248,14 +248,8 @@ Cpu::Cpu() {
 
 void Cpu::ld16(uint16_t& input) {
     registers.pc++;
-    // read low byte
-    uint16_t data = 0;
-    data += mmu.read_memory(registers.pc);
-    // read high byte
-    registers.pc++;
-    data += mmu.read_memory(registers.pc) << 8;
-    input = data;
-    registers.pc++;
+    input = mmu.read_memory_word(registers.pc);
+    registers.pc += 2;
 }
 
 void Cpu::ld8(uint8_t& input) {

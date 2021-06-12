@@ -359,6 +359,9 @@ uint8_t Cpu::cb(opcodes::OpCode op_code) {
         bitmanip::unset(val, internal::op_code_to_bit(op_code));
         write_to_destionation(op_code, val);
         registers.pc++;
+        if (was_indirect_access(op_code)) {
+            return 12;
+        }
         return 4;
     } else if (op_code.value >= opcodes::SET_0B.value && op_code.value <= opcodes::SET_7A.value) {
         // Set bit instruction
@@ -366,6 +369,9 @@ uint8_t Cpu::cb(opcodes::OpCode op_code) {
         bitmanip::set(val, internal::op_code_to_bit(op_code));
         write_to_destionation(op_code, val);
         registers.pc++;
+        if (was_indirect_access(op_code)) {
+            return 12;
+        }
         return 4;
     }
     // TODO implement further CB instructions

@@ -210,6 +210,13 @@ Cpu::Cpu() {
         this->registers.pc++;
         return 8;
     };
+    instructions[opcodes::LDH_N_A] = [&]() {
+        this->registers.pc++;
+        uint16_t address = this->mmu.read_memory(this->registers.pc) + 0xFF00;
+        this->registers.pc++;
+        this->mmu.write_memory(address, this->registers.a);
+        return 12;
+    };
     instructions[opcodes::LD_HL_A] = [&]() {
         this->save_value_to_address_hl(this->registers.a);
         return 8;

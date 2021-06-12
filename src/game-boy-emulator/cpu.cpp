@@ -127,9 +127,9 @@ Cpu::Cpu() {
         Increment<L> ib{MutableRegister<L>{x}, make_mutable_flag<flags::zero>(),
                              make_mutable_flag<flags::subtract>(),
                              make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
-        auto cycles = ib.execute() + 8;
+        auto elapsed_cycles = ib.execute() + 8;
         this->mmu.write_memory(this->registers.hl, x);
-        return cycles;
+        return elapsed_cycles;
     };
 
     instructions[opcodes::LDD_HL_A] = [&]() {

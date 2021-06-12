@@ -189,23 +189,23 @@ Cpu::Cpu() {
         return 8;
     };
 
-    instructions[opcodes::JR_C] = [&] {
+    instructions[opcodes::JR_C] = [&]() {
         this->jump_r(is_flag_set(registers::flags::carry));
         return 8;
     };
-    instructions[opcodes::JR_NC] = [&] {
+    instructions[opcodes::JR_NC] = [&]() {
         this->jump_r(!is_flag_set(registers::flags::carry));
         return 8;
     };
-    instructions[opcodes::JR_Z] = [&] {
+    instructions[opcodes::JR_Z] = [&]() {
         this->jump_r(is_flag_set(registers::flags::zero));
         return 8;
     };
-    instructions[opcodes::JR_NZ] = [&] {
+    instructions[opcodes::JR_NZ] = [&]() {
         this->jump_r(!is_flag_set(registers::flags::zero));
         return 8;
     };
-    instructions[opcodes::LDH_C_A] = [&] {
+    instructions[opcodes::LDH_C_A] = [&]() {
         this->mmu.write_memory(this->registers.c + 0xFF00, this->registers.a);
         this->registers.pc++;
         return 8;

@@ -185,6 +185,12 @@ private:
      * @param is_condition_met if true read immediate value and set stackpointer to it.
      */
     void jump_r(bool is_condition_met);
+
+    /**
+     * Save value to address pointed at by register hl and increment program counter
+     * @param value
+     */
+    void save_value_to_address_hl(uint8_t value);
 };
 
 namespace internal {

@@ -72,6 +72,14 @@ namespace opcodes {
     constexpr OpCode XOR_N{0xEE};
     // Save A to address pointed at by C + 0xFF00
     constexpr OpCode LDH_C_A{0xE2};
+    // Save to address pointed at by register HL
+    constexpr OpCode LD_HL_B{0x70};
+    constexpr OpCode LD_HL_C{0x71};
+    constexpr OpCode LD_HL_D{0x72};
+    constexpr OpCode LD_HL_E{0x73};
+    constexpr OpCode LD_HL_H{0x74};
+    constexpr OpCode LD_HL_L{0x75};
+    constexpr OpCode LD_HL_A{0x77};
 
 } // namespace opcodes
 

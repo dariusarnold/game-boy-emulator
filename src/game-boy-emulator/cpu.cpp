@@ -210,6 +210,34 @@ Cpu::Cpu() {
         this->registers.pc++;
         return 8;
     };
+    instructions[opcodes::LD_HL_A] = [&]() {
+        this->save_value_to_address_hl(this->registers.a);
+        return 8;
+    };
+    instructions[opcodes::LD_HL_B] = [&]() {
+        this->save_value_to_address_hl(this->registers.b);
+        return 8;
+    };
+    instructions[opcodes::LD_HL_C] = [&]() {
+        this->save_value_to_address_hl(this->registers.c);
+        return 8;
+    };
+    instructions[opcodes::LD_HL_D] = [&]() {
+        this->save_value_to_address_hl(this->registers.d);
+        return 8;
+    };
+    instructions[opcodes::LD_HL_E] = [&]() {
+        this->save_value_to_address_hl(this->registers.e);
+        return 8;
+    };
+    instructions[opcodes::LD_HL_H] = [&]() {
+        this->save_value_to_address_hl(this->registers.h);
+        return 8;
+    };
+    instructions[opcodes::LD_HL_L] = [&]() {
+        this->save_value_to_address_hl(this->registers.l);
+        return 8;
+    };
 }
 
 void Cpu::ld16(uint16_t& input) {
@@ -397,6 +425,11 @@ void Cpu::jump_r(bool condition_met) {
         // Set to instruction after immediate data if we didnt jump
         registers.pc++;
     }
+}
+
+void Cpu::save_value_to_address_hl(uint8_t value) {
+    mmu.write_memory(registers.hl, value);
+    registers.pc++;
 }
 
 uint8_t internal::op_code_to_bit(opcodes::OpCode opcode) {

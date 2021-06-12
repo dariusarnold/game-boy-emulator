@@ -70,6 +70,8 @@ namespace opcodes {
     constexpr OpCode XOR_L{0xAD};
     constexpr OpCode XOR_HL{0xAE};
     constexpr OpCode XOR_N{0xEE};
+    // Save A to address pointed at by C + 0xFF00
+    constexpr OpCode LDH_C_A{0xE2};
 
 } // namespace opcodes
 

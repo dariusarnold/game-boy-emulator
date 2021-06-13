@@ -22,6 +22,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/instructions/callintermediary.hpp
         game-boy-emulator/facades/memory.cpp
         game-boy-emulator/facades/memory.hpp
+        game-boy-emulator/instructions/copyregister.cpp
+        game-boy-emulator/instructions/copyregister.hpp
         )
 target_include_directories(game_boy_emulator_library PUBLIC
         game-boy-emulator

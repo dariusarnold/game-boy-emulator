@@ -27,4 +27,9 @@ namespace bitmanip {
     // Get least significant byte
     uint8_t get_low_byte(uint16_t x);
 
+    // Examle 0x34 -> 0x04
+    uint8_t get_low_nibble(uint8_t);
+    // Exaple 0x34 -> 0x03
+    uint8_t get_high_nibble(uint8_t);
+
 } // namespace bitmanip

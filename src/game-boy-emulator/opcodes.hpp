@@ -88,6 +88,56 @@ namespace opcodes {
     constexpr OpCode LD_HL_A{0x77};
     // Call function at 16 bit location
     constexpr OpCode CALL_NN{0xCD};
+    // Copy register to register
+    constexpr OpCode LD_B_B{0x40};
+    constexpr OpCode LD_B_C{0x41};
+    constexpr OpCode LD_B_D{0x42};
+    constexpr OpCode LD_B_E{0x43};
+    constexpr OpCode LD_B_H{0x44};
+    constexpr OpCode LD_B_L{0x45};
+    constexpr OpCode LD_B_A{0x47};
+    constexpr OpCode LD_C_B{0x48};
+    constexpr OpCode LD_C_C{0x49};
+    constexpr OpCode LD_C_D{0x4A};
+    constexpr OpCode LD_C_E{0x4B};
+    constexpr OpCode LD_C_H{0x4C};
+    constexpr OpCode LD_C_L{0x4D};
+    constexpr OpCode LD_C_A{0x4F};
+    constexpr OpCode LD_D_B{0x50};
+    constexpr OpCode LD_D_C{0x51};
+    constexpr OpCode LD_D_D{0x52};
+    constexpr OpCode LD_D_E{0x53};
+    constexpr OpCode LD_D_H{0x54};
+    constexpr OpCode LD_D_L{0x55};
+    constexpr OpCode LD_D_A{0x57};
+    constexpr OpCode LD_E_B{0x58};
+    constexpr OpCode LD_E_C{0x59};
+    constexpr OpCode LD_E_D{0x5A};
+    constexpr OpCode LD_E_E{0x5B};
+    constexpr OpCode LD_E_H{0x5C};
+    constexpr OpCode LD_E_L{0x5D};
+    constexpr OpCode LD_E_A{0x5F};
+    constexpr OpCode LD_H_B{0x60};
+    constexpr OpCode LD_H_C{0x61};
+    constexpr OpCode LD_H_D{0x62};
+    constexpr OpCode LD_H_E{0x63};
+    constexpr OpCode LD_H_H{0x64};
+    constexpr OpCode LD_H_L{0x65};
+    constexpr OpCode LD_H_A{0x67};
+    constexpr OpCode LD_L_B{0x68};
+    constexpr OpCode LD_L_C{0x69};
+    constexpr OpCode LD_L_D{0x6A};
+    constexpr OpCode LD_L_E{0x6B};
+    constexpr OpCode LD_L_H{0x6C};
+    constexpr OpCode LD_L_L{0x6D};
+    constexpr OpCode LD_L_A{0x6F};
+    constexpr OpCode LD_A_B{0x78};
+    constexpr OpCode LD_A_C{0x79};
+    constexpr OpCode LD_A_D{0x7A};
+    constexpr OpCode LD_A_E{0x7B};
+    constexpr OpCode LD_A_H{0x7C};
+    constexpr OpCode LD_A_L{0x7D};
+    constexpr OpCode LD_A_A{0x7F};
 } // namespace opcodes
 
 // hash specialization for std::unordered_map

@@ -19,4 +19,11 @@ namespace bitmanip {
     uint8_t get_low_byte(uint16_t x) {
         return x & 0xFF;
     }
+
+    uint8_t get_low_nibble(uint8_t x) {
+        return x & 0x0F;
+    }
+    uint8_t get_high_nibble(uint8_t x) {
+        return (x & 0xF0) >> (constants::BYTE_SIZE / 2);
+    }
 } // namespace bitmanip

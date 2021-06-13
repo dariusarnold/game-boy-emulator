@@ -47,3 +47,15 @@ TEST_CASE("Test getting high byte from word") {
     CHECK(bitmanip::get_high_byte(0xFF00) == 0xFF);
     CHECK(bitmanip::get_high_byte(0x1234) == 0x12);
 }
+
+TEST_CASE("Get low nibble from byte") {
+    CHECK(bitmanip::get_low_nibble(0x34) == 0x04);
+    CHECK(bitmanip::get_low_nibble(0x1A) == 0x0A);
+    CHECK(bitmanip::get_low_nibble(0x20) == 0x00);
+}
+
+TEST_CASE("Get high nibble from byte") {
+    CHECK(bitmanip::get_high_nibble(0x34) == 0x03);
+    CHECK(bitmanip::get_high_nibble(0x1A) == 0x01);
+    CHECK(bitmanip::get_high_nibble(0x20) == 0x02);
+}

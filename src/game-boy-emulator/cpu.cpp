@@ -1,6 +1,7 @@
 #include "cpu.hpp"
 #include "bitmanipulation.hpp"
 #include "instructions/callintermediary.hpp"
+#include "instructions/copyregister.hpp"
 #include "instructions/increment.hpp"
 
 
@@ -280,6 +281,80 @@ Cpu::Cpu() {
                               make_mutable_register<PC>()};
         return call.execute();
     };
+
+    IncrementPC ipc{MutableRegister<PC>(registers.pc)};
+    // This function is just to save typing
+    auto ld_helper = [=](auto source, auto destination) {
+        return [=]() {
+            CopyRegister cr{source, destination, ipc};
+            return cr.execute();
+        };
+    };
+    Register<A> a{registers.a};
+    Register<F> f{registers.f};
+    Register<B> b{registers.b};
+    Register<C> c{registers.c};
+    Register<D> d{registers.d};
+    Register<E> e{registers.e};
+    Register<H> h{registers.h};
+    Register<L> l{registers.l};
+    MutableRegister<A> a_mut{registers.a};
+    MutableRegister<F> f_mut{registers.f};
+    MutableRegister<B> b_mut{registers.b};
+    MutableRegister<C> c_mut{registers.c};
+    MutableRegister<D> d_mut{registers.d};
+    MutableRegister<E> e_mut{registers.e};
+    MutableRegister<H> h_mut{registers.h};
+    MutableRegister<L> l_mut{registers.l};
+    instructions[opcodes::LD_B_B] = ld_helper(b, b_mut);
+    instructions[opcodes::LD_B_C] = ld_helper(b, c_mut);
+    instructions[opcodes::LD_B_D] = ld_helper(b, d_mut);
+    instructions[opcodes::LD_B_E] = ld_helper(b, e_mut);
+    instructions[opcodes::LD_B_H] = ld_helper(b, h_mut);
+    instructions[opcodes::LD_B_L] = ld_helper(b, l_mut);
+    instructions[opcodes::LD_B_A] = ld_helper(b, a_mut);
+    instructions[opcodes::LD_C_B] = ld_helper(c, b_mut);
+    instructions[opcodes::LD_C_C] = ld_helper(c, c_mut);
+    instructions[opcodes::LD_C_D] = ld_helper(c, d_mut);
+    instructions[opcodes::LD_C_E] = ld_helper(c, e_mut);
+    instructions[opcodes::LD_C_H] = ld_helper(c, h_mut);
+    instructions[opcodes::LD_C_L] = ld_helper(c, l_mut);
+    instructions[opcodes::LD_C_A] = ld_helper(c, a_mut);
+    instructions[opcodes::LD_D_B] = ld_helper(d, b_mut);
+    instructions[opcodes::LD_D_C] = ld_helper(d, c_mut);
+    instructions[opcodes::LD_D_D] = ld_helper(d, d_mut);
+    instructions[opcodes::LD_D_E] = ld_helper(d, e_mut);
+    instructions[opcodes::LD_D_H] = ld_helper(d, h_mut);
+    instructions[opcodes::LD_D_L] = ld_helper(d, l_mut);
+    instructions[opcodes::LD_D_A] = ld_helper(d, a_mut);
+    instructions[opcodes::LD_E_B] = ld_helper(e, b_mut);
+    instructions[opcodes::LD_E_C] = ld_helper(e, c_mut);
+    instructions[opcodes::LD_E_D] = ld_helper(e, d_mut);
+    instructions[opcodes::LD_E_E] = ld_helper(e, e_mut);
+    instructions[opcodes::LD_E_H] = ld_helper(e, h_mut);
+    instructions[opcodes::LD_E_L] = ld_helper(e, l_mut);
+    instructions[opcodes::LD_E_A] = ld_helper(e, a_mut);
+    instructions[opcodes::LD_H_B] = ld_helper(h, b_mut);
+    instructions[opcodes::LD_H_C] = ld_helper(h, c_mut);
+    instructions[opcodes::LD_H_D] = ld_helper(h, d_mut);
+    instructions[opcodes::LD_H_E] = ld_helper(h, e_mut);
+    instructions[opcodes::LD_H_H] = ld_helper(h, h_mut);
+    instructions[opcodes::LD_H_L] = ld_helper(h, l_mut);
+    instructions[opcodes::LD_H_A] = ld_helper(h, a_mut);
+    instructions[opcodes::LD_L_B] = ld_helper(l, b_mut);
+    instructions[opcodes::LD_L_C] = ld_helper(l, c_mut);
+    instructions[opcodes::LD_L_D] = ld_helper(l, d_mut);
+    instructions[opcodes::LD_L_E] = ld_helper(l, e_mut);
+    instructions[opcodes::LD_L_H] = ld_helper(l, h_mut);
+    instructions[opcodes::LD_L_L] = ld_helper(l, l_mut);
+    instructions[opcodes::LD_L_A] = ld_helper(l, a_mut);
+    instructions[opcodes::LD_A_B] = ld_helper(a, b_mut);
+    instructions[opcodes::LD_A_C] = ld_helper(a, c_mut);
+    instructions[opcodes::LD_A_D] = ld_helper(a, d_mut);
+    instructions[opcodes::LD_A_E] = ld_helper(a, e_mut);
+    instructions[opcodes::LD_A_H] = ld_helper(a, h_mut);
+    instructions[opcodes::LD_A_L] = ld_helper(a, l_mut);
+    instructions[opcodes::LD_A_A] = ld_helper(a, a_mut);
 }
 
 void Cpu::ld16(uint16_t& input) {

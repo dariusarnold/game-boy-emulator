@@ -518,8 +518,10 @@ uint8_t Cpu::cb(opcodes::OpCode op_code) {
             return 12;
         }
         return 4;
+    } else {
+        // TODO implement further CB instructions
+        throw std::runtime_error(fmt::format("CB {:02x} not supported\n", op_code.value));
     }
-    // TODO implement further CB instructions
     return 0;
 }
 

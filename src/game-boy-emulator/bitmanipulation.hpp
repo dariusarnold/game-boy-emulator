@@ -22,4 +22,9 @@ namespace bitmanip {
         return (input & (1 << position)) > 0;
     }
 
+    // Get most significant byte
+    uint8_t get_high_byte(uint16_t x);
+    // Get least significant byte
+    uint8_t get_low_byte(uint16_t x);
+
 } // namespace bitmanip

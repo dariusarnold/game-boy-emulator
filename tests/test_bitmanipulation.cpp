@@ -37,3 +37,13 @@ TEST_CASE("Check if bit is set in 2 byte int") {
     CHECK(bitmanip::is_bit_set(x, 13));
     CHECK_FALSE(bitmanip::is_bit_set(x, 0));
 }
+
+TEST_CASE("Test getting low byte from word") {
+    CHECK(bitmanip::get_low_byte(0xFF00) == 0x00);
+    CHECK(bitmanip::get_low_byte(0x1234) == 0x34);
+}
+
+TEST_CASE("Test getting high byte from word") {
+    CHECK(bitmanip::get_high_byte(0xFF00) == 0xFF);
+    CHECK(bitmanip::get_high_byte(0x1234) == 0x12);
+}

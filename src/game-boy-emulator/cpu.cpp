@@ -1,5 +1,6 @@
 #include "cpu.hpp"
 #include "bitmanipulation.hpp"
+#include "instructions/callintermediary.hpp"
 #include "instructions/increment.hpp"
 
 
@@ -271,6 +272,13 @@ Cpu::Cpu() {
     };
     instructions[opcodes::LD_A_DE] = [&]() {
         return this->save_value_to_address(this->registers.de, this->registers.a);
+    };
+
+    instructions[opcodes::CALL_NN] = [&]() {
+        CallIntermediary call{Memory{mmu},
+                              MutableStack{MutableMemory{mmu}, make_mutable_register<SP>()},
+                              make_mutable_register<PC>()};
+        return call.execute();
     };
 }
 

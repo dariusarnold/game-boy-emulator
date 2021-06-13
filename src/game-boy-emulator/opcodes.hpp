@@ -86,7 +86,8 @@ namespace opcodes {
     constexpr OpCode LD_HL_H{0x74};
     constexpr OpCode LD_HL_L{0x75};
     constexpr OpCode LD_HL_A{0x77};
-
+    // Call function at 16 bit location
+    constexpr OpCode CALL_NN{0xCD};
 } // namespace opcodes
 
 // hash specialization for std::unordered_map

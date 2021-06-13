@@ -138,6 +138,8 @@ class Register {
 public:
     using underlying_type = std::conditional_t<is_byte_register_v<T>, uint8_t, uint16_t>;
 
+    explicit Register(underlying_type input): value(input) {}
+
     underlying_type get() {
         return value;
     }
@@ -165,6 +167,10 @@ public:
 
     void set(underlying_type new_value) {
         value = new_value;
+    }
+
+    void increment() {
+        value++;
     }
 
 private:

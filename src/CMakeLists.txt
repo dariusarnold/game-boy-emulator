@@ -16,6 +16,12 @@ add_library(game_boy_emulator_library
         game-boy-emulator/facades/flag.hpp
         game-boy-emulator/facades/incrementpc.cpp
         game-boy-emulator/facades/incrementpc.hpp
+        game-boy-emulator/facades/pushstack.cpp
+        game-boy-emulator/facades/pushstack.hpp
+        game-boy-emulator/instructions/callintermediary.cpp
+        game-boy-emulator/instructions/callintermediary.hpp
+        game-boy-emulator/facades/memory.cpp
+        game-boy-emulator/facades/memory.hpp
         )
 target_include_directories(game_boy_emulator_library PUBLIC
         game-boy-emulator

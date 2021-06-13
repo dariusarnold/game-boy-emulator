@@ -55,70 +55,70 @@ Cpu::Cpu() {
 
     instructions[opcodes::INC_A] = [&]() {
         Increment<A> ib{make_mutable_register<A>(), make_mutable_flag<flags::zero>(),
-                             make_mutable_flag<flags::subtract>(),
-                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+                        make_mutable_flag<flags::subtract>(),
+                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_B] = [&]() {
         Increment<B> ib{make_mutable_register<B>(), make_mutable_flag<flags::zero>(),
-                             make_mutable_flag<flags::subtract>(),
-                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+                        make_mutable_flag<flags::subtract>(),
+                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_C] = [&]() {
         Increment<C> ib{make_mutable_register<C>(), make_mutable_flag<flags::zero>(),
-                             make_mutable_flag<flags::subtract>(),
-                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+                        make_mutable_flag<flags::subtract>(),
+                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_D] = [&]() {
         Increment<D> ib{make_mutable_register<D>(), make_mutable_flag<flags::zero>(),
-                             make_mutable_flag<flags::subtract>(),
-                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+                        make_mutable_flag<flags::subtract>(),
+                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_E] = [&]() {
         Increment<E> ib{make_mutable_register<E>(), make_mutable_flag<flags::zero>(),
-                             make_mutable_flag<flags::subtract>(),
-                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+                        make_mutable_flag<flags::subtract>(),
+                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_H] = [&]() {
         Increment<H> ib{make_mutable_register<H>(), make_mutable_flag<flags::zero>(),
-                             make_mutable_flag<flags::subtract>(),
-                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+                        make_mutable_flag<flags::subtract>(),
+                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_L] = [&]() {
         Increment<L> ib{make_mutable_register<L>(), make_mutable_flag<flags::zero>(),
-                             make_mutable_flag<flags::subtract>(),
-                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+                        make_mutable_flag<flags::subtract>(),
+                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
 
     instructions[opcodes::INC_BC] = [&]() {
         Increment<BC> ib{make_mutable_register<BC>(), make_mutable_flag<flags::zero>(),
-                           make_mutable_flag<flags::subtract>(),
-                           make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+                         make_mutable_flag<flags::subtract>(),
+                         make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_DE] = [&]() {
         Increment<DE> ib{make_mutable_register<DE>(), make_mutable_flag<flags::zero>(),
-                            make_mutable_flag<flags::subtract>(),
-                            make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
-      return ib.execute();
+                         make_mutable_flag<flags::subtract>(),
+                         make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
     instructions[opcodes::INC_HL] = [&]() {
         Increment<HL> ib{make_mutable_register<HL>(), make_mutable_flag<flags::zero>(),
-                            make_mutable_flag<flags::subtract>(),
-                            make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
-      return ib.execute();
+                         make_mutable_flag<flags::subtract>(),
+                         make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
     instructions[opcodes::INC_SP] = [&]() {
         Increment<SP> ib{make_mutable_register<SP>(), make_mutable_flag<flags::zero>(),
-                            make_mutable_flag<flags::subtract>(),
-                            make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
-      return ib.execute();
+                         make_mutable_flag<flags::subtract>(),
+                         make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        return ib.execute();
     };
 
     instructions[opcodes::INC_HL_INDIRECT] = [&]() {
@@ -126,8 +126,8 @@ Cpu::Cpu() {
         // TODO this is a workaround, there should be an Increment_Byte__Indirect to avoid passing
         // a fake template type
         Increment<L> ib{MutableRegister<L>{x}, make_mutable_flag<flags::zero>(),
-                             make_mutable_flag<flags::subtract>(),
-                             make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+                        make_mutable_flag<flags::subtract>(),
+                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         auto elapsed_cycles = ib.execute() + 8;
         this->mmu.write_memory(this->registers.hl, x);
         return elapsed_cycles;

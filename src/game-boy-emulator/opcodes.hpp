@@ -138,6 +138,11 @@ namespace opcodes {
     constexpr OpCode LD_A_H{0x7C};
     constexpr OpCode LD_A_L{0x7D};
     constexpr OpCode LD_A_A{0x7F};
+    // Push 2 byte register onto stack
+    constexpr OpCode PUSH_BC{0xC5};
+    constexpr OpCode PUSH_DE{0xD5};
+    constexpr OpCode PUSH_HL{0xE5};
+    constexpr OpCode PUSH_AF{0xF5};
 } // namespace opcodes
 
 // hash specialization for std::unordered_map

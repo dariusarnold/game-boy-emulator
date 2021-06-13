@@ -3,6 +3,7 @@
 #include "instructions/callintermediary.hpp"
 #include "instructions/copyregister.hpp"
 #include "instructions/increment.hpp"
+#include "instructions/pushregister.hpp"
 
 
 bool Cpu::step() {
@@ -355,6 +356,34 @@ Cpu::Cpu() {
     instructions[opcodes::LD_A_H] = ld_helper(a, h_mut);
     instructions[opcodes::LD_A_L] = ld_helper(a, l_mut);
     instructions[opcodes::LD_A_A] = ld_helper(a, a_mut);
+    instructions[opcodes::PUSH_AF] = [&]() {
+        PushRegisterOnStack<AF> push{
+            Register<AF>{registers.af},
+            MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
+            IncrementPC{MutableRegister<PC>{registers.pc}}};
+        return push.execute();
+    };
+    instructions[opcodes::PUSH_BC] = [&]() {
+      PushRegisterOnStack<BC> push{
+          Register<BC>{registers.bc},
+          MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
+          IncrementPC{MutableRegister<PC>{registers.pc}}};
+      return push.execute();
+    };
+    instructions[opcodes::PUSH_DE] = [&]() {
+      PushRegisterOnStack<DE> push{
+          Register<DE>{registers.de},
+          MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
+          IncrementPC{MutableRegister<PC>{registers.pc}}};
+      return push.execute();
+    };
+    instructions[opcodes::PUSH_HL] = [&]() {
+      PushRegisterOnStack<HL> push{
+          Register<HL>{registers.hl},
+          MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
+          IncrementPC{MutableRegister<PC>{registers.pc}}};
+      return push.execute();
+    };
 }
 
 void Cpu::ld16(uint16_t& input) {

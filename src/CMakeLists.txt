@@ -26,7 +26,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/instructions/copyregister.hpp
         game-boy-emulator/instructions/pushregister.cpp
         game-boy-emulator/instructions/pushregister.hpp
-        )
+        game-boy-emulator/instructions/rotateleft.cpp
+        game-boy-emulator/instructions/rotateleft.hpp)
 target_include_directories(game_boy_emulator_library PUBLIC
         game-boy-emulator
         )

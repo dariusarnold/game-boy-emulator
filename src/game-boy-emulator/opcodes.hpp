@@ -143,6 +143,14 @@ namespace opcodes {
     constexpr OpCode PUSH_DE{0xD5};
     constexpr OpCode PUSH_HL{0xE5};
     constexpr OpCode PUSH_AF{0xF5};
+    constexpr OpCode RL_A{0x17};
+    constexpr OpCode RL_B{0x10};
+    constexpr OpCode RL_C{0x11};
+    constexpr OpCode RL_D{0x12};
+    constexpr OpCode RL_E{0x13};
+    constexpr OpCode RL_H{0x14};
+    constexpr OpCode RL_L{0x15};
+
 } // namespace opcodes
 
 // hash specialization for std::unordered_map

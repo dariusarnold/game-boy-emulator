@@ -59,3 +59,9 @@ TEST_CASE("Get high nibble from byte") {
     CHECK(bitmanip::get_high_nibble(0x1A) == 0x01);
     CHECK(bitmanip::get_high_nibble(0x20) == 0x02);
 }
+
+TEST_CASE("Rotate left") {
+    CHECK(bitmanip::rotate_left(0x00) == 0x00);
+    CHECK(bitmanip::rotate_left(0b0000'0001) == 0b0000'0010);
+    CHECK(bitmanip::rotate_left(0b1000'0001) == 0b0000'0011);
+}

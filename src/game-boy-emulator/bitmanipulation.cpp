@@ -26,4 +26,10 @@ namespace bitmanip {
     uint8_t get_high_nibble(uint8_t x) {
         return (x & 0xF0) >> (constants::BYTE_SIZE / 2);
     }
+
+    uint8_t rotate_left(uint8_t x) {
+        return (x << 1) | (x >> 7);
+    }
+
+
 } // namespace bitmanip

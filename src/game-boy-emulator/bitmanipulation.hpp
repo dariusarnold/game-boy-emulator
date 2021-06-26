@@ -32,4 +32,6 @@ namespace bitmanip {
     // Exaple 0x34 -> 0x03
     uint8_t get_high_nibble(uint8_t);
 
+    uint8_t rotate_left(uint8_t x);
+
 } // namespace bitmanip

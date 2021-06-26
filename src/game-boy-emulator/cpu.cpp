@@ -25,14 +25,8 @@ void Cpu::set_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot
 }
 
 void Cpu::run() {
-    print_registers();
     while (step()) {
-        //        print_registers();
     }
-}
-
-void Cpu::print_registers() const {
-    fmt::print("{}\n", registers);
 }
 
 void Cpu::xor8(uint8_t value) {

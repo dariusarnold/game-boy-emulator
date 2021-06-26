@@ -1,7 +1,7 @@
 #pragma once
 
-#include <type_traits>
 #include <cstdint>
+#include <type_traits>
 
 
 struct AF;
@@ -75,7 +75,7 @@ template <typename T>
 constexpr bool is_byte_register_v = is_byte_register<T>::value;
 
 /**
- * Condition true of combined/word register
+ * Condition true if combined/word register
  */
 template <typename T>
 struct is_word_register {
@@ -138,7 +138,7 @@ class Register {
 public:
     using underlying_type = std::conditional_t<is_byte_register_v<T>, uint8_t, uint16_t>;
 
-    explicit Register(underlying_type input): value(input) {}
+    explicit Register(underlying_type input) : value(input) {}
 
     underlying_type get() {
         return value;

@@ -15,7 +15,12 @@
 #include <cstdint>
 
 
-// This works on little endian only, for big endian the order of bytes has to be swapped.
+/**
+ * Main data structure for register data.
+ * Unions allow easy access to the lower and higher half of a two byte register.
+ * This works on little endian only, for big endian the order of bytes has to be
+ * swapped.
+ */
 struct Registers {
     uint16_t sp, pc;
     union {
@@ -89,7 +94,8 @@ class Cpu {
      * cycles.
      */
     using Instruction = std::function<int()>;
-    // Assigns executable function to opcode
+    // Maps op code to function which executes the instruction associated with
+    // the opcode
     std::unordered_map<opcodes::OpCode, Instruction> instructions;
 
 public:
@@ -101,23 +107,21 @@ public:
     void set_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom);
 
     /**
-     * Start cpu
-     * Only call after boot rom was set
+     * Start cpu.
+     * Only call after boot rom was set.
      */
     void run();
 
+private:
     /**
      * Execute single step. Returns false if opcode at current program counter is invalid, else true
      */
     bool step();
 
-    void print_registers() const;
-
-private:
     template <typename T>
     MutableRegister<T> make_mutable_register() {
         if constexpr (std::is_same_v<T, A>) {
-            return MutableRegister<A>{registers.a};
+            return MutableRegister<T>{registers.a};
         } else if constexpr (std::is_same_v<T, B>) {
             return MutableRegister<T>{registers.b};
         } else if constexpr (std::is_same_v<T, C>) {

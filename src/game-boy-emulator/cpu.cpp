@@ -4,6 +4,8 @@
 #include "instructions/copyregister.hpp"
 #include "instructions/increment.hpp"
 #include "instructions/pushregister.hpp"
+#include "instructions/rotateleft.hpp"
+#include <unordered_set>
 
 
 bool Cpu::step() {
@@ -364,25 +366,25 @@ Cpu::Cpu() {
         return push.execute();
     };
     instructions[opcodes::PUSH_BC] = [&]() {
-      PushRegisterOnStack<BC> push{
-          Register<BC>{registers.bc},
-          MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
-          IncrementPC{MutableRegister<PC>{registers.pc}}};
-      return push.execute();
+        PushRegisterOnStack<BC> push{
+            Register<BC>{registers.bc},
+            MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
+            IncrementPC{MutableRegister<PC>{registers.pc}}};
+        return push.execute();
     };
     instructions[opcodes::PUSH_DE] = [&]() {
-      PushRegisterOnStack<DE> push{
-          Register<DE>{registers.de},
-          MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
-          IncrementPC{MutableRegister<PC>{registers.pc}}};
-      return push.execute();
+        PushRegisterOnStack<DE> push{
+            Register<DE>{registers.de},
+            MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
+            IncrementPC{MutableRegister<PC>{registers.pc}}};
+        return push.execute();
     };
     instructions[opcodes::PUSH_HL] = [&]() {
-      PushRegisterOnStack<HL> push{
-          Register<HL>{registers.hl},
-          MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
-          IncrementPC{MutableRegister<PC>{registers.pc}}};
-      return push.execute();
+        PushRegisterOnStack<HL> push{
+            Register<HL>{registers.hl},
+            MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
+            IncrementPC{MutableRegister<PC>{registers.pc}}};
+        return push.execute();
     };
 }
 
@@ -518,6 +520,41 @@ uint8_t Cpu::cb(opcodes::OpCode op_code) {
             return 12;
         }
         return 4;
+    } else if (std::unordered_set{opcodes::RL_A, opcodes::RL_B, opcodes::RL_C, opcodes::RL_D,
+                                  opcodes::RL_E, opcodes::RL_H, opcodes::RL_L}
+                   .contains(op_code)) {
+        auto z_flag = make_mutable_flag<flags::zero>();
+        auto s_flag = make_mutable_flag<flags::subtract>();
+        auto hc_flag = make_mutable_flag<flags::half_carry>();
+        auto c_flag = make_mutable_flag<flags::carry>();
+        if (op_code == opcodes::RL_A) {
+            RotateLeft<A> rla(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<A>());
+            return rla.execute();
+        }
+        if (op_code == opcodes::RL_B) {
+            RotateLeft<B> rlb(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<B>());
+            return rlb.execute();
+        }
+        if (op_code == opcodes::RL_C) {
+            RotateLeft<C> rlc(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<C>());
+            return rlc.execute();
+        }
+        if (op_code == opcodes::RL_D) {
+            RotateLeft<D> rld(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<D>());
+            return rld.execute();
+        }
+        if (op_code == opcodes::RL_E) {
+            RotateLeft<E> rle(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<E>());
+            return rle.execute();
+        }
+        if (op_code == opcodes::RL_H) {
+            RotateLeft<H> rlh(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<H>());
+            return rlh.execute();
+        }
+        if (op_code == opcodes::RL_L) {
+            RotateLeft<L> rll(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<L>());
+            return rll.execute();
+        }
     } else {
         // TODO implement further CB instructions
         throw std::runtime_error(fmt::format("CB {:02x} not supported\n", op_code.value));

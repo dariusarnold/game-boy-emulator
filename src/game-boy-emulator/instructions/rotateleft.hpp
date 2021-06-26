@@ -15,7 +15,7 @@ public:
     RotateLeft(MutableFlag<flags::zero> z, MutableFlag<flags::subtract> s,
                MutableFlag<flags::half_carry> hc, MutableFlag<flags::carry> c,
                MutableRegister<R> reg) :
-            zero_flag(z), subtract_flag(s), half_carry_flag(hc), carry_flag(c) {}
+            zero_flag(z), subtract_flag(s), half_carry_flag(hc), carry_flag(c), register_(reg) {}
 
     int execute() {
         bitmanip::rotate_left(register_.get());

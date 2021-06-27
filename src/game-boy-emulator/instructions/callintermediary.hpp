@@ -8,10 +8,10 @@
  */
 class CallIntermediary {
     MutableStack stack;
-    MutableRegister<PC> register_pc;
+    MutableRegister<registers::PC> register_pc;
     Memory memory;
 
 public:
-    CallIntermediary(Memory mem, MutableStack push_stack, MutableRegister<PC> reg_pc);
+    CallIntermediary(Memory mem, MutableStack push_stack, MutableRegister<registers::PC> reg_pc);
     int execute();
 };

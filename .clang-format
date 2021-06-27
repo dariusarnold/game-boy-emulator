@@ -13,5 +13,5 @@ ConstructorInitializerIndentWidth: '8'
 IndentWidth: '4'
 Language: Cpp
 MaxEmptyLinesToKeep: '2'
-NamespaceIndentation: All
+NamespaceIndentation: None
 PointerAlignment: Left

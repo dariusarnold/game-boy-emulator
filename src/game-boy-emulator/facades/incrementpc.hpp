@@ -6,9 +6,9 @@
  * Facade for incrementing program counter.
  */
 class IncrementPC {
-    MutableRegister<PC> m_pc;
+    MutableRegister<registers::PC> m_pc;
 
 public:
-    explicit IncrementPC(MutableRegister<PC> pc);
+    explicit IncrementPC(MutableRegister<registers::PC> pc);
     void increment();
 };

@@ -1,10 +1,10 @@
 #include "pushstack.hpp"
 #include "bitmanipulation.hpp"
 #include "memory.hpp"
-#include "fmt/format.h"
+#include "register.hpp"
 
 
-MutableStack::MutableStack(MutableMemory m, MutableRegister<SP> sp_register): mem(m), sp(sp_register) {}
+MutableStack::MutableStack(MutableMemory m, MutableRegister<registers::SP> sp_register): mem(m), sp(sp_register) {}
 
 void MutableStack::push(uint16_t value) {
     sp.set(sp.get() - 1);

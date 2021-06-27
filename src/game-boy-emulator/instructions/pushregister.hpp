@@ -10,7 +10,7 @@
  */
 template <typename T>
 class PushRegisterOnStack {
-    static_assert(is_word_register_v<T>);
+    static_assert(registers::is_word_register_v<T>);
     Register<T> reg;
     MutableStack stack;
     IncrementPC increment_pc;

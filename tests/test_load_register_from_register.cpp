@@ -2,6 +2,8 @@
 
 #include "instructions/copyregister.hpp"
 
+using namespace registers;
+
 class CopyRegisterFixture {
 protected:
     uint8_t source_value = 0;

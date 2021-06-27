@@ -1,6 +1,7 @@
 #include "catch2/catch.hpp"
 #include "instructions/pushregister.hpp"
 
+using namespace registers;
 
 class PushRegisterFixture {
 protected:

@@ -1,6 +1,6 @@
 #include "callintermediary.hpp"
 
-CallIntermediary::CallIntermediary(Memory mem, MutableStack push_stack, MutableRegister<PC> reg_pc) :
+CallIntermediary::CallIntermediary(Memory mem, MutableStack push_stack, MutableRegister<registers::PC> reg_pc) :
         stack(push_stack), register_pc(reg_pc), memory(mem) {}
 
 int CallIntermediary::execute() {

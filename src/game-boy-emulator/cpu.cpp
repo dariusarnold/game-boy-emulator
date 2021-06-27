@@ -54,70 +54,81 @@ Cpu::Cpu() {
     };
 
     instructions[opcodes::INC_A] = [&]() {
-        Increment<A> ib{make_mutable_register<A>(), make_mutable_flag<flags::zero>(),
-                        make_mutable_flag<flags::subtract>(),
-                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::A> ib{make_mutable_register<registers::A>(),
+                                   make_mutable_flag<flags::zero>(),
+                                   make_mutable_flag<flags::subtract>(),
+                                   make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_B] = [&]() {
-        Increment<B> ib{make_mutable_register<B>(), make_mutable_flag<flags::zero>(),
-                        make_mutable_flag<flags::subtract>(),
-                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::B> ib{make_mutable_register<registers::B>(),
+                                   make_mutable_flag<flags::zero>(),
+                                   make_mutable_flag<flags::subtract>(),
+                                   make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_C] = [&]() {
-        Increment<C> ib{make_mutable_register<C>(), make_mutable_flag<flags::zero>(),
-                        make_mutable_flag<flags::subtract>(),
-                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::C> ib{make_mutable_register<registers::C>(),
+                                   make_mutable_flag<flags::zero>(),
+                                   make_mutable_flag<flags::subtract>(),
+                                   make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_D] = [&]() {
-        Increment<D> ib{make_mutable_register<D>(), make_mutable_flag<flags::zero>(),
-                        make_mutable_flag<flags::subtract>(),
-                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::D> ib{make_mutable_register<registers::D>(),
+                                   make_mutable_flag<flags::zero>(),
+                                   make_mutable_flag<flags::subtract>(),
+                                   make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_E] = [&]() {
-        Increment<E> ib{make_mutable_register<E>(), make_mutable_flag<flags::zero>(),
-                        make_mutable_flag<flags::subtract>(),
-                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::E> ib{make_mutable_register<registers::E>(),
+                                   make_mutable_flag<flags::zero>(),
+                                   make_mutable_flag<flags::subtract>(),
+                                   make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_H] = [&]() {
-        Increment<H> ib{make_mutable_register<H>(), make_mutable_flag<flags::zero>(),
-                        make_mutable_flag<flags::subtract>(),
-                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::H> ib{make_mutable_register<registers::H>(),
+                                   make_mutable_flag<flags::zero>(),
+                                   make_mutable_flag<flags::subtract>(),
+                                   make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_L] = [&]() {
-        Increment<L> ib{make_mutable_register<L>(), make_mutable_flag<flags::zero>(),
-                        make_mutable_flag<flags::subtract>(),
-                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::L> ib{make_mutable_register<registers::L>(),
+                                   make_mutable_flag<flags::zero>(),
+                                   make_mutable_flag<flags::subtract>(),
+                                   make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
 
     instructions[opcodes::INC_BC] = [&]() {
-        Increment<BC> ib{make_mutable_register<BC>(), make_mutable_flag<flags::zero>(),
-                         make_mutable_flag<flags::subtract>(),
-                         make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::BC> ib{make_mutable_register<registers::BC>(),
+                                    make_mutable_flag<flags::zero>(),
+                                    make_mutable_flag<flags::subtract>(),
+                                    make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_DE] = [&]() {
-        Increment<DE> ib{make_mutable_register<DE>(), make_mutable_flag<flags::zero>(),
-                         make_mutable_flag<flags::subtract>(),
-                         make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::DE> ib{make_mutable_register<registers::DE>(),
+                                    make_mutable_flag<flags::zero>(),
+                                    make_mutable_flag<flags::subtract>(),
+                                    make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_HL] = [&]() {
-        Increment<HL> ib{make_mutable_register<HL>(), make_mutable_flag<flags::zero>(),
-                         make_mutable_flag<flags::subtract>(),
-                         make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::HL> ib{make_mutable_register<registers::HL>(),
+                                    make_mutable_flag<flags::zero>(),
+                                    make_mutable_flag<flags::subtract>(),
+                                    make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
     instructions[opcodes::INC_SP] = [&]() {
-        Increment<SP> ib{make_mutable_register<SP>(), make_mutable_flag<flags::zero>(),
-                         make_mutable_flag<flags::subtract>(),
-                         make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::SP> ib{make_mutable_register<registers::SP>(),
+                                    make_mutable_flag<flags::zero>(),
+                                    make_mutable_flag<flags::subtract>(),
+                                    make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         return ib.execute();
     };
 
@@ -125,9 +136,10 @@ Cpu::Cpu() {
         auto x = this->mmu.read_memory(this->registers.hl);
         // TODO this is a workaround, there should be an Increment_Byte__Indirect to avoid passing
         // a fake template type
-        Increment<L> ib{MutableRegister<L>{x}, make_mutable_flag<flags::zero>(),
-                        make_mutable_flag<flags::subtract>(),
-                        make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
+        Increment<registers::L> ib{MutableRegister<registers::L>{x},
+                                   make_mutable_flag<flags::zero>(),
+                                   make_mutable_flag<flags::subtract>(),
+                                   make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         auto elapsed_cycles = ib.execute() + 8;
         this->mmu.write_memory(this->registers.hl, x);
         return elapsed_cycles;
@@ -271,9 +283,9 @@ Cpu::Cpu() {
     };
 
     instructions[opcodes::CALL_NN] = [&]() {
-        CallIntermediary call{Memory{mmu},
-                              MutableStack{MutableMemory{mmu}, make_mutable_register<SP>()},
-                              make_mutable_register<PC>()};
+        CallIntermediary call{
+            Memory{mmu}, MutableStack{MutableMemory{mmu}, make_mutable_register<registers::SP>()},
+            make_mutable_register<registers::PC>()};
         return call.execute();
     };
 
@@ -282,7 +294,7 @@ Cpu::Cpu() {
     instructions[opcodes::LDD_A_HL] = [&]() { return this->indirect_hl(opcodes::LDD_A_HL); };
     instructions[opcodes::LDD_HL_A] = [&]() { return this->indirect_hl(opcodes::LDD_HL_A); };
 
-    IncrementPC ipc{MutableRegister<PC>(registers.pc)};
+    IncrementPC ipc{MutableRegister<registers::PC>(registers.pc)};
     // This function is just to save typing
     auto ld_helper = [=](auto source, auto destination) {
         return [=]() {
@@ -290,22 +302,22 @@ Cpu::Cpu() {
             return cr.execute();
         };
     };
-    Register<A> a{registers.a};
-    Register<F> f{registers.f};
-    Register<B> b{registers.b};
-    Register<C> c{registers.c};
-    Register<D> d{registers.d};
-    Register<E> e{registers.e};
-    Register<H> h{registers.h};
-    Register<L> l{registers.l};
-    MutableRegister<A> a_mut{registers.a};
-    MutableRegister<F> f_mut{registers.f};
-    MutableRegister<B> b_mut{registers.b};
-    MutableRegister<C> c_mut{registers.c};
-    MutableRegister<D> d_mut{registers.d};
-    MutableRegister<E> e_mut{registers.e};
-    MutableRegister<H> h_mut{registers.h};
-    MutableRegister<L> l_mut{registers.l};
+    Register<registers::A> a{registers.a};
+    Register<registers::F> f{registers.f};
+    Register<registers::B> b{registers.b};
+    Register<registers::C> c{registers.c};
+    Register<registers::D> d{registers.d};
+    Register<registers::E> e{registers.e};
+    Register<registers::H> h{registers.h};
+    Register<registers::L> l{registers.l};
+    MutableRegister<registers::A> a_mut{registers.a};
+    MutableRegister<registers::F> f_mut{registers.f};
+    MutableRegister<registers::B> b_mut{registers.b};
+    MutableRegister<registers::C> c_mut{registers.c};
+    MutableRegister<registers::D> d_mut{registers.d};
+    MutableRegister<registers::E> e_mut{registers.e};
+    MutableRegister<registers::H> h_mut{registers.h};
+    MutableRegister<registers::L> l_mut{registers.l};
     instructions[opcodes::LD_B_B] = ld_helper(b, b_mut);
     instructions[opcodes::LD_B_C] = ld_helper(b, c_mut);
     instructions[opcodes::LD_B_D] = ld_helper(b, d_mut);
@@ -356,31 +368,31 @@ Cpu::Cpu() {
     instructions[opcodes::LD_A_L] = ld_helper(a, l_mut);
     instructions[opcodes::LD_A_A] = ld_helper(a, a_mut);
     instructions[opcodes::PUSH_AF] = [&]() {
-        PushRegisterOnStack<AF> push{
-            Register<AF>{registers.af},
-            MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
-            IncrementPC{MutableRegister<PC>{registers.pc}}};
+        PushRegisterOnStack<registers::AF> push{
+            Register<registers::AF>{registers.af},
+            MutableStack{MutableMemory{mmu}, MutableRegister<registers::SP>{registers.sp}},
+            IncrementPC{MutableRegister<registers::PC>{registers.pc}}};
         return push.execute();
     };
     instructions[opcodes::PUSH_BC] = [&]() {
-        PushRegisterOnStack<BC> push{
-            Register<BC>{registers.bc},
-            MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
-            IncrementPC{MutableRegister<PC>{registers.pc}}};
+        PushRegisterOnStack<registers::BC> push{
+            Register<registers::BC>{registers.bc},
+            MutableStack{MutableMemory{mmu}, MutableRegister<registers::SP>{registers.sp}},
+            IncrementPC{MutableRegister<registers::PC>{registers.pc}}};
         return push.execute();
     };
     instructions[opcodes::PUSH_DE] = [&]() {
-        PushRegisterOnStack<DE> push{
-            Register<DE>{registers.de},
-            MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
-            IncrementPC{MutableRegister<PC>{registers.pc}}};
+        PushRegisterOnStack<registers::DE> push{
+            Register<registers::DE>{registers.de},
+            MutableStack{MutableMemory{mmu}, MutableRegister<registers::SP>{registers.sp}},
+            IncrementPC{MutableRegister<registers::PC>{registers.pc}}};
         return push.execute();
     };
     instructions[opcodes::PUSH_HL] = [&]() {
-        PushRegisterOnStack<HL> push{
-            Register<HL>{registers.hl},
-            MutableStack{MutableMemory{mmu}, MutableRegister<SP>{registers.sp}},
-            IncrementPC{MutableRegister<PC>{registers.pc}}};
+        PushRegisterOnStack<registers::HL> push{
+            Register<registers::HL>{registers.hl},
+            MutableStack{MutableMemory{mmu}, MutableRegister<registers::SP>{registers.sp}},
+            IncrementPC{MutableRegister<registers::PC>{registers.pc}}};
         return push.execute();
     };
 }
@@ -534,31 +546,38 @@ uint8_t Cpu::cb(opcodes::OpCode op_code) {
         auto hc_flag = make_mutable_flag<flags::half_carry>();
         auto c_flag = make_mutable_flag<flags::carry>();
         if (op_code == opcodes::RL_A) {
-            RotateLeft<A> rla(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<A>());
+            RotateLeft<registers::A> rla(z_flag, s_flag, hc_flag, c_flag,
+                                         make_mutable_register<registers::A>());
             return rla.execute();
         }
         if (op_code == opcodes::RL_B) {
-            RotateLeft<B> rlb(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<B>());
+            RotateLeft<registers::B> rlb(z_flag, s_flag, hc_flag, c_flag,
+                                         make_mutable_register<registers::B>());
             return rlb.execute();
         }
         if (op_code == opcodes::RL_C) {
-            RotateLeft<C> rlc(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<C>());
+            RotateLeft<registers::C> rlc(z_flag, s_flag, hc_flag, c_flag,
+                                         make_mutable_register<registers::C>());
             return rlc.execute();
         }
         if (op_code == opcodes::RL_D) {
-            RotateLeft<D> rld(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<D>());
+            RotateLeft<registers::D> rld(z_flag, s_flag, hc_flag, c_flag,
+                                         make_mutable_register<registers::D>());
             return rld.execute();
         }
         if (op_code == opcodes::RL_E) {
-            RotateLeft<E> rle(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<E>());
+            RotateLeft<registers::E> rle(z_flag, s_flag, hc_flag, c_flag,
+                                         make_mutable_register<registers::E>());
             return rle.execute();
         }
         if (op_code == opcodes::RL_H) {
-            RotateLeft<H> rlh(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<H>());
+            RotateLeft<registers::H> rlh(z_flag, s_flag, hc_flag, c_flag,
+                                         make_mutable_register<registers::H>());
             return rlh.execute();
         }
         if (op_code == opcodes::RL_L) {
-            RotateLeft<L> rll(z_flag, s_flag, hc_flag, c_flag, make_mutable_register<L>());
+            RotateLeft<registers::L> rll(z_flag, s_flag, hc_flag, c_flag,
+                                         make_mutable_register<registers::L>());
             return rll.execute();
         }
     } else {

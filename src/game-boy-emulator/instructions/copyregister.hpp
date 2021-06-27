@@ -11,7 +11,7 @@
 template <typename I, typename O>
 class CopyRegister {
     // Check if same register type
-    static_assert(is_byte_register_v<I> and is_byte_register_v<O> or is_word_register_v<I> and is_word_register_v<O>);
+    static_assert(registers::is_byte_register_v<I> and registers::is_byte_register_v<O> or registers::is_word_register_v<I> and registers::is_word_register_v<O>);
     Register<I> source;
     MutableRegister<O> destination;
     IncrementPC increment_pc;

@@ -2,6 +2,8 @@
 
 #include "instructions/callintermediary.hpp"
 
+using namespace registers;
+
 class CallTestFixture {
 protected:
     Mmu mmu;

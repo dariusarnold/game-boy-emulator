@@ -1,6 +1,7 @@
 #include "catch2/catch.hpp"
 #include "instructions/increment.hpp"
 
+using namespace registers;
 
 class IncrementTestFixture {
 protected:

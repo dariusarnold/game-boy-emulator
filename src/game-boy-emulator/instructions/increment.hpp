@@ -28,7 +28,7 @@ public:
      * @return
      */
     int execute() {
-        return _execute(typename std::conditional_t<is_byte_register_v<T>, ByteRegisterTag, WordRegisterTag>());
+        return _execute(typename std::conditional_t<registers::is_byte_register_v<T>, ByteRegisterTag, WordRegisterTag>());
     }
 
     /**

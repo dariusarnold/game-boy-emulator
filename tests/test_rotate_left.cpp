@@ -1,6 +1,8 @@
 #include "catch2/catch.hpp"
 #include "instructions/rotateleft.hpp"
 
+using namespace registers;
+
 class RotateLeftFixture {
 protected:
     uint8_t f = 0;

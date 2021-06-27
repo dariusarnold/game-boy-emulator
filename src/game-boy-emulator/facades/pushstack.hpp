@@ -1,7 +1,8 @@
 #pragma once
 
-#include "facades/register.hpp"
 #include "facades/memory.hpp"
+#include "facades/register.hpp"
+#include "register.hpp"
 #include <cstdint>
 
 
@@ -10,10 +11,10 @@
  */
 class MutableStack {
     MutableMemory mem;
-    MutableRegister<SP> sp;
+    MutableRegister<registers::SP> sp;
 
 public:
-    MutableStack(MutableMemory m, MutableRegister<SP> sp_register);
+    MutableStack(MutableMemory m, MutableRegister<registers::SP> sp_register);
     /**
      * Push word onto stack.
      */

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <type_traits>
 
+namespace registers {
 
 struct AF;
 struct BC;
@@ -127,16 +128,19 @@ template <typename T>
 constexpr bool is_register_v = is_register<T>::value;
 
 
+} // namespace registers
+
+
 /**
  * Facade for read only access to byte or word register.
  * @tparam T
  */
 template <typename T>
 class Register {
-    static_assert(is_register_v<T>);
+    static_assert(registers::is_register_v<T>);
 
 public:
-    using underlying_type = std::conditional_t<is_byte_register_v<T>, uint8_t, uint16_t>;
+    using underlying_type = std::conditional_t<registers::is_byte_register_v<T>, uint8_t, uint16_t>;
 
     explicit Register(underlying_type input) : value(input) {}
 
@@ -154,10 +158,10 @@ private:
  */
 template <typename T>
 struct MutableRegister {
-    static_assert(is_register_v<T>);
+    static_assert(registers::is_register_v<T>);
 
 public:
-    using underlying_type = std::conditional_t<is_byte_register_v<T>, uint8_t, uint16_t>;
+    using underlying_type = std::conditional_t<registers::is_byte_register_v<T>, uint8_t, uint16_t>;
 
     explicit MutableRegister(underlying_type& input) : value(input) {}
 

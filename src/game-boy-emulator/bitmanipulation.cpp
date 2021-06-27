@@ -2,6 +2,8 @@
 
 namespace bitmanip {
 
+    // TODO This overload is not clearly distinguished by name from set
+    // TODO position as enum
     void set(uint8_t& input, uint8_t position) {
         set(input, position, BitValues::Active);
     }

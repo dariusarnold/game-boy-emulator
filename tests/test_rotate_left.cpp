@@ -15,5 +15,5 @@ protected:
 };
 
 TEST_CASE_METHOD(RotateLeftFixture, "Test rotate left instruction") {
-
+    // TODO Add tests
 }

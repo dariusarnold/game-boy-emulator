@@ -15,6 +15,7 @@
 #include <cstdint>
 
 
+// TODO move this to registers.hpp
 /**
  * Main data structure for register data.
  * Unions allow easy access to the lower and higher half of a two byte register.

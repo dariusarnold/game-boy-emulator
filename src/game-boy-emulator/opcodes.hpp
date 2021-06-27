@@ -142,6 +142,7 @@ namespace opcodes {
     constexpr OpCode PUSH_DE{0xD5};
     constexpr OpCode PUSH_HL{0xE5};
     constexpr OpCode PUSH_AF{0xF5};
+    // Rotate value in register left
     constexpr OpCode RL_A{0x17};
     constexpr OpCode RL_B{0x10};
     constexpr OpCode RL_C{0x11};

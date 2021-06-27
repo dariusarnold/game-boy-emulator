@@ -12,11 +12,13 @@ bool Cpu::step() {
     auto opcode = opcodes::OpCode{mmu.read_memory(registers.pc)};
     auto instruction = instructions.find(opcode);
     if (instruction == instructions.end()) {
-        fmt::print("Encountered unsupported opcode {:02x}\n", opcode.value);
+        fmt::print("Encountered unsupported opcode {:02X} at {:pc}.\n", opcode.value, registers);
+        fmt::print("Ran for {} instructions.\n", instructions_executed);
         return false;
     }
-    fmt::print("Executing {:02x}\n", opcode.value);
+    fmt::print("Executing {:02X}\n", opcode.value);
     cycles += instruction->second();
+    instructions_executed++;
     return true;
 }
 

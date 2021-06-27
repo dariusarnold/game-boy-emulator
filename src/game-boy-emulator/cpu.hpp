@@ -2,9 +2,9 @@
 
 #include "bitmanipulation.hpp"
 #include "constants.h"
-#include "facades/register.hpp"
 #include "facades/flag.hpp"
 #include "facades/incrementpc.hpp"
+#include "facades/register.hpp"
 #include "mmu.hpp"
 #include "opcodes.hpp"
 
@@ -51,7 +51,9 @@ struct Registers {
 
 
 /**
- * Formatted output for Registers
+ * Formatted output for Registers.
+ * Allows to print single registers by specifying the name in lower case.
+ * Example: {:sp} would print the stack pointer
  */
 template <>
 struct fmt::formatter<Registers> {
@@ -79,7 +81,13 @@ struct fmt::formatter<Registers> {
 
     template <typename FormatContext>
     auto format(const Registers& registers, FormatContext& context) {
-        return format_to(context.out(), "sp: {:02X}, pc: {:02x}", registers.sp, registers.pc);
+        if (format_string == "sp") {
+            return format_to(context.out(), "sp: {:02X}", registers.sp);
+        } else if (format_string == "pc") {
+            return format_to(context.out(), "pc: {:02X}", registers.pc);
+        } else {
+            throw fmt::format_error(fmt::format("Format string {} not supported", format_string));
+        }
     }
 };
 
@@ -88,6 +96,8 @@ class Cpu {
     Mmu mmu;
     // Number of cycles since execution start
     size_t cycles = 0;
+    // Number of instructions executed since start
+    size_t instructions_executed = 0;
 
     /**
      * Function which modifies CPU state according to the instruction and returns the number of

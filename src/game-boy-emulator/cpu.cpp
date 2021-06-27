@@ -612,7 +612,7 @@ void Cpu::jump_r(bool condition_met) {
 }
 
 int Cpu::save_value_to_address(uint16_t address, uint8_t value) {
-    mmu.write_memory(registers.hl, value);
+    mmu.write_memory(address, value);
     registers.pc++;
     return 8;
 }

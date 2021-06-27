@@ -93,7 +93,7 @@ struct fmt::formatter<Registers> {
 };
 
 class Cpu {
-    Registers registers = {0};
+    Registers registers = {};
     Mmu mmu;
     // Number of cycles since execution start
     size_t cycles = 0;

@@ -41,3 +41,41 @@ add_executable(game_boy_emulator
 target_link_libraries(game_boy_emulator PRIVATE
         game_boy_emulator_library
         )
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang as well as MSVC." OFF)
+
+if (WARNINGS_ENABLED)
+    if (MSVC)
+        target_compile_options(game_boy_emulatory_library PRIVATE /W4 /WX)
+    else()
+    target_compile_options(game_boy_emulator_library PRIVATE
+            # Catchalls to avoid listing many single warnings
+            -Wall -Wextra
+            # Warn on conversions
+            -Wconversion
+            # For C++ this isnt activated by Wconversion
+            -Wsign-conversion
+            # Warn on shadowing
+            -Wshadow
+            # Warn when parentheses are omitted in contexts where this could lead to bugs
+            -Wparentheses
+            # Warn about suspicious uses of logical operators in expressions
+            # Hide this for non-GNU compiler
+            $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
+            # Better to use modern style casts
+            -Wold-style-cast
+            # Warn when function declaration hides virtual functions from a base class
+            -Woverloaded-virtual
+            # Overriding virtual functions should be marked override
+            -Wsuggest-override
+            # Dont allow zero as a nullptr constant
+            -Wzero-as-null-pointer-constant
+            # Warn if undefined identifer is used in an if directive
+            -Wundef
+            # Warn if object is used without initialization
+            -Wuninitialized
+            )
+    endif()
+endif()

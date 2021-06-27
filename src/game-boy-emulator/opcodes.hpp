@@ -51,7 +51,6 @@ namespace opcodes {
     constexpr OpCode LD_DE_NN{0x11};
     constexpr OpCode LD_HL_NN{0x21};
     constexpr OpCode LD_SP_NN{0x31};
-    constexpr OpCode LDD_HL_A{0x32};
     // Load 1 byte immediate to register
     constexpr OpCode LD_C_N{0x0E};
     constexpr OpCode LD_E_N{0x1E};
@@ -150,6 +149,14 @@ namespace opcodes {
     constexpr OpCode RL_E{0x13};
     constexpr OpCode RL_H{0x14};
     constexpr OpCode RL_L{0x15};
+    // Save A to address pointed by HL and increment HL
+    constexpr OpCode LDI_HL_A{0x22};
+    // Load A from address pointed by HL and increment HL
+    constexpr OpCode LDI_A_HL{0x2A};
+    // Save A to address pointed by HL and decrement HL
+    constexpr OpCode LDD_HL_A{0x32};
+    // Load A from address pointed by HL and decrement HL
+    constexpr OpCode LDD_A_HL{0x3A};
 
 } // namespace opcodes
 

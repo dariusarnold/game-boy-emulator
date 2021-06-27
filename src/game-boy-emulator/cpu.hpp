@@ -194,9 +194,12 @@ private:
     void ld16(uint16_t& input);
 
     /**
-     * Save value of a to address pointed at by hl, decrement hl.
+     * Common function for loading/storing A from/to adress pointed at by HL and
+     * incrementing/decrementing HL after.
+     * @param op Opcode, used to decide wether to load/store and increment/decrement.
+     * @return Number of cycles for instruction
      */
-    void ldd_hl();
+    int indirect_hl(opcodes::OpCode op);
 
     /**
      * Handle second byte of two byte instruction codes beginning with prefix cb

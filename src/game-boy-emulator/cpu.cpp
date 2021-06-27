@@ -131,10 +131,6 @@ Cpu::Cpu() {
         return elapsed_cycles;
     };
 
-    instructions[opcodes::LDD_HL_A] = [&]() {
-        this->ldd_hl();
-        return 8;
-    };
     instructions[opcodes::LD_B_N] = [&]() {
         this->ld8(registers.b);
         return 8;
@@ -279,6 +275,11 @@ Cpu::Cpu() {
         return call.execute();
     };
 
+    instructions[opcodes::LDI_A_HL] = [&]() { return this->indirect_hl(opcodes::LDI_A_HL); };
+    instructions[opcodes::LDI_HL_A] = [&]() { return this->indirect_hl(opcodes::LDI_HL_A); };
+    instructions[opcodes::LDD_A_HL] = [&]() { return this->indirect_hl(opcodes::LDD_A_HL); };
+    instructions[opcodes::LDD_HL_A] = [&]() { return this->indirect_hl(opcodes::LDD_HL_A); };
+
     IncrementPC ipc{MutableRegister<PC>(registers.pc)};
     // This function is just to save typing
     auto ld_helper = [=](auto source, auto destination) {
@@ -395,10 +396,19 @@ void Cpu::ld8(uint8_t& input) {
     registers.pc++;
 }
 
-void Cpu::ldd_hl() {
-    mmu.write_memory(registers.hl, registers.a);
-    registers.hl--;
+int Cpu::indirect_hl(opcodes::OpCode op) {
+    if (op == opcodes::LDD_HL_A or op == opcodes::LDI_HL_A) {
+        mmu.write_memory(registers.hl, registers.a);
+    } else if (op == opcodes::LDD_A_HL or op == opcodes::LDI_A_HL) {
+        registers.a = mmu.read_memory(registers.hl);
+    }
+    if (op == opcodes::LDD_HL_A or op == opcodes::LDD_A_HL) {
+        registers.hl--;
+    } else {
+        registers.hl++;
+    }
     registers.pc++;
+    return 8;
 }
 
 void Cpu::set_subtract_flag(BitValues value) {

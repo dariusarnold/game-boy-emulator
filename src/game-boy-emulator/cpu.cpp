@@ -478,24 +478,32 @@ uint8_t Cpu::op_code_to_register(opcodes::OpCode opcode) {
     }
 }
 
-void Cpu::write_to_destionation(opcodes::OpCode destination, uint8_t value) {
+void Cpu::write_to_destination(opcodes::OpCode destination, uint8_t value) {
     switch (destination.value % 8) {
     case 0:
         registers.b = value;
+        break;
     case 1:
         registers.c = value;
+        break;
     case 2:
         registers.d = value;
+        break;
     case 3:
         registers.e = value;
+        break;
     case 4:
         registers.h = value;
+        break;
     case 5:
         registers.l = value;
+        break;
     case 6:
         mmu.write_memory(registers.hl, value);
+        break;
     case 7:
         registers.a = value;
+        break;
     default:
         throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", destination.value));
     }
@@ -522,7 +530,7 @@ uint8_t Cpu::cb(opcodes::OpCode op_code) {
         // Reset bit instruction
         auto val = op_code_to_register(op_code);
         bitmanip::unset(val, internal::op_code_to_bit(op_code));
-        write_to_destionation(op_code, val);
+        write_to_destination(op_code, val);
         registers.pc++;
         if (was_indirect_access(op_code)) {
             return 12;
@@ -532,7 +540,7 @@ uint8_t Cpu::cb(opcodes::OpCode op_code) {
         // Set bit instruction
         auto val = op_code_to_register(op_code);
         bitmanip::set(val, internal::op_code_to_bit(op_code));
-        write_to_destionation(op_code, val);
+        write_to_destination(op_code, val);
         registers.pc++;
         if (was_indirect_access(op_code)) {
             return 12;

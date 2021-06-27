@@ -236,7 +236,7 @@ private:
     /**
      * Write value to register specified by the opcode. Used for the second byte of CB instruction.
      */
-    void write_to_destionation(opcodes::OpCode destination, uint8_t value);
+    void write_to_destination(opcodes::OpCode destination, uint8_t value);
 
     /**
      * Common function for all jumps.

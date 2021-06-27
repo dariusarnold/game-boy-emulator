@@ -52,7 +52,8 @@ if (WARNINGS_ENABLED)
     else()
     target_compile_options(game_boy_emulator_library PRIVATE
             # Catchalls to avoid listing many single warnings
-            -Wall -Wextra
+            -Wall
+            -Wextra
             # Warn on conversion where the sign could be lost
             -Wsign-conversion
             # Warn on shadowing

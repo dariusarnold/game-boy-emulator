@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <limits>
 
 
 inline consteval uint8_t operator"" _u8(unsigned long long x) {

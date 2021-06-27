@@ -1,7 +1,7 @@
 #pragma once
 
-#include "facades/pushstack.hpp"
 #include "facades/register.hpp"
+#include "facades/stack.hpp"
 
 /**
  * Push program counter to stack pointer, set program counter to 16 bit location.

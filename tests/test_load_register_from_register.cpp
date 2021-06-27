@@ -12,7 +12,7 @@ protected:
     MutableRegister<A> sd_register{source_value};
     MutableRegister<D> destination_register{destination_value};
     uint16_t pc = 0;
-    IncrementPC increment_pc{MutableRegister<PC>{pc}};
+    ProgramCounterIncDec increment_pc{MutableRegister<PC>{pc}};
 
     void set_source_value(uint8_t val) {
         // Since Register stores the value it tracks as a copy, it doesnt reflect changes after

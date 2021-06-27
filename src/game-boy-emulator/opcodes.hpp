@@ -158,6 +158,8 @@ namespace opcodes {
     constexpr OpCode LDD_HL_A{0x32};
     // Load A from address pointed by HL and decrement HL
     constexpr OpCode LDD_A_HL{0x3A};
+    // Unconditional return
+    constexpr OpCode RET{0xC9};
 
 } // namespace opcodes
 

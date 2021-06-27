@@ -1,6 +1,6 @@
 #pragma once
 
-#include "facades/incrementpc.hpp"
+#include "facades/programcounter.hpp"
 #include "facades/register.hpp"
 
 /**
@@ -15,10 +15,10 @@ class CopyRegister {
                   or (registers::is_word_register_v<I> and registers::is_word_register_v<O>));
     Register<I> source;
     MutableRegister<O> destination;
-    IncrementPC increment_pc;
+    ProgramCounterIncDec increment_pc;
 
 public:
-    CopyRegister(Register<I> sourc, MutableRegister<O> dest, IncrementPC ipc) :
+    CopyRegister(Register<I> sourc, MutableRegister<O> dest, ProgramCounterIncDec ipc) :
             source(sourc), destination(dest), increment_pc(ipc) {}
 
     unsigned int execute() {

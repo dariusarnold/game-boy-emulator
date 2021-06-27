@@ -3,7 +3,7 @@
 #include "bitmanipulation.hpp"
 #include "constants.h"
 #include "facades/flag.hpp"
-#include "facades/incrementpc.hpp"
+#include "facades/programcounter.hpp"
 #include "facades/register.hpp"
 #include "mmu.hpp"
 #include "opcodes.hpp"
@@ -169,8 +169,8 @@ private:
         return MutableFlag<f>{registers.f};
     }
 
-    IncrementPC make_pc_incrementer() {
-        return IncrementPC{make_mutable_register<registers::PC>()};
+    ProgramCounterIncDec make_pc_incrementer() {
+        return ProgramCounterIncDec{make_mutable_register<registers::PC>()};
     }
 
     /**

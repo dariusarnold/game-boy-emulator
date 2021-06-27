@@ -14,7 +14,7 @@ protected:
     MutableMemory memory{mmu};
     MutableStack stack{memory, register_sp};
     uint16_t pc = 0;
-    IncrementPC increment_pc{MutableRegister<PC>{pc}};
+    ProgramCounterIncDec increment_pc{MutableRegister<PC>{pc}};
 };
 
 

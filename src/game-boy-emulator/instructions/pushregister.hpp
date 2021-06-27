@@ -1,8 +1,8 @@
 #pragma once
 
+#include "facades/programcounter.hpp"
 #include "facades/register.hpp"
-#include "facades/pushstack.hpp"
-#include "facades/incrementpc.hpp"
+#include "facades/stack.hpp"
 
 /**
  * Push value of word register on stack
@@ -13,10 +13,10 @@ class PushRegisterOnStack {
     static_assert(registers::is_word_register_v<T>);
     Register<T> reg;
     MutableStack stack;
-    IncrementPC increment_pc;
+    ProgramCounterIncDec increment_pc;
 
 public:
-    PushRegisterOnStack(Register<T> r, MutableStack s, IncrementPC ipc) :
+    PushRegisterOnStack(Register<T> r, MutableStack s, ProgramCounterIncDec ipc) :
             reg(r), stack(s), increment_pc(ipc) {}
     unsigned int execute() {
         stack.push(reg.get());

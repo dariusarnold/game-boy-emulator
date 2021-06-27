@@ -14,10 +14,10 @@ add_library(game_boy_emulator_library
         game-boy-emulator/facades/register.hpp
         game-boy-emulator/facades/flag.cpp
         game-boy-emulator/facades/flag.hpp
-        game-boy-emulator/facades/incrementpc.cpp
-        game-boy-emulator/facades/incrementpc.hpp
-        game-boy-emulator/facades/pushstack.cpp
-        game-boy-emulator/facades/pushstack.hpp
+        game-boy-emulator/facades/programcounter.cpp
+        game-boy-emulator/facades/programcounter.hpp
+        game-boy-emulator/facades/stack.cpp
+        game-boy-emulator/facades/stack.hpp
         game-boy-emulator/instructions/callintermediary.cpp
         game-boy-emulator/instructions/callintermediary.hpp
         game-boy-emulator/facades/memory.cpp
@@ -27,7 +27,9 @@ add_library(game_boy_emulator_library
         game-boy-emulator/instructions/pushregister.cpp
         game-boy-emulator/instructions/pushregister.hpp
         game-boy-emulator/instructions/rotateleft.cpp
-        game-boy-emulator/instructions/rotateleft.hpp)
+        game-boy-emulator/instructions/rotateleft.hpp
+        game-boy-emulator/instructions/return.cpp
+        game-boy-emulator/instructions/return.hpp)
 target_include_directories(game_boy_emulator_library PUBLIC
         game-boy-emulator
         )

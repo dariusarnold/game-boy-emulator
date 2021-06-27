@@ -14,7 +14,7 @@ protected:
     MutableFlag<flags::zero> zero_flag{f};
     MutableFlag<flags::subtract> subtract_flag{f};
     uint16_t pc = 0;
-    IncrementPC increment_pc{MutableRegister<PC>{pc}};
+    ProgramCounterIncDec increment_pc{MutableRegister<PC>{pc}};
 };
 
 TEST_CASE_METHOD(IncrementTestFixture, "Test increment 1 byte register increments") {

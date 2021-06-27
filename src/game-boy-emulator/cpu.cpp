@@ -4,6 +4,7 @@
 #include "instructions/copyregister.hpp"
 #include "instructions/increment.hpp"
 #include "instructions/pushregister.hpp"
+#include "instructions/return.hpp"
 #include "instructions/rotateleft.hpp"
 #include <unordered_set>
 
@@ -254,33 +255,24 @@ Cpu::Cpu() {
         this->mmu.write_memory(address, this->registers.a);
         return 12;
     };
-    instructions[opcodes::LD_HL_A] = [&]() {
-        return this->save_value_to_address(this->registers.hl, this->registers.a);
-    };
-    instructions[opcodes::LD_HL_B] = [&]() {
-        return this->save_value_to_address(this->registers.hl, this->registers.b);
-    };
-    instructions[opcodes::LD_HL_C] = [&]() {
-        return this->save_value_to_address(this->registers.hl, this->registers.c);
-    };
-    instructions[opcodes::LD_HL_D] = [&]() {
-        return this->save_value_to_address(this->registers.hl, this->registers.d);
-    };
-    instructions[opcodes::LD_HL_E] = [&]() {
-        return this->save_value_to_address(this->registers.hl, this->registers.e);
-    };
-    instructions[opcodes::LD_HL_H] = [&]() {
-        return this->save_value_to_address(this->registers.hl, this->registers.h);
-    };
-    instructions[opcodes::LD_HL_L] = [&]() {
-        return this->save_value_to_address(this->registers.hl, this->registers.l);
-    };
-    instructions[opcodes::LD_A_BC] = [&]() {
-        return this->save_value_to_address(this->registers.bc, this->registers.a);
-    };
-    instructions[opcodes::LD_A_DE] = [&]() {
-        return this->save_value_to_address(this->registers.de, this->registers.a);
-    };
+    instructions[opcodes::LD_HL_A]
+        = [&]() { return this->save_value_to_address(this->registers.hl, this->registers.a); };
+    instructions[opcodes::LD_HL_B]
+        = [&]() { return this->save_value_to_address(this->registers.hl, this->registers.b); };
+    instructions[opcodes::LD_HL_C]
+        = [&]() { return this->save_value_to_address(this->registers.hl, this->registers.c); };
+    instructions[opcodes::LD_HL_D]
+        = [&]() { return this->save_value_to_address(this->registers.hl, this->registers.d); };
+    instructions[opcodes::LD_HL_E]
+        = [&]() { return this->save_value_to_address(this->registers.hl, this->registers.e); };
+    instructions[opcodes::LD_HL_H]
+        = [&]() { return this->save_value_to_address(this->registers.hl, this->registers.h); };
+    instructions[opcodes::LD_HL_L]
+        = [&]() { return this->save_value_to_address(this->registers.hl, this->registers.l); };
+    instructions[opcodes::LD_A_BC]
+        = [&]() { return this->save_value_to_address(this->registers.bc, this->registers.a); };
+    instructions[opcodes::LD_A_DE]
+        = [&]() { return this->save_value_to_address(this->registers.de, this->registers.a); };
 
     instructions[opcodes::CALL_NN] = [&]() {
         CallIntermediary call{
@@ -294,7 +286,7 @@ Cpu::Cpu() {
     instructions[opcodes::LDD_A_HL] = [&]() { return this->indirect_hl(opcodes::LDD_A_HL); };
     instructions[opcodes::LDD_HL_A] = [&]() { return this->indirect_hl(opcodes::LDD_HL_A); };
 
-    IncrementPC ipc{MutableRegister<registers::PC>(registers.pc)};
+    ProgramCounterIncDec ipc{MutableRegister<registers::PC>(registers.pc)};
     // This function is just to save typing
     auto ld_helper = [=](auto source, auto destination) {
         return [=]() {
@@ -310,6 +302,12 @@ Cpu::Cpu() {
     Register<registers::E> e{registers.e};
     Register<registers::H> h{registers.h};
     Register<registers::L> l{registers.l};
+    Register<registers::SP> sp{registers.sp};
+    Register<registers::PC> pc{registers.pc};
+    Register<registers::AF> af{registers.af};
+    Register<registers::BC> bc{registers.bc};
+    Register<registers::DE> de{registers.de};
+    Register<registers::HL> hl{registers.hl};
     MutableRegister<registers::A> a_mut{registers.a};
     MutableRegister<registers::F> f_mut{registers.f};
     MutableRegister<registers::B> b_mut{registers.b};
@@ -318,6 +316,14 @@ Cpu::Cpu() {
     MutableRegister<registers::E> e_mut{registers.e};
     MutableRegister<registers::H> h_mut{registers.h};
     MutableRegister<registers::L> l_mut{registers.l};
+    MutableRegister<registers::SP> sp_mut{registers.sp};
+    MutableRegister<registers::PC> pc_mut{registers.pc};
+    MutableRegister<registers::AF> af_mut{registers.af};
+    MutableRegister<registers::BC> bc_mut{registers.bc};
+    MutableRegister<registers::DE> de_mut{registers.de};
+    MutableRegister<registers::HL> hl_mut{registers.hl};
+    MutableMemory mem_mut{mmu};
+    MutableStack stack_mut{mem_mut, sp_mut};
     instructions[opcodes::LD_B_B] = ld_helper(b, b_mut);
     instructions[opcodes::LD_B_C] = ld_helper(b, c_mut);
     instructions[opcodes::LD_B_D] = ld_helper(b, d_mut);
@@ -368,32 +374,25 @@ Cpu::Cpu() {
     instructions[opcodes::LD_A_L] = ld_helper(a, l_mut);
     instructions[opcodes::LD_A_A] = ld_helper(a, a_mut);
     instructions[opcodes::PUSH_AF] = [&]() {
-        PushRegisterOnStack<registers::AF> push{
-            Register<registers::AF>{registers.af},
-            MutableStack{MutableMemory{mmu}, MutableRegister<registers::SP>{registers.sp}},
-            IncrementPC{MutableRegister<registers::PC>{registers.pc}}};
+        PushRegisterOnStack<registers::AF> push{af, stack_mut, ProgramCounterIncDec{pc_mut}};
         return push.execute();
     };
     instructions[opcodes::PUSH_BC] = [&]() {
-        PushRegisterOnStack<registers::BC> push{
-            Register<registers::BC>{registers.bc},
-            MutableStack{MutableMemory{mmu}, MutableRegister<registers::SP>{registers.sp}},
-            IncrementPC{MutableRegister<registers::PC>{registers.pc}}};
+        PushRegisterOnStack<registers::BC> push{bc, stack_mut, ProgramCounterIncDec{pc_mut}};
         return push.execute();
     };
     instructions[opcodes::PUSH_DE] = [&]() {
-        PushRegisterOnStack<registers::DE> push{
-            Register<registers::DE>{registers.de},
-            MutableStack{MutableMemory{mmu}, MutableRegister<registers::SP>{registers.sp}},
-            IncrementPC{MutableRegister<registers::PC>{registers.pc}}};
+        PushRegisterOnStack<registers::DE> push{de, stack_mut, ProgramCounterIncDec{pc_mut}};
         return push.execute();
     };
     instructions[opcodes::PUSH_HL] = [&]() {
-        PushRegisterOnStack<registers::HL> push{
-            Register<registers::HL>{registers.hl},
-            MutableStack{MutableMemory{mmu}, MutableRegister<registers::SP>{registers.sp}},
-            IncrementPC{MutableRegister<registers::PC>{registers.pc}}};
+        PushRegisterOnStack<registers::HL> push{hl, stack_mut, ProgramCounterIncDec{pc_mut}};
         return push.execute();
+    };
+
+    instructions[opcodes::RET] = [&]() {
+        Return r(stack_mut, ProgramCounterJump{pc_mut});
+        return r.execute();
     };
 }
 
@@ -633,6 +632,6 @@ uint8_t internal::op_code_to_bit(opcodes::OpCode opcode) {
     //
     // First map higher nibble 0x -> 0, 1x -> 2, 2x -> 4, 3x -> 6
     // Then add 1 if we are in the right half of the table
-    return ((opcode.value & 0xF0) >> constants::NIBBLE_SIZE) * 2 +
-           ((opcode.value & 0x0F) / constants::BYTE_SIZE);
+    return ((opcode.value & 0xF0) >> constants::NIBBLE_SIZE) * 2
+           + ((opcode.value & 0x0F) / constants::BYTE_SIZE);
 }

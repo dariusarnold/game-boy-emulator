@@ -11,7 +11,7 @@ class Increment {
     MutableFlag<flags::zero> zero_flag;
     MutableFlag<flags::subtract> subtract_flag;
     MutableFlag<flags::half_carry> half_carry_flag;
-    IncrementPC increment_pc;
+    ProgramCounterIncDec increment_pc;
 
     struct ByteRegisterTag {};
     struct WordRegisterTag {};
@@ -19,7 +19,7 @@ class Increment {
 public:
     Increment(MutableRegister<T> reg, MutableFlag<flags::zero> z_flag,
                    MutableFlag<flags::subtract> s_flag, MutableFlag<flags::half_carry> hc_flag,
-                   IncrementPC inc_pc) :
+              ProgramCounterIncDec inc_pc) :
             m_register(reg), zero_flag(z_flag), subtract_flag(s_flag), half_carry_flag(hc_flag),
             increment_pc(inc_pc) {}
 

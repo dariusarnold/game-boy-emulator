@@ -53,8 +53,10 @@ if (WARNINGS_ENABLED)
     target_compile_options(game_boy_emulator_library PRIVATE
             # Catchalls to avoid listing many single warnings
             -Wall -Wextra
-            # Warn on conversions
+            # Warn on conversions but exclude warnings for arithmetic conversions where
+            # the conversion cannot change the values
             -Wconversion
+            -Wno-arith-conversion
             # For C++ this isnt activated by Wconversion
             -Wsign-conversion
             # Warn on shadowing

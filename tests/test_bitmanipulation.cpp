@@ -11,12 +11,12 @@ TEST_CASE("Setting bit value to 1") {
 }
 
 TEST_CASE("Setting bit value to 0") {
+    auto i = GENERATE(range(0, 8));
+    std::vector<uint8_t> expected_results = {0b1111'1110, 0b1111'1101, 0b1111'1011, 0b1111'0111,
+                                             0b1110'1111, 0b1101'1111, 0b1011'1111, 0b0111'1111};
     uint8_t x = 0xFF;
-    for (int i = 0; i < 8; ++i) {
-        bitmanip::unset(x, i);
-        CHECK(x == 0xFF - (1U << i));
-        x = 0xFF;
-    }
+    bitmanip::unset(x, i);
+    CHECK(x == expected_results[i]);
 }
 
 TEST_CASE("Check if bit is set") {

@@ -18,7 +18,7 @@ class PushRegisterOnStack {
 public:
     PushRegisterOnStack(Register<T> r, MutableStack s, IncrementPC ipc) :
             reg(r), stack(s), increment_pc(ipc) {}
-    int execute() {
+    unsigned int execute() {
         stack.push(reg.get());
         increment_pc.increment();
         return 16;

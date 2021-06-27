@@ -104,7 +104,7 @@ class Cpu {
      * Function which modifies CPU state according to the instruction and returns the number of
      * cycles.
      */
-    using Instruction = std::function<int()>;
+    using Instruction = std::function<unsigned int()>;
     // Maps op code to function which executes the instruction associated with
     // the opcode
     std::unordered_map<opcodes::OpCode, Instruction> instructions;

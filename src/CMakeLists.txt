@@ -60,7 +60,7 @@ if (WARNINGS_ENABLED)
             # Warn when parentheses are omitted in contexts where this could lead to bugs
             -Wparentheses
             # Warn about suspicious uses of logical operators in expressions
-            # Hide this for non-GNU compiler
+            # Hide this for non-GNU compiler since Clang doesnt support it
             $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
             # Better to use modern style casts
             -Wold-style-cast

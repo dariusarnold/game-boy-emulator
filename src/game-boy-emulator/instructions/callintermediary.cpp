@@ -3,7 +3,7 @@
 CallIntermediary::CallIntermediary(Memory mem, MutableStack push_stack, MutableRegister<registers::PC> reg_pc) :
         stack(push_stack), register_pc(reg_pc), memory(mem) {}
 
-int CallIntermediary::execute() {
+unsigned int CallIntermediary::execute() {
     // read 2 byte immediate data
     register_pc.increment();
     auto location = memory.read_word(register_pc.get());

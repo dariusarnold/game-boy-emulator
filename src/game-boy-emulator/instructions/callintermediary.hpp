@@ -13,5 +13,5 @@ class CallIntermediary {
 
 public:
     CallIntermediary(Memory mem, MutableStack push_stack, MutableRegister<registers::PC> reg_pc);
-    int execute();
+    unsigned int execute();
 };

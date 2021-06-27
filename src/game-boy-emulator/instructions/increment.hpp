@@ -27,7 +27,7 @@ public:
      * Dispatch depending on what register type (single or combined) we are operating on
      * @return
      */
-    int execute() {
+    unsigned int execute() {
         return _execute(typename std::conditional_t<registers::is_byte_register_v<T>, ByteRegisterTag, WordRegisterTag>());
     }
 
@@ -35,7 +35,7 @@ public:
      * Increment single byte register.
      * @return Number of cycles for execution
      */
-    int _execute(ByteRegisterTag) {
+    unsigned int _execute(ByteRegisterTag) {
         bool bit_3_before = bitmanip::is_bit_set(m_register.get(), 3);
         m_register.set(m_register.get() + 1);
         bool bit_3_after = bitmanip::is_bit_set(m_register.get(), 3);
@@ -54,7 +54,7 @@ public:
      * Increment word register.
      * @return Number of cycles for execution
      */
-    int _execute(WordRegisterTag) {
+    unsigned int _execute(WordRegisterTag) {
         bool bit_11_before = bitmanip::is_bit_set(m_register.get(), 11);
         m_register.set(m_register.get() + 1);
         bool bit_11_after = bitmanip::is_bit_set(m_register.get(), 11);

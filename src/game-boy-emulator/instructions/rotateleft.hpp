@@ -17,7 +17,7 @@ public:
                MutableRegister<R> reg) :
             zero_flag(z), subtract_flag(s), half_carry_flag(hc), carry_flag(c), register_(reg) {}
 
-    int execute() {
+    unsigned int execute() {
         bitmanip::rotate_left(register_.get());
         if (bitmanip::is_bit_set(register_.get(), 7)) {
             carry_flag.set_active();

@@ -21,7 +21,7 @@ public:
             source(sourc), destination(dest), increment_pc(ipc) {
     }
 
-    int execute() {
+    unsigned int execute() {
         destination.set(source.get());
         increment_pc.increment();
         return 8;

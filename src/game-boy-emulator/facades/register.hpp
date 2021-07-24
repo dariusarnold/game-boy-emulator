@@ -142,14 +142,14 @@ class Register {
 public:
     using underlying_type = std::conditional_t<registers::is_byte_register_v<T>, uint8_t, uint16_t>;
 
-    explicit Register(underlying_type input) : value(input) {}
+    explicit Register(const underlying_type& input) : value(input) {}
 
-    underlying_type get() {
+    const underlying_type& get() {
         return value;
     }
 
 private:
-    underlying_type value = {0};
+    const underlying_type& value;
 };
 
 /**

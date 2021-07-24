@@ -36,3 +36,18 @@ TEST_CASE("Accessing combined register after writing to single byte registers") 
     CHECK(r.h == 1);
     CHECK(r.l == 1);
 }
+
+TEST_CASE("Writing to the value should update all registers for that value") {
+    uint8_t a = 0;
+    Register<registers::A> r1{a};
+    a = 1;
+    CHECK(r1.get() == 1);
+}
+
+TEST_CASE("Writing through MutableRegister should update all registers for that value") {
+    uint8_t a = 0;
+    MutableRegister<registers::A> r1{a};
+    MutableRegister<registers::A> r2{a};
+    r2.set(1);
+    CHECK(r1.get() == 1);
+}

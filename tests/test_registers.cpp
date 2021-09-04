@@ -3,8 +3,8 @@
 #include "iostream"
 
 
-TEST_CASE("Registers are zero initialized register bytes") {
-    Registers r{};
+TEST_CASE("Registers are zero initialized") {
+    Registers r;
     CHECK(r.af == 0);
     CHECK(r.sp == 0);
     CHECK(r.pc == 0);

@@ -12,23 +12,23 @@ public:
     /**
      * Read memory value from address.
      */
-    [[nodiscard]] uint8_t read_memory(u_int16_t address) const;
+    [[nodiscard]] uint8_t read_byte(u_int16_t address) const;
 
     /**
      * Read word from address.
      * Assumes that words are stored least significant byte first
      */
-    [[nodiscard]] uint16_t read_memory_word(uint16_t address) const;
+    [[nodiscard]] uint16_t read_word(uint16_t address) const;
 
     /**
      * Write value to ram at address.
      */
-    void write_memory(uint16_t address, uint8_t value);
+    void write_byte(uint16_t address, uint8_t value);
 
     /**
      * Write 2 byte wird to ram at address.
      */
-    void write_memory_word(uint16_t address, uint16_t value);
+    void write_word(uint16_t address, uint16_t value);
 
     /**
      * Map boot rom at memory address 0x00

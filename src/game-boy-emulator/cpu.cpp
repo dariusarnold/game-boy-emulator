@@ -10,7 +10,7 @@
 
 
 bool Cpu::step() {
-    auto opcode = opcodes::OpCode{mmu.read_memory(registers.pc)};
+    auto opcode = opcodes::OpCode{mmu.read_byte(registers.pc)};
     auto instruction = instructions.find(opcode);
     if (instruction == instructions.end()) {
         fmt::print("Encountered unsupported opcode {:02X} at {:pc}.\n", opcode.value, registers);
@@ -51,7 +51,7 @@ Cpu::Cpu() {
 
     instructions[opcodes::CB] = [&]() {
         this->registers.pc++;
-        return this->cb(opcodes::OpCode{mmu.read_memory(registers.pc)});
+        return this->cb(opcodes::OpCode{mmu.read_byte(registers.pc)});
     };
 
     instructions[opcodes::INC_A] = [&]() {
@@ -134,7 +134,7 @@ Cpu::Cpu() {
     };
 
     instructions[opcodes::INC_HL_INDIRECT] = [&]() {
-        auto x = this->mmu.read_memory(this->registers.hl);
+        auto x = this->mmu.read_byte(this->registers.hl);
         // TODO this is a workaround, there should be an Increment_Byte__Indirect to avoid passing
         // a fake template type
         Increment<registers::L> ib{MutableRegister<registers::L>{x},
@@ -142,7 +142,7 @@ Cpu::Cpu() {
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>(), make_pc_incrementer()};
         auto elapsed_cycles = ib.execute() + 8;
-        this->mmu.write_memory(this->registers.hl, x);
+        this->mmu.write_byte(this->registers.hl, x);
         return elapsed_cycles;
     };
 
@@ -219,7 +219,7 @@ Cpu::Cpu() {
         return 4;
     };
     instructions[opcodes::XOR_HL] = [&]() {
-        this->xor8(this->mmu.read_memory(this->registers.hl));
+        this->xor8(this->mmu.read_byte(this->registers.hl));
         return 8;
     };
     instructions[opcodes::XOR_N] = [&]() {
@@ -244,15 +244,15 @@ Cpu::Cpu() {
         return 8;
     };
     instructions[opcodes::LDH_C_A] = [&]() {
-        this->mmu.write_memory(this->registers.c + 0xFF00, this->registers.a);
+        this->mmu.write_byte(this->registers.c + 0xFF00, this->registers.a);
         this->registers.pc++;
         return 8;
     };
     instructions[opcodes::LDH_N_A] = [&]() {
         this->registers.pc++;
-        uint16_t address = this->mmu.read_memory(this->registers.pc) + 0xFF00;
+        uint16_t address = this->mmu.read_byte(this->registers.pc) + 0xFF00;
         this->registers.pc++;
-        this->mmu.write_memory(address, this->registers.a);
+        this->mmu.write_byte(address, this->registers.a);
         return 12;
     };
     instructions[opcodes::LD_HL_A]
@@ -398,22 +398,22 @@ Cpu::Cpu() {
 
 void Cpu::ld16(uint16_t& input) {
     registers.pc++;
-    input = mmu.read_memory_word(registers.pc);
+    input = mmu.read_word(registers.pc);
     registers.pc += 2;
 }
 
 void Cpu::ld8(uint8_t& input) {
     registers.pc++;
-    const auto immediate = mmu.read_memory(registers.pc);
+    const auto immediate = mmu.read_byte(registers.pc);
     input = immediate;
     registers.pc++;
 }
 
 int Cpu::indirect_hl(opcodes::OpCode op) {
     if (op == opcodes::LDD_HL_A or op == opcodes::LDI_HL_A) {
-        mmu.write_memory(registers.hl, registers.a);
+        mmu.write_byte(registers.hl, registers.a);
     } else if (op == opcodes::LDD_A_HL or op == opcodes::LDI_A_HL) {
-        registers.a = mmu.read_memory(registers.hl);
+        registers.a = mmu.read_byte(registers.hl);
     }
     if (op == opcodes::LDD_HL_A or op == opcodes::LDD_A_HL) {
         registers.hl--;
@@ -469,7 +469,7 @@ uint8_t Cpu::op_code_to_register(opcodes::OpCode opcode) {
     case 5:
         return registers.l;
     case 6:
-        return mmu.read_memory(registers.hl);
+        return mmu.read_byte(registers.hl);
     case 7:
         return registers.a;
     default:
@@ -498,7 +498,7 @@ void Cpu::write_to_destination(opcodes::OpCode destination, uint8_t value) {
         registers.l = value;
         break;
     case 6:
-        mmu.write_memory(registers.hl, value);
+        mmu.write_byte(registers.hl, value);
         break;
     case 7:
         registers.a = value;
@@ -600,7 +600,7 @@ void Cpu::jump_r(bool condition_met) {
         // For C++20 this is defined behaviour since signed integers are twos complement
         // On older standards this is implementation defined
         // https://stackoverflow.com/questions/13150449/efficient-unsigned-to-signed-cast-avoiding-implementation-defined-behavior
-        auto immediate = static_cast<int8_t>(mmu.read_memory(registers.pc));
+        auto immediate = static_cast<int8_t>(mmu.read_byte(registers.pc));
         // We need to increment here, otherwise the jump is off by one address
         registers.pc++;
         registers.pc += immediate;
@@ -611,7 +611,7 @@ void Cpu::jump_r(bool condition_met) {
 }
 
 int Cpu::save_value_to_address(uint16_t address, uint8_t value) {
-    mmu.write_memory(address, value);
+    mmu.write_byte(address, value);
     registers.pc++;
     return 8;
 }

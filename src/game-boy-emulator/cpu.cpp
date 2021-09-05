@@ -147,48 +147,37 @@ Cpu::Cpu() {
     };
 
     instructions[opcodes::LD_B_N] = [&]() {
-        this->ld8(registers.b);
-        return 8;
+        return this->ld8(registers.b);
     };
     instructions[opcodes::LD_C_N] = [&]() {
-        this->ld8(registers.c);
-        return 8;
+        return this->ld8(registers.c);
     };
     instructions[opcodes::LD_D_N] = [&]() {
-        this->ld8(registers.d);
-        return 8;
+        return this->ld8(registers.d);
     };
     instructions[opcodes::LD_E_N] = [&]() {
-        this->ld8(registers.e);
-        return 8;
+        return this->ld8(registers.e);
     };
     instructions[opcodes::LD_A_N] = [&]() {
-        this->ld8(registers.a);
-        return 8;
+        return this->ld8(registers.a);
     };
     instructions[opcodes::LD_L_N] = [&]() {
-        this->ld8(registers.l);
-        return 8;
+        return this->ld8(registers.l);
     };
     instructions[opcodes::LD_H_N] = [&]() {
-        this->ld8(registers.h);
-        return 8;
+        return this->ld8(registers.h);
     };
     instructions[opcodes::LD_BC_NN] = [&]() {
-        this->ld16(registers.bc);
-        return 12;
+        return this->ld16(registers.bc);
     };
     instructions[opcodes::LD_DE_NN] = [&]() {
-        this->ld16(registers.de);
-        return 12;
+        return this->ld16(registers.de);
     };
     instructions[opcodes::LD_HL_NN] = [&]() {
-        this->ld16(registers.hl);
-        return 12;
+        return this->ld16(registers.hl);
     };
     instructions[opcodes::LD_SP_NN] = [&]() {
-        this->ld16(registers.sp);
-        return 12;
+        return this->ld16(registers.sp);
     };
     instructions[opcodes::XOR_A] = [&]() {
         this->xor8(this->registers.a);
@@ -396,17 +385,19 @@ Cpu::Cpu() {
     };
 }
 
-void Cpu::ld16(uint16_t& input) {
+unsigned int Cpu::ld16(uint16_t& input) {
     registers.pc++;
     input = mmu.read_word(registers.pc);
     registers.pc += 2;
+    return 12;
 }
 
-void Cpu::ld8(uint8_t& input) {
+unsigned int Cpu::ld8(uint8_t& input) {
     registers.pc++;
     const auto immediate = mmu.read_byte(registers.pc);
     input = immediate;
     registers.pc++;
+    return 8;
 }
 
 int Cpu::indirect_hl(opcodes::OpCode op) {

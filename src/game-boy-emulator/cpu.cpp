@@ -10,15 +10,15 @@
 
 
 bool Cpu::step() {
-    auto opcode = opcodes::OpCode{mmu.read_byte(registers.pc)};
-    auto instruction = instructions.find(opcode);
-    if (instruction == instructions.end()) {
+    auto opcode = fetch();
+    auto instruction = decode(opcode);
+    if (not instruction) {
         fmt::print("Encountered unsupported opcode {:02X} at {:pc}.\n", opcode.value, registers);
         fmt::print("Ran for {} instructions.\n", instructions_executed);
         return false;
     }
-    fmt::print("Executing {:02X}\n", opcode.value);
-    cycles += instruction->second();
+    fmt::print("Executing {} 0x{:02X}\n", opcode.extendend ? "0xCB" : "", opcode.value);
+    cycles += instruction();
     instructions_executed++;
     return true;
 }
@@ -40,18 +40,11 @@ void Cpu::xor8(uint8_t value) {
     set_subtract_flag(BitValues::Inactive);
     set_half_carry_flag(BitValues::Inactive);
     set_carry_flag(BitValues::Inactive);
-    registers.pc++;
 }
 
 Cpu::Cpu() {
     instructions[opcodes::NOP] = [&]() {
-        this->registers.pc++;
         return 4;
-    };
-
-    instructions[opcodes::CB] = [&]() {
-        this->registers.pc++;
-        return this->cb(opcodes::OpCode{mmu.read_byte(registers.pc)});
     };
 
     instructions[opcodes::INC_A] = [&]() {
@@ -234,11 +227,9 @@ Cpu::Cpu() {
     };
     instructions[opcodes::LDH_C_A] = [&]() {
         this->mmu.write_byte(this->registers.c + 0xFF00, this->registers.a);
-        this->registers.pc++;
         return 8;
     };
     instructions[opcodes::LDH_N_A] = [&]() {
-        this->registers.pc++;
         uint16_t address = this->mmu.read_byte(this->registers.pc) + 0xFF00;
         this->registers.pc++;
         this->mmu.write_byte(address, this->registers.a);
@@ -362,38 +353,36 @@ Cpu::Cpu() {
     instructions[opcodes::LD_A_H] = ld_helper(a, h_mut);
     instructions[opcodes::LD_A_L] = ld_helper(a, l_mut);
     instructions[opcodes::LD_A_A] = ld_helper(a, a_mut);
-    instructions[opcodes::PUSH_AF] = [&]() {
+    instructions[opcodes::PUSH_AF] = [=]() {
         PushRegisterOnStack<registers::AF> push{af, stack_mut, ProgramCounterIncDec{pc_mut}};
         return push.execute();
     };
-    instructions[opcodes::PUSH_BC] = [&]() {
+    instructions[opcodes::PUSH_BC] = [=]() {
         PushRegisterOnStack<registers::BC> push{bc, stack_mut, ProgramCounterIncDec{pc_mut}};
         return push.execute();
     };
-    instructions[opcodes::PUSH_DE] = [&]() {
+    instructions[opcodes::PUSH_DE] = [=]() {
         PushRegisterOnStack<registers::DE> push{de, stack_mut, ProgramCounterIncDec{pc_mut}};
         return push.execute();
     };
-    instructions[opcodes::PUSH_HL] = [&]() {
+    instructions[opcodes::PUSH_HL] = [=]() {
         PushRegisterOnStack<registers::HL> push{hl, stack_mut, ProgramCounterIncDec{pc_mut}};
         return push.execute();
     };
 
-    instructions[opcodes::RET] = [&]() {
+    instructions[opcodes::RET] = [=]() {
         Return r(stack_mut, ProgramCounterJump{pc_mut});
         return r.execute();
     };
 }
 
 unsigned int Cpu::ld16(uint16_t& input) {
-    registers.pc++;
     input = mmu.read_word(registers.pc);
     registers.pc += 2;
     return 12;
 }
 
 unsigned int Cpu::ld8(uint8_t& input) {
-    registers.pc++;
     const auto immediate = mmu.read_byte(registers.pc);
     input = immediate;
     registers.pc++;
@@ -411,7 +400,6 @@ int Cpu::indirect_hl(opcodes::OpCode op) {
     } else {
         registers.hl++;
     }
-    registers.pc++;
     return 8;
 }
 
@@ -445,8 +433,8 @@ void Cpu::test_bit(uint8_t value, u_int8_t position) {
     set_half_carry_flag(BitValues::Active);
 }
 
-uint8_t Cpu::op_code_to_register(opcodes::OpCode opcode) {
-    switch (opcode.value % 8) {
+uint8_t Cpu::op_code_to_register(uint8_t opcode_byte) {
+    switch (opcode_byte % 8) {
     case 0:
         return registers.b;
     case 1:
@@ -464,12 +452,12 @@ uint8_t Cpu::op_code_to_register(opcodes::OpCode opcode) {
     case 7:
         return registers.a;
     default:
-        throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", opcode.value));
+        throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", opcode_byte));
     }
 }
 
-void Cpu::write_to_destination(opcodes::OpCode destination, uint8_t value) {
-    switch (destination.value % 8) {
+void Cpu::write_to_destination(uint8_t opcode_byte, uint8_t value) {
+    switch (opcode_byte % 8) {
     case 0:
         registers.b = value;
         break;
@@ -495,7 +483,7 @@ void Cpu::write_to_destination(opcodes::OpCode destination, uint8_t value) {
         registers.a = value;
         break;
     default:
-        throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", destination.value));
+        throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", opcode_byte));
     }
 }
 
@@ -503,90 +491,87 @@ void Cpu::write_to_destination(opcodes::OpCode destination, uint8_t value) {
  * Check if second byte of CB opcode did indirect memory access
  * @return True if RAM was accessed, else false
  */
-bool was_indirect_access(opcodes::OpCode opcode) {
-    return opcode.value % 8 == 6;
+bool was_indirect_access(uint8_t opcode_byte) {
+    return opcode_byte % 8 == 6;
 }
 
-uint8_t Cpu::cb(opcodes::OpCode op_code) {
-    if (op_code.value >= opcodes::BIT_0B.value && op_code.value <= opcodes::BIT_7A.value) {
+uint8_t Cpu::cb(uint8_t instruction_byte) {
+    if (instruction_byte >= opcodes::BIT_0B.value && instruction_byte <= opcodes::BIT_7A.value) {
         // Set bit instruction
-        test_bit(op_code_to_register(op_code), internal::op_code_to_bit(op_code));
-        registers.pc++;
-        if (was_indirect_access(op_code)) {
+        test_bit(op_code_to_register(instruction_byte), internal::op_code_to_bit(instruction_byte));
+        if (was_indirect_access(instruction_byte)) {
             return 12;
         }
         return 4;
-    } else if (op_code.value >= opcodes::RES_0B.value && op_code.value <= opcodes::RES_7A.value) {
+    } else if (instruction_byte >= opcodes::RES_0B.value && instruction_byte <= opcodes::RES_7A.value) {
         // Reset bit instruction
-        auto val = op_code_to_register(op_code);
-        bitmanip::unset(val, internal::op_code_to_bit(op_code));
-        write_to_destination(op_code, val);
-        registers.pc++;
-        if (was_indirect_access(op_code)) {
+        auto val = op_code_to_register(instruction_byte);
+        bitmanip::unset(val, internal::op_code_to_bit(instruction_byte));
+        write_to_destination(instruction_byte, val);
+        if (was_indirect_access(instruction_byte)) {
             return 12;
         }
         return 4;
-    } else if (op_code.value >= opcodes::SET_0B.value && op_code.value <= opcodes::SET_7A.value) {
+    } else if (instruction_byte >= opcodes::SET_0B.value && instruction_byte <= opcodes::SET_7A.value) {
         // Set bit instruction
-        auto val = op_code_to_register(op_code);
-        bitmanip::set(val, internal::op_code_to_bit(op_code));
-        write_to_destination(op_code, val);
-        registers.pc++;
-        if (was_indirect_access(op_code)) {
+        auto val = op_code_to_register(instruction_byte);
+        bitmanip::set(val, internal::op_code_to_bit(instruction_byte));
+        write_to_destination(instruction_byte, val);
+        if (was_indirect_access(instruction_byte)) {
             return 12;
         }
         return 4;
-    } else if (std::unordered_set{opcodes::RL_A, opcodes::RL_B, opcodes::RL_C, opcodes::RL_D,
-                                  opcodes::RL_E, opcodes::RL_H, opcodes::RL_L}
-                   .contains(op_code)) {
+    } else if (opcodes::RL_A.value == instruction_byte or opcodes::RL_B.value == instruction_byte
+               or opcodes::RL_C.value == instruction_byte or opcodes::RL_D.value == instruction_byte
+               or opcodes::RL_E.value == instruction_byte or opcodes::RL_H.value == instruction_byte
+               or opcodes::RL_L.value == instruction_byte) {
         auto z_flag = make_mutable_flag<flags::zero>();
         auto s_flag = make_mutable_flag<flags::subtract>();
         auto hc_flag = make_mutable_flag<flags::half_carry>();
         auto c_flag = make_mutable_flag<flags::carry>();
-        if (op_code == opcodes::RL_A) {
+        if (instruction_byte == opcodes::RL_A.value) {
             RotateLeft<registers::A> rla(z_flag, s_flag, hc_flag, c_flag,
                                          make_mutable_register<registers::A>());
             return rla.execute();
         }
-        if (op_code == opcodes::RL_B) {
+        if (instruction_byte == opcodes::RL_B.value) {
             RotateLeft<registers::B> rlb(z_flag, s_flag, hc_flag, c_flag,
                                          make_mutable_register<registers::B>());
             return rlb.execute();
         }
-        if (op_code == opcodes::RL_C) {
+        if (instruction_byte == opcodes::RL_C.value) {
             RotateLeft<registers::C> rlc(z_flag, s_flag, hc_flag, c_flag,
                                          make_mutable_register<registers::C>());
             return rlc.execute();
         }
-        if (op_code == opcodes::RL_D) {
+        if (instruction_byte == opcodes::RL_D.value) {
             RotateLeft<registers::D> rld(z_flag, s_flag, hc_flag, c_flag,
                                          make_mutable_register<registers::D>());
             return rld.execute();
         }
-        if (op_code == opcodes::RL_E) {
+        if (instruction_byte == opcodes::RL_E.value) {
             RotateLeft<registers::E> rle(z_flag, s_flag, hc_flag, c_flag,
                                          make_mutable_register<registers::E>());
             return rle.execute();
         }
-        if (op_code == opcodes::RL_H) {
+        if (instruction_byte == opcodes::RL_H.value) {
             RotateLeft<registers::H> rlh(z_flag, s_flag, hc_flag, c_flag,
                                          make_mutable_register<registers::H>());
             return rlh.execute();
         }
-        if (op_code == opcodes::RL_L) {
+        if (instruction_byte == opcodes::RL_L.value) {
             RotateLeft<registers::L> rll(z_flag, s_flag, hc_flag, c_flag,
                                          make_mutable_register<registers::L>());
             return rll.execute();
         }
     } else {
         // TODO implement further CB instructions
-        throw std::runtime_error(fmt::format("CB {:02x} not supported\n", op_code.value));
+        throw std::runtime_error(fmt::format("CB {:02x} not supported\n", instruction_byte));
     }
     return 0;
 }
 
 void Cpu::jump_r(bool condition_met) {
-    registers.pc++;
     if (condition_met) {
         // For C++20 this is defined behaviour since signed integers are twos complement
         // On older standards this is implementation defined
@@ -595,23 +580,45 @@ void Cpu::jump_r(bool condition_met) {
         // We need to increment here, otherwise the jump is off by one address
         registers.pc++;
         registers.pc += immediate;
-    } else {
-        // Set to instruction after immediate data if we didnt jump
-        registers.pc++;
     }
 }
 
 int Cpu::save_value_to_address(uint16_t address, uint8_t value) {
     mmu.write_byte(address, value);
-    registers.pc++;
     return 8;
 }
 
-uint8_t internal::op_code_to_bit(opcodes::OpCode opcode) {
+opcodes::OpCode Cpu::fetch() {
+    auto opcode = opcodes::OpCode{mmu.read_byte(registers.pc)};
+    registers.pc++;
+    if (opcode == opcodes::CB) {
+        opcode = opcodes::OpCode{mmu.read_byte(registers.pc), true};
+        registers.pc++;
+    }
+    return opcode;
+}
+
+Cpu::Instruction Cpu::decode(opcodes::OpCode opcode) {
+    if (opcode.extendend) {
+        return [&, opcode]() {
+            auto v = opcode.value;
+            return this->cb(v);
+        };
+    }
+    auto instruction = instructions.find(opcode);
+    if (instruction == instructions.end()) {
+        fmt::print("Encountered unsupported opcode {:02X} at {:pc}.\n", opcode.value, registers);
+        fmt::print("Ran for {} instructions.\n", instructions_executed);
+        return {};
+    }
+    return instruction->second;
+}
+
+uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {
     // Divide by lowest opcode which is regular (part of a 4x16 block in op table)
     // to handle opcodes for BIT, RES and SET instructions in the same way by projecting
     // them all to 0x00..0x3F
-    opcode.value %= 0x40;
+    opcode_byte %= 0x40;
     // higher nibble
     // |
     // | | 0 1 2 3 4 5 6 7 8 9 A B C D E F ->lower nibble
@@ -623,6 +630,6 @@ uint8_t internal::op_code_to_bit(opcodes::OpCode opcode) {
     //
     // First map higher nibble 0x -> 0, 1x -> 2, 2x -> 4, 3x -> 6
     // Then add 1 if we are in the right half of the table
-    return ((opcode.value & 0xF0) >> constants::NIBBLE_SIZE) * 2
-           + ((opcode.value & 0x0F) / constants::BYTE_SIZE);
+    return ((opcode_byte & 0xF0) >> constants::NIBBLE_SIZE) * 2
+           + ((opcode_byte & 0x0F) / constants::BYTE_SIZE);
 }

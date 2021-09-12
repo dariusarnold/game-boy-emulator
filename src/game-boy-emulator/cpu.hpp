@@ -124,6 +124,14 @@ public:
     void run();
 
 private:
+
+    /**
+     * Finds the instruction associated with an opcode
+     * @param opcode
+     * @return
+     */
+    Instruction decode(opcodes::OpCode opcode);
+
     /**
      * Execute single step. Returns false if opcode at current program counter is invalid, else true
      */
@@ -214,9 +222,9 @@ private:
 
     /**
      * Handle second byte of two byte instruction codes beginning with prefix cb
-     * @param op_code second byte of opcode
+     * @param instruction_byte second byte of opcode
      */
-    uint8_t cb(opcodes::OpCode op_code);
+    uint8_t cb(uint8_t instruction_byte);
 
     /**
      * Common function for all bit test instructions.
@@ -231,12 +239,12 @@ private:
      * @param opcode
      * @return
      */
-    uint8_t op_code_to_register(opcodes::OpCode opcode);
+    uint8_t op_code_to_register(uint8_t opcode_byte);
 
     /**
      * Write value to register specified by the opcode. Used for the second byte of CB instruction.
      */
-    void write_to_destination(opcodes::OpCode destination, uint8_t value);
+    void write_to_destination(uint8_t opcode_byte, uint8_t value);
 
     /**
      * Common function for all jumps.
@@ -249,11 +257,20 @@ private:
      * @param value
      */
     int save_value_to_address(uint16_t address, uint8_t value);
+
+    /**
+     * Read next instruction from address at program counter.
+     * After this method reads the new opcode, the program counter will be incremented to point past
+     * the opcode read
+     * @return
+     */
+    opcodes::OpCode fetch();
+
 };
 
 namespace internal {
     /**
      * Resolve second byte of CB opcodes to bit position on which this instructions operates.
      */
-    uint8_t op_code_to_bit(opcodes::OpCode opcode);
+    uint8_t op_code_to_bit(uint8_t opcode_byte);
 } // namespace internal

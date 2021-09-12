@@ -7,11 +7,12 @@ namespace opcodes {
 
     struct OpCode {
         uint8_t value;
+        bool extendend = false;
     };
 
     // Comparison operator for std::unordered_map
     inline bool operator==(const OpCode& op1, const OpCode& op2) {
-        return op1.value == op2.value;
+        return op1.value == op2.value && op1.extendend == op2.extendend;
     }
 
     constexpr OpCode NOP{0x00};

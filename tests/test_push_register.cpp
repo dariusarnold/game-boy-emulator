@@ -13,16 +13,13 @@ protected:
     Mmu mmu;
     MutableMemory memory{mmu};
     MutableStack stack{memory, register_sp};
-    uint16_t pc = 0;
-    ProgramCounterIncDec increment_pc{MutableRegister<PC>{pc}};
 };
 
 
 TEST_CASE_METHOD(PushRegisterFixture, "Pushing register to stack") {
-    PushRegisterOnStack<BC> push_register_on_stack{register_bc, stack, increment_pc};
+    PushRegisterOnStack<BC> push_register_on_stack{register_bc, stack};
     auto cycles = push_register_on_stack.execute();
     CHECK(cycles == 16);
-    CHECK(pc == 1);
     CHECK(stack.peek() == bc);
     CHECK(sp == 0x06);
 }

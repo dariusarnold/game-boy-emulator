@@ -11,17 +11,14 @@ class Increment {
     MutableFlag<flags::zero> zero_flag;
     MutableFlag<flags::subtract> subtract_flag;
     MutableFlag<flags::half_carry> half_carry_flag;
-    ProgramCounterIncDec increment_pc;
 
     struct ByteRegisterTag {};
     struct WordRegisterTag {};
 
 public:
     Increment(MutableRegister<T> reg, MutableFlag<flags::zero> z_flag,
-                   MutableFlag<flags::subtract> s_flag, MutableFlag<flags::half_carry> hc_flag,
-              ProgramCounterIncDec inc_pc) :
-            m_register(reg), zero_flag(z_flag), subtract_flag(s_flag), half_carry_flag(hc_flag),
-            increment_pc(inc_pc) {}
+                   MutableFlag<flags::subtract> s_flag, MutableFlag<flags::half_carry> hc_flag) :
+            m_register(reg), zero_flag(z_flag), subtract_flag(s_flag), half_carry_flag(hc_flag) {}
 
     /**
      * Dispatch depending on what register type (single or combined) we are operating on
@@ -46,7 +43,6 @@ public:
         }
         if (m_register.get() == 0) zero_flag.set_active();
         subtract_flag.set_inactive();
-        increment_pc.increment();
         return 4;
     }
 
@@ -65,7 +61,6 @@ public:
         }
         if (m_register.get() == 0) zero_flag.set_active();
         subtract_flag.set_inactive();
-        increment_pc.increment();
         return 8;
     }
 };

@@ -20,7 +20,7 @@ protected:
      * Call this only after setting the program counter
      */
     void set_target_location(uint16_t location) {
-        mmu.write_word(pc + 1, location);
+        mmu.write_word(pc, location);
     }
 };
 
@@ -32,8 +32,8 @@ TEST_CASE_METHOD(CallTestFixture, "Test call instruction setting program counter
     CHECK(cycles == 24);
     CHECK(register_pc.get() == 0xABCD);
     // stack is set to address of the following instruction, since this instruction has a size of
-    // 3 bytes and when entering CallIntermediary the pc is still pointing to the CD opcode of
-    // Call nn, we have to check for pc + 3 here
-    CHECK(stack.peek() == 0x1234 + 0x03);
-    CHECK(mmu.read_word(sp) == 0x1234 + 0x03);
+    // 3 bytes and when entering CallIntermediary the pc is pointing to the first byte of immediate
+    // data, we have to check for pc + 2 here
+    CHECK(stack.peek() == 0x1234 + 0x02);
+    CHECK(mmu.read_word(sp) == 0x1234 + 0x02);
 }

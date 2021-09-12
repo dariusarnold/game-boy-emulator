@@ -5,7 +5,6 @@ CallIntermediary::CallIntermediary(Memory mem, MutableStack push_stack, MutableR
 
 unsigned int CallIntermediary::execute() {
     // read 2 byte immediate data
-    register_pc.increment();
     auto location = memory.read_word(register_pc.get());
     // Push pc of the following instruction onto stack
     register_pc.increment();

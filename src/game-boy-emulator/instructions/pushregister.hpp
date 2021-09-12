@@ -13,14 +13,13 @@ class PushRegisterOnStack {
     static_assert(registers::is_word_register_v<T>);
     Register<T> reg;
     MutableStack stack;
-    ProgramCounterIncDec increment_pc;
 
 public:
-    PushRegisterOnStack(Register<T> r, MutableStack s, ProgramCounterIncDec ipc) :
-            reg(r), stack(s), increment_pc(ipc) {}
+    PushRegisterOnStack(Register<T> r, MutableStack s) :
+            reg(r), stack(s) {}
+
     unsigned int execute() {
         stack.push(reg.get());
-        increment_pc.increment();
         return 16;
     }
 };

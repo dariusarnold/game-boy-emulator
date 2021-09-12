@@ -15,15 +15,13 @@ class CopyRegister {
                   or (registers::is_word_register_v<I> and registers::is_word_register_v<O>));
     Register<I> source;
     MutableRegister<O> destination;
-    ProgramCounterIncDec increment_pc;
 
 public:
-    CopyRegister(Register<I> sourc, MutableRegister<O> dest, ProgramCounterIncDec ipc) :
-            source(sourc), destination(dest), increment_pc(ipc) {}
+    CopyRegister(Register<I> sourc, MutableRegister<O> dest) :
+            source(sourc), destination(dest) {}
 
     unsigned int execute() {
         destination.set(source.get());
-        increment_pc.increment();
         return 8;
     }
 };

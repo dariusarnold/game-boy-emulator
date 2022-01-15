@@ -573,13 +573,14 @@ t_cycle Cpu::cb(uint8_t instruction_byte) {
 }
 
 void Cpu::jump_r(bool condition_met) {
+    // For C++20 this is defined behaviour since signed integers are twos complement
+    // On older standards this is implementation defined
+    // https://stackoverflow.com/questions/13150449/efficient-unsigned-to-signed-cast-avoiding-implementation-defined-behavior
+    auto immediate = static_cast<int8_t>(mmu.read_byte(registers.pc));
+    // We need to increment here, otherwise the jump is off by one address.
+    // Reading = incrementing happens whether the jump happens or not.
+    registers.pc++;
     if (condition_met) {
-        // For C++20 this is defined behaviour since signed integers are twos complement
-        // On older standards this is implementation defined
-        // https://stackoverflow.com/questions/13150449/efficient-unsigned-to-signed-cast-avoiding-implementation-defined-behavior
-        auto immediate = static_cast<int8_t>(mmu.read_byte(registers.pc));
-        // We need to increment here, otherwise the jump is off by one address
-        registers.pc++;
         registers.pc += immediate;
     }
 }

@@ -29,7 +29,11 @@ add_library(game_boy_emulator_library
         game-boy-emulator/instructions/rotateleft.cpp
         game-boy-emulator/instructions/rotateleft.hpp
         game-boy-emulator/instructions/return.cpp
-        game-boy-emulator/instructions/return.hpp)
+        game-boy-emulator/instructions/return.hpp
+        game-boy-emulator/io.cpp
+        game-boy-emulator/io.hpp
+        )
+
 target_include_directories(game_boy_emulator_library PUBLIC
         game-boy-emulator
         )

@@ -31,7 +31,7 @@ TEST_CASE("Compare boot sequence") {
     auto boot_rom_path = std::filesystem::absolute(("dmg01-boot.bin"));
     auto boot_rom = load_boot_rom_file(boot_rom_path);
     REQUIRE(boot_rom);
-    Cpu cpu;
+    Cpu cpu{Verbosity::LEVEL_NONE};
     cpu.set_boot_rom(boot_rom.value());
     for (auto i = 0; const auto& expected_line: expected_output) {
         auto actual_output = cpu.get_minimal_debug_state();

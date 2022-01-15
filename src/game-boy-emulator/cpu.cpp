@@ -13,11 +13,11 @@ bool Cpu::step() {
     auto opcode = fetch();
     auto instruction = decode(opcode);
     if (not instruction) {
-        fmt::print("Encountered unsupported opcode {:02X} at {:pc}.\n", opcode.value, registers);
-        fmt::print("Ran for {} instructions.\n", instructions_executed);
+        print(fmt::format("Encountered unsupported opcode {:02X} at {:pc}.\n", opcode.value, registers), Verbosity::LEVEL_ERROR);
+        print(fmt::format("Ran for {} instructions.\n", instructions_executed), Verbosity::LEVEL_INFO);
         return false;
     }
-    fmt::print("Executing {} 0x{:02X}\n", opcode.extendend ? "0xCB" : "", opcode.value);
+    print(fmt::format("Executing {} 0x{:02X}\n", opcode.extendend ? "0xCB" : "", opcode.value), Verbosity::LEVEL_INFO);
     cycles += instruction();
     instructions_executed++;
     return true;
@@ -42,7 +42,9 @@ void Cpu::xor8(uint8_t value) {
     set_carry_flag(BitValues::Inactive);
 }
 
-Cpu::Cpu() {
+Cpu::Cpu(): Cpu(Verbosity::LEVEL_INFO){}
+
+Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
     instructions[opcodes::NOP] = [&]() {
         return 4;
     };
@@ -606,8 +608,6 @@ Cpu::Instruction Cpu::decode(opcodes::OpCode opcode) {
     }
     auto instruction = instructions.find(opcode);
     if (instruction == instructions.end()) {
-        fmt::print("Encountered unsupported opcode {:02X} at {:pc}.\n", opcode.value, registers);
-        fmt::print("Ran for {} instructions.\n", instructions_executed);
         return {};
     }
     return instruction->second;
@@ -623,6 +623,12 @@ std::string Cpu::get_minimal_debug_state() {
                        registers.h, registers.l, registers.sp, registers.pc,
                        mmu.read_byte(registers.pc), mmu.read_byte(registers.pc + 1),
                        mmu.read_byte(registers.pc + 2), mmu.read_byte(registers.pc + 3));
+}
+
+void Cpu::print(std::string_view message, Verbosity level) {
+    if (static_cast<int>(level) <= static_cast<int>(verbosity)) {
+        fmt::print(message);
+    }
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

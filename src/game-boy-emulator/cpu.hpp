@@ -92,6 +92,13 @@ struct fmt::formatter<Registers> {
     }
 };
 
+enum class Verbosity {
+    LEVEL_NONE = 0,
+    LEVEL_ERROR = 1,
+    LEVEL_DEBUG = 2,
+    LEVEL_INFO = 3,
+};
+
 class Cpu {
     Registers registers = {};
     Mmu mmu;
@@ -109,8 +116,14 @@ class Cpu {
     // the opcode
     std::unordered_map<opcodes::OpCode, Instruction> instructions;
 
+    // Controlls logging to stdout
+    Verbosity verbosity;
+
+    // Print considering the selected verbosity level
+    void print(std::string_view message, Verbosity level);
 public:
     Cpu();
+    explicit Cpu(Verbosity verbosity_);
 
     /**
      * Copy boot rom to first 256 bytes of ram.

@@ -269,7 +269,7 @@ private:
      * Common function for all jumps.
      * @param is_condition_met if true read immediate value and set stackpointer to it.
      */
-    void jump_r(bool is_condition_met);
+    t_cycle jump_r(bool is_condition_met);
 
     /**
      * Save value to address pointed at by register hl and increment program counter

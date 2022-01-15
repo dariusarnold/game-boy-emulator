@@ -212,20 +212,16 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
     };
 
     instructions[opcodes::JR_C] = [&]() {
-        this->jump_r(is_flag_set(flags::carry));
-        return 8;
+        return this->jump_r(is_flag_set(flags::carry));
     };
     instructions[opcodes::JR_NC] = [&]() {
-        this->jump_r(!is_flag_set(flags::carry));
-        return 8;
+        return this->jump_r(!is_flag_set(flags::carry));
     };
     instructions[opcodes::JR_Z] = [&]() {
-        this->jump_r(is_flag_set(flags::zero));
-        return 8;
+        return this->jump_r(is_flag_set(flags::zero));
     };
     instructions[opcodes::JR_NZ] = [&]() {
-        this->jump_r(!is_flag_set(flags::zero));
-        return 8;
+        return this->jump_r(!is_flag_set(flags::zero));
     };
     instructions[opcodes::LDH_C_A] = [&]() {
         this->mmu.write_byte(this->registers.c + 0xFF00, this->registers.a);
@@ -572,7 +568,7 @@ t_cycle Cpu::cb(uint8_t instruction_byte) {
     return 0;
 }
 
-void Cpu::jump_r(bool condition_met) {
+t_cycle Cpu::jump_r(bool condition_met) {
     // For C++20 this is defined behaviour since signed integers are twos complement
     // On older standards this is implementation defined
     // https://stackoverflow.com/questions/13150449/efficient-unsigned-to-signed-cast-avoiding-implementation-defined-behavior
@@ -583,6 +579,11 @@ void Cpu::jump_r(bool condition_met) {
     if (condition_met) {
         registers.pc += immediate;
     }
+    // If the action was taken, one additional m-cycle is used.
+    if (condition_met) {
+        return 12;
+    }
+    return 8;
 }
 
 t_cycle Cpu::save_value_to_address(uint16_t address, uint8_t value) {

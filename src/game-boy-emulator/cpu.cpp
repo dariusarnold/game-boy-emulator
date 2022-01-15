@@ -19,6 +19,7 @@ bool Cpu::step() {
         return false;
     }
     print(fmt::format("Executing {} 0x{:02X}\n", opcode.extendend ? "0xCB" : "", opcode.value), Verbosity::LEVEL_INFO);
+    registers.pc += opcode.extendend ? 2 : 1;
     cycles += instruction();
     instructions_executed++;
     return true;
@@ -595,10 +596,8 @@ t_cycle Cpu::save_value_to_address(uint16_t address, uint8_t value) {
 
 opcodes::OpCode Cpu::fetch() {
     auto opcode = opcodes::OpCode{mmu.read_byte(registers.pc)};
-    registers.pc++;
     if (opcode == opcodes::CB) {
-        opcode = opcodes::OpCode{mmu.read_byte(registers.pc), true};
-        registers.pc++;
+        opcode = opcodes::OpCode{mmu.read_byte(registers.pc + 1), true};
     }
     return opcode;
 }

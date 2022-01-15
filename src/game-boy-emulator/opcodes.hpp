@@ -27,11 +27,13 @@ namespace opcodes {
     // Set 1 bit in register
     constexpr OpCode SET_0B{0xC0};
     constexpr OpCode SET_7A{0xFF};
-    // Jump if condition after adding immediate value to address
+    // Jump if condition after adding signed 8 bit immediate value to address
     constexpr OpCode JR_NZ{0x20};
     constexpr OpCode JR_Z{0x28};
     constexpr OpCode JR_NC{0x30};
     constexpr OpCode JR_C{0x38};
+    // Jump by signed 8 bit immediate value
+    constexpr OpCode JR{0x18};
     // Increment 1 byte register
     constexpr OpCode INC_A{0x3C};
     constexpr OpCode INC_B{0x04};

@@ -224,6 +224,7 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
     instructions[opcodes::JR_NZ] = [&]() {
         return this->jump_r(!is_flag_set(flags::zero));
     };
+    instructions[opcodes::JR] = [&]() { return this->jump_r(true); };
     instructions[opcodes::LDH_C_A] = [&]() {
         this->mmu.write_byte(this->registers.c + 0xFF00, this->registers.a);
         return 8;

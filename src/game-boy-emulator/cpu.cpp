@@ -377,20 +377,20 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
     };
 }
 
-unsigned int Cpu::ld16(uint16_t& input) {
+t_cycle Cpu::ld16(uint16_t& input) {
     input = mmu.read_word(registers.pc);
     registers.pc += 2;
     return 12;
 }
 
-unsigned int Cpu::ld8(uint8_t& input) {
+t_cycle Cpu::ld8(uint8_t& input) {
     const auto immediate = mmu.read_byte(registers.pc);
     input = immediate;
     registers.pc++;
     return 8;
 }
 
-int Cpu::indirect_hl(opcodes::OpCode op) {
+t_cycle Cpu::indirect_hl(opcodes::OpCode op) {
     if (op == opcodes::LDD_HL_A or op == opcodes::LDI_HL_A) {
         mmu.write_byte(registers.hl, registers.a);
     } else if (op == opcodes::LDD_A_HL or op == opcodes::LDI_A_HL) {
@@ -496,7 +496,7 @@ bool was_indirect_access(uint8_t opcode_byte) {
     return opcode_byte % 8 == 6;
 }
 
-uint8_t Cpu::cb(uint8_t instruction_byte) {
+t_cycle Cpu::cb(uint8_t instruction_byte) {
     if (instruction_byte >= opcodes::BIT_0B.value && instruction_byte <= opcodes::BIT_7A.value) {
         // Set bit instruction
         test_bit(op_code_to_register(instruction_byte), internal::op_code_to_bit(instruction_byte));
@@ -584,7 +584,7 @@ void Cpu::jump_r(bool condition_met) {
     }
 }
 
-int Cpu::save_value_to_address(uint16_t address, uint8_t value) {
+t_cycle Cpu::save_value_to_address(uint16_t address, uint8_t value) {
     mmu.write_byte(address, value);
     return 8;
 }

@@ -92,6 +92,10 @@ struct fmt::formatter<Registers> {
     }
 };
 
+// Typedef for clock cycles.
+// Gives a more descriptive name but doesn't change semantics.
+using t_cycle = size_t;
+
 enum class Verbosity {
     LEVEL_NONE = 0,
     LEVEL_ERROR = 1,
@@ -219,13 +223,13 @@ private:
      * Common function for all 8 byte loads (LD).
      * @param input Reference to register into which to load the immediate value
      */
-    unsigned int ld8(uint8_t& input);
+    t_cycle ld8(uint8_t& input);
 
     /**
      * Common function for all 16 byte loads (LD).
      * @param input Reference to register into which to load the immediate value
      */
-    unsigned int ld16(uint16_t& input);
+    t_cycle ld16(uint16_t& input);
 
     /**
      * Common function for loading/storing A from/to adress pointed at by HL and
@@ -233,13 +237,13 @@ private:
      * @param op Opcode, used to decide wether to load/store and increment/decrement.
      * @return Number of cycles for instruction
      */
-    int indirect_hl(opcodes::OpCode op);
+    t_cycle indirect_hl(opcodes::OpCode op);
 
     /**
      * Handle second byte of two byte instruction codes beginning with prefix cb
      * @param instruction_byte second byte of opcode
      */
-    uint8_t cb(uint8_t instruction_byte);
+    t_cycle cb(uint8_t instruction_byte);
 
     /**
      * Common function for all bit test instructions.
@@ -271,7 +275,7 @@ private:
      * Save value to address pointed at by register hl and increment program counter
      * @param value
      */
-    int save_value_to_address(uint16_t address, uint8_t value);
+    t_cycle save_value_to_address(uint16_t address, uint8_t value);
 
     /**
      * Read next instruction from address at program counter.

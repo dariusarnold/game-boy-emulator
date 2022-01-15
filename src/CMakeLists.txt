@@ -34,7 +34,7 @@ target_include_directories(game_boy_emulator_library PUBLIC
         game-boy-emulator
         )
 target_link_libraries(game_boy_emulator_library PUBLIC
-        fmt
+        fmt::fmt
         )
 
 add_executable(game_boy_emulator

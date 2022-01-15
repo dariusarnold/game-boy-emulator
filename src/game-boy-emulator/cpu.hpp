@@ -123,6 +123,13 @@ public:
      */
     void run();
 
+    /**
+     * Execute single step. Returns false if opcode at current program counter is invalid, else true
+     */
+    bool step();
+
+    std::string get_minimal_debug_state();
+
 private:
 
     /**
@@ -131,11 +138,6 @@ private:
      * @return
      */
     Instruction decode(opcodes::OpCode opcode);
-
-    /**
-     * Execute single step. Returns false if opcode at current program counter is invalid, else true
-     */
-    bool step();
 
     template <typename T>
     MutableRegister<T> make_mutable_register() {

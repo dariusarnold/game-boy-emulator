@@ -613,6 +613,18 @@ Cpu::Instruction Cpu::decode(opcodes::OpCode opcode) {
     return instruction->second;
 }
 
+std::string Cpu::get_minimal_debug_state() {
+    // Format: [registers] (mem[pc] mem[pc+1] mem[pc+2] mem[pc+3])
+    // Thanks to https://github.com/wheremyfoodat/Gameboy-logs
+    return fmt::format("A: {:02X} F: {:02X} B: {:02X} C: {:02X} D: {:02X} E: {:02X} H: {:02X} L: "
+                       "{:02X} SP: {:04X} "
+                       "PC: 00:{:04X} ({:02X} {:02X} {:02X} {:02X})",
+                       registers.a, registers.f, registers.b, registers.c, registers.d, registers.e,
+                       registers.h, registers.l, registers.sp, registers.pc,
+                       mmu.read_byte(registers.pc), mmu.read_byte(registers.pc + 1),
+                       mmu.read_byte(registers.pc + 2), mmu.read_byte(registers.pc + 3));
+}
+
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {
     // Divide by lowest opcode which is regular (part of a 4x16 block in op table)
     // to handle opcodes for BIT, RES and SET instructions in the same way by projecting

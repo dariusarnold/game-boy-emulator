@@ -374,6 +374,16 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
         Return r(stack_mut, ProgramCounterJump{pc_mut});
         return r.execute();
     };
+
+    instructions[opcodes::RL_A] = [&]() {
+        auto z_flag = make_mutable_flag<flags::zero>();
+        auto s_flag = make_mutable_flag<flags::subtract>();
+        auto hc_flag = make_mutable_flag<flags::half_carry>();
+        auto c_flag = make_mutable_flag<flags::carry>();
+        RotateLeft<registers::A> rla(z_flag, s_flag, hc_flag, c_flag,
+                                     make_mutable_register<registers::A>(), true);
+        return rla.execute();
+    };
 }
 
 t_cycle Cpu::ld16(uint16_t& input) {

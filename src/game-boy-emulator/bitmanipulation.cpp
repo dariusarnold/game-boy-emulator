@@ -33,5 +33,9 @@ namespace bitmanip {
         return (x << 1);
     }
 
+    uint8_t rotate_left_carry(uint8_t x) {
+        return (x << 1) | (x >> 7);
+    }
 
-} // namespace bitmanip
+
+    } // namespace bitmanip

@@ -84,3 +84,10 @@ TEST_CASE_METHOD(RotateLeftFixture, "Test rotate left instruction resetting carr
     rl.execute();
     CHECK_FALSE(carry_flag.read());
 }
+
+TEST_CASE_METHOD(RotateLeftFixture, "Test rotate left instruction with carry bit") {
+    a = 0x80;
+    RotateLeft rl{zero_flag, subtract_flag, half_carry_flag, carry_flag, register_, true};
+    rl.execute();
+    CHECK(a == 0x01);
+}

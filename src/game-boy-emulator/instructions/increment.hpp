@@ -41,7 +41,11 @@ public:
         } else {
             half_carry_flag.set_inactive();
         }
-        if (m_register.get() == 0) zero_flag.set_active();
+        if (m_register.get() == 0) {
+            zero_flag.set_active();
+        } else {
+            zero_flag.set_inactive();
+        }
         subtract_flag.set_inactive();
         return 4;
     }
@@ -59,8 +63,11 @@ public:
         } else {
             half_carry_flag.set_inactive();
         }
-        if (m_register.get() == 0) zero_flag.set_active();
-        subtract_flag.set_inactive();
+        if (m_register.get() == 0) {
+            zero_flag.set_active();
+        } else {
+            zero_flag.set_inactive();
+        }        subtract_flag.set_inactive();
         return 8;
     }
 };

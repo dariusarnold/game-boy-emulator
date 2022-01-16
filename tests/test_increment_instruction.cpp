@@ -36,7 +36,7 @@ TEST_CASE_METHOD(IncrementTestFixture, "Test increment 1 byte register half carr
     CHECK(subtract_flag.read() == false);
 }
 
-TEST_CASE_METHOD(IncrementTestFixture, "Test increment 1 byte register zero flag") {
+TEST_CASE_METHOD(IncrementTestFixture, "Test increment 1 byte register setting zero flag") {
     a = 0xFF;
     Increment<A> increment{a_register, zero_flag, subtract_flag, hc_flag};
     auto cycles = increment.execute();
@@ -44,6 +44,18 @@ TEST_CASE_METHOD(IncrementTestFixture, "Test increment 1 byte register zero flag
     CHECK(a == 0);
     CHECK(hc_flag.read() == true);
     CHECK(zero_flag.read() == true);
+    CHECK(subtract_flag.read() == false);
+}
+
+TEST_CASE_METHOD(IncrementTestFixture, "Test increment 1 byte register resetting zero flag") {
+    a = 0x01;
+    zero_flag.set_active();
+    Increment<A> increment{a_register, zero_flag, subtract_flag, hc_flag};
+    auto cycles = increment.execute();
+    CHECK(cycles == 4);
+    CHECK(a == 0x02);
+    CHECK(hc_flag.read() == false);
+    CHECK(zero_flag.read() == false);
     CHECK(subtract_flag.read() == false);
 }
 
@@ -68,7 +80,7 @@ TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register half carr
     CHECK(subtract_flag.read() == false);
 }
 
-TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register zero flag") {
+TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register setting zero flag") {
     hl = 0xFFFF;
     Increment<HL> increment{hl_register, zero_flag, subtract_flag, hc_flag};
     auto cycles = increment.execute();
@@ -76,5 +88,17 @@ TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register zero flag
     CHECK(hl == 0);
     CHECK(hc_flag.read() == true);
     CHECK(zero_flag.read() == true);
+    CHECK(subtract_flag.read() == false);
+}
+
+TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register resetting zero flag") {
+    hl = 0x0101;
+    zero_flag.set_active();
+    Increment<HL> increment{hl_register, zero_flag, subtract_flag, hc_flag};
+    auto cycles = increment.execute();
+    CHECK(cycles == 8);
+    CHECK(hl == 0x0102);
+    CHECK(hc_flag.read() == false);
+    CHECK(zero_flag.read() == false);
     CHECK(subtract_flag.read() == false);
 }

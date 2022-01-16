@@ -18,14 +18,16 @@ public:
             zero_flag(z), subtract_flag(s), half_carry_flag(hc), carry_flag(c), register_(reg) {}
 
     unsigned int execute() {
-        bitmanip::rotate_left(register_.get());
         if (bitmanip::is_bit_set(register_.get(), 7)) {
             carry_flag.set_active();
         } else {
             carry_flag.set_inactive();
         }
+        register_.set(bitmanip::rotate_left(register_.get()));
         if (register_.get() == 0x00) {
             zero_flag.set_active();
+        } else {
+            zero_flag.set_inactive();
         }
         subtract_flag.set_inactive();
         half_carry_flag.set_inactive();

@@ -30,7 +30,7 @@ namespace bitmanip {
     }
 
     uint8_t rotate_left(uint8_t x) {
-        return (x << 1) | (x >> 7);
+        return (x << 1);
     }
 
 

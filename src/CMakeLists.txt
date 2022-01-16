@@ -30,6 +30,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/instructions/rotateleft.hpp
         game-boy-emulator/instructions/return.cpp
         game-boy-emulator/instructions/return.hpp
+        game-boy-emulator/instructions/popstack.cpp
+        game-boy-emulator/instructions/popstack.hpp
         game-boy-emulator/io.cpp
         game-boy-emulator/io.hpp
         )
@@ -81,6 +83,9 @@ if (WARNINGS_ENABLED)
             -Wundef
             # Warn if object is used without initialization
             -Wuninitialized
+            # Initializing a class member from itself is a nasty and hard to spot bug, so we turn it
+            # into a warning. Clang has the flag but wont do anything, but gcc spots the error.
+            -Werror=init-self
             )
     endif()
 endif()

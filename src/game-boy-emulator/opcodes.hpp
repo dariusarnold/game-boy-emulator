@@ -163,6 +163,11 @@ namespace opcodes {
     constexpr OpCode LDD_A_HL{0x3A};
     // Unconditional return
     constexpr OpCode RET{0xC9};
+    // Pop 16bit value from stack into register
+    constexpr OpCode POP_BC{0xC1};
+    constexpr OpCode POP_DE{0xD1};
+    constexpr OpCode POP_HL{0xE1};
+    constexpr OpCode POP_AF{0xF1};
 
 } // namespace opcodes
 

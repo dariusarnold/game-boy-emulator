@@ -11,6 +11,7 @@ add_executable(game_boy_emulator_tests
         test_rotate_left.cpp
         test_return.cpp
         test_boot_rom_comparison.cpp
+        test_pop_stack.cpp
         )
 
 

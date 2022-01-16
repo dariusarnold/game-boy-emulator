@@ -6,6 +6,7 @@
 #include "instructions/pushregister.hpp"
 #include "instructions/return.hpp"
 #include "instructions/rotateleft.hpp"
+#include "instructions/popstack.hpp"
 #include <unordered_set>
 
 
@@ -383,6 +384,19 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
         RotateLeft<registers::A> rla(z_flag, s_flag, hc_flag, c_flag,
                                      make_mutable_register<registers::A>(), true);
         return rla.execute();
+    };
+
+    instructions[opcodes::POP_BC] = [=]() {
+        PopStack<registers::BC> pop_stack{bc_mut, stack_mut};
+        return pop_stack.execute();
+    };
+    instructions[opcodes::POP_DE] = [=]() {
+        PopStack<registers::DE> pop_stack{de_mut, stack_mut};
+        return pop_stack.execute();
+    };
+    instructions[opcodes::POP_HL] = [=]() {
+        PopStack<registers::HL> pop_stack{hl_mut, stack_mut};
+        return pop_stack.execute();
     };
 }
 

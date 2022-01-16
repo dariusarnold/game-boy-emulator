@@ -8,6 +8,15 @@
 class Mmu {
     std::array<uint8_t, constants::RAM_SIZE> ram = {0};
 
+    /*
+     * Helpful for catching uninitialized reads during debugging.
+     * Since the ram size is fixed and small, we can just use a copy of the
+     * normal ram and dont have to bitpack it.
+     */
+    const uint8_t unitialized = 0;
+    const uint8_t initialized = 1;
+    std::array<uint8_t, constants::RAM_SIZE> shadow_ram = {unitialized};
+
 public:
     /**
      * Read memory value from address.

@@ -272,10 +272,13 @@ private:
     t_cycle jump_r(bool is_condition_met);
 
     /**
-     * Save value to address pointed at by register hl and increment program counter
+     * Save value to address
      * @param value
      */
     t_cycle save_value_to_address(uint16_t address, uint8_t value);
+
+    t_cycle load_value_from_address(uint16_t address, uint8_t& value);
+
 
     /**
      * Read next instruction from address at program counter.

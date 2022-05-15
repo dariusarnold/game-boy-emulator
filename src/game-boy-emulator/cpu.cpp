@@ -7,6 +7,7 @@
 #include "instructions/return.hpp"
 #include "instructions/rotateleft.hpp"
 #include "instructions/popstack.hpp"
+#include "instructions/loadimmediateword.hpp"
 #include <unordered_set>
 
 
@@ -48,6 +49,46 @@ void Cpu::xor8(uint8_t value) {
 Cpu::Cpu(): Cpu(Verbosity::LEVEL_INFO){}
 
 Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
+
+    // This function is just to save typing
+    auto ld_helper = [=](auto source, auto destination) {
+        return [=]() {
+            CopyRegister cr{source, destination};
+            return cr.execute();
+        };
+    };
+    Register<registers::A> a{registers.a};
+    Register<registers::F> f{registers.f};
+    Register<registers::B> b{registers.b};
+    Register<registers::C> c{registers.c};
+    Register<registers::D> d{registers.d};
+    Register<registers::E> e{registers.e};
+    Register<registers::H> h{registers.h};
+    Register<registers::L> l{registers.l};
+    Register<registers::SP> sp{registers.sp};
+    Register<registers::PC> pc{registers.pc};
+    Register<registers::AF> af{registers.af};
+    Register<registers::BC> bc{registers.bc};
+    Register<registers::DE> de{registers.de};
+    Register<registers::HL> hl{registers.hl};
+    MutableRegister<registers::A> a_mut{registers.a};
+    MutableRegister<registers::F> f_mut{registers.f};
+    MutableRegister<registers::B> b_mut{registers.b};
+    MutableRegister<registers::C> c_mut{registers.c};
+    MutableRegister<registers::D> d_mut{registers.d};
+    MutableRegister<registers::E> e_mut{registers.e};
+    MutableRegister<registers::H> h_mut{registers.h};
+    MutableRegister<registers::L> l_mut{registers.l};
+    MutableRegister<registers::SP> sp_mut{registers.sp};
+    MutableRegister<registers::PC> pc_mut{registers.pc};
+    MutableRegister<registers::AF> af_mut{registers.af};
+    MutableRegister<registers::BC> bc_mut{registers.bc};
+    MutableRegister<registers::DE> de_mut{registers.de};
+    MutableRegister<registers::HL> hl_mut{registers.hl};
+    MutableMemory mem_mut{mmu};
+    Memory mem{mmu};
+    MutableStack stack_mut{mem_mut, sp_mut};
+
     instructions[opcodes::NOP] = [&]() {
         return 4;
     };
@@ -165,17 +206,21 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
     instructions[opcodes::LD_H_N] = [&]() {
         return this->ld8(registers.h);
     };
-    instructions[opcodes::LD_BC_NN] = [&]() {
-        return this->ld16(registers.bc);
+    instructions[opcodes::LD_BC_NN] = [=]() {
+        LoadImmediateWord load_immediate_word{bc_mut, pc_mut, stack_mut, mem};
+        return load_immediate_word.execute();
     };
-    instructions[opcodes::LD_DE_NN] = [&]() {
-        return this->ld16(registers.de);
+    instructions[opcodes::LD_DE_NN] = [=]() {
+        LoadImmediateWord load_immediate_word{de_mut, pc_mut, stack_mut, mem};
+        return load_immediate_word.execute();
     };
-    instructions[opcodes::LD_HL_NN] = [&]() {
-        return this->ld16(registers.hl);
+    instructions[opcodes::LD_HL_NN] = [=]() {
+        LoadImmediateWord load_immediate_word{hl_mut, pc_mut, stack_mut, mem};
+        return load_immediate_word.execute();
     };
-    instructions[opcodes::LD_SP_NN] = [&]() {
-        return this->ld16(registers.sp);
+    instructions[opcodes::LD_SP_NN] = [=]() {
+        LoadImmediateWord load_immediate_word{sp_mut, pc_mut, stack_mut, mem};
+        return load_immediate_word.execute();
     };
     instructions[opcodes::XOR_A] = [&]() {
         this->xor8(this->registers.a);
@@ -268,43 +313,6 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
     instructions[opcodes::LDD_A_HL] = [&]() { return this->indirect_hl(opcodes::LDD_A_HL); };
     instructions[opcodes::LDD_HL_A] = [&]() { return this->indirect_hl(opcodes::LDD_HL_A); };
 
-    // This function is just to save typing
-    auto ld_helper = [=](auto source, auto destination) {
-        return [=]() {
-            CopyRegister cr{source, destination};
-            return cr.execute();
-        };
-    };
-    Register<registers::A> a{registers.a};
-    Register<registers::F> f{registers.f};
-    Register<registers::B> b{registers.b};
-    Register<registers::C> c{registers.c};
-    Register<registers::D> d{registers.d};
-    Register<registers::E> e{registers.e};
-    Register<registers::H> h{registers.h};
-    Register<registers::L> l{registers.l};
-    Register<registers::SP> sp{registers.sp};
-    Register<registers::PC> pc{registers.pc};
-    Register<registers::AF> af{registers.af};
-    Register<registers::BC> bc{registers.bc};
-    Register<registers::DE> de{registers.de};
-    Register<registers::HL> hl{registers.hl};
-    MutableRegister<registers::A> a_mut{registers.a};
-    MutableRegister<registers::F> f_mut{registers.f};
-    MutableRegister<registers::B> b_mut{registers.b};
-    MutableRegister<registers::C> c_mut{registers.c};
-    MutableRegister<registers::D> d_mut{registers.d};
-    MutableRegister<registers::E> e_mut{registers.e};
-    MutableRegister<registers::H> h_mut{registers.h};
-    MutableRegister<registers::L> l_mut{registers.l};
-    MutableRegister<registers::SP> sp_mut{registers.sp};
-    MutableRegister<registers::PC> pc_mut{registers.pc};
-    MutableRegister<registers::AF> af_mut{registers.af};
-    MutableRegister<registers::BC> bc_mut{registers.bc};
-    MutableRegister<registers::DE> de_mut{registers.de};
-    MutableRegister<registers::HL> hl_mut{registers.hl};
-    MutableMemory mem_mut{mmu};
-    MutableStack stack_mut{mem_mut, sp_mut};
     instructions[opcodes::LD_B_B] = ld_helper(b, b_mut);
     instructions[opcodes::LD_B_C] = ld_helper(c, b_mut);
     instructions[opcodes::LD_B_D] = ld_helper(d, b_mut);
@@ -398,12 +406,6 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
         PopStack<registers::HL> pop_stack{hl_mut, stack_mut};
         return pop_stack.execute();
     };
-}
-
-t_cycle Cpu::ld16(uint16_t& input) {
-    input = mmu.read_word(registers.pc);
-    registers.pc += 2;
-    return 12;
 }
 
 t_cycle Cpu::ld8(uint8_t& input) {

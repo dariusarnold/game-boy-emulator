@@ -226,12 +226,6 @@ private:
     t_cycle ld8(uint8_t& input);
 
     /**
-     * Common function for all 16 byte loads (LD).
-     * @param input Reference to register into which to load the immediate value
-     */
-    t_cycle ld16(uint16_t& input);
-
-    /**
      * Common function for loading/storing A from/to adress pointed at by HL and
      * incrementing/decrementing HL after.
      * @param op Opcode, used to decide wether to load/store and increment/decrement.

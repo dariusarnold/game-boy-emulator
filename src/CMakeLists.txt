@@ -32,6 +32,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/instructions/return.hpp
         game-boy-emulator/instructions/popstack.cpp
         game-boy-emulator/instructions/popstack.hpp
+        game-boy-emulator/instructions/loadimmediateword.cpp
+        game-boy-emulator/instructions/loadimmediateword.hpp
         game-boy-emulator/io.cpp
         game-boy-emulator/io.hpp
         )

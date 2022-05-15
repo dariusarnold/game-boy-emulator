@@ -5,7 +5,7 @@ add_executable(game_boy_emulator_tests
         test_cpu.cpp
         test_mmu.cpp
         test_increment_instruction.cpp
-        test_call_intermediary.cpp
+        test_call_immediate.cpp
         test_load_register_from_register.cpp
         test_push_register.cpp
         test_rotate_left.cpp

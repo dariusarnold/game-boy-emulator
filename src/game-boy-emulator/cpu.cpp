@@ -1,6 +1,6 @@
 #include "cpu.hpp"
 #include "bitmanipulation.hpp"
-#include "instructions/callintermediary.hpp"
+#include "instructions/callimmediate.hpp"
 #include "instructions/copyregister.hpp"
 #include "instructions/increment.hpp"
 #include "instructions/pushregister.hpp"
@@ -257,7 +257,7 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
         = [&]() { return this->load_value_from_address(this->registers.de, this->registers.a); };
 
     instructions[opcodes::CALL_NN] = [&]() {
-        CallIntermediary call{
+        CallImmediate call{
             Memory{mmu}, MutableStack{MutableMemory{mmu}, make_mutable_register<registers::SP>()},
             make_mutable_register<registers::PC>()};
         return call.execute();

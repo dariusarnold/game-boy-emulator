@@ -18,8 +18,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/facades/programcounter.hpp
         game-boy-emulator/facades/stack.cpp
         game-boy-emulator/facades/stack.hpp
-        game-boy-emulator/instructions/callintermediary.cpp
-        game-boy-emulator/instructions/callintermediary.hpp
+        game-boy-emulator/instructions/callimmediate.cpp
+        game-boy-emulator/instructions/callimmediate.hpp
         game-boy-emulator/facades/memory.cpp
         game-boy-emulator/facades/memory.hpp
         game-boy-emulator/instructions/copyregister.cpp

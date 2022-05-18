@@ -2,6 +2,9 @@
 fmt/7.1.3
 catch2/2.13.6
 
+[options]
+fmt:header_only=True
+
 [generators]
 cmake_find_package
 cmake_paths

@@ -27,10 +27,6 @@ bool Cpu::step() {
     return true;
 }
 
-void Cpu::set_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom) {
-    mmu.map_boot_rom(boot_rom);
-}
-
 void Cpu::run() {
     while (step()) {
     }
@@ -46,9 +42,9 @@ void Cpu::xor8(uint8_t value) {
     set_carry_flag(BitValues::Inactive);
 }
 
-Cpu::Cpu(): Cpu(Verbosity::LEVEL_INFO){}
+Cpu::Cpu(IMmu& mmu): Cpu(mmu,Verbosity::LEVEL_INFO){}
 
-Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
+Cpu::Cpu(IMmu& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
 
     // This function is just to save typing
     auto ld_helper = [=](auto source, auto destination) {
@@ -85,8 +81,8 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
     Register<registers::BC> bc_mut{registers.bc};
     Register<registers::DE> de_mut{registers.de};
     Register<registers::HL> hl_mut{registers.hl};
-    MutableMemory mem_mut{mmu};
-    Memory mem{mmu};
+    MutableMemory mem_mut{m_mmu};
+    Memory mem{m_mmu};
     MutableStack stack_mut{mem_mut, sp_mut};
 
     instructions[opcodes::NOP] = [&]() {
@@ -173,7 +169,7 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
     };
 
     instructions[opcodes::INC_HL_INDIRECT] = [&]() {
-        auto x = this->mmu.read_byte(this->registers.hl);
+        auto x = this->m_mmu.read_byte(this->registers.hl);
         // TODO this is a workaround, there should be an Increment_Byte__Indirect to avoid passing
         // a fake template type
         Increment<registers::L> ib{Register<registers::L>{x},
@@ -181,7 +177,7 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>()};
         auto elapsed_cycles = ib.execute() + 8;
-        this->mmu.write_byte(this->registers.hl, x);
+        this->m_mmu.write_byte(this->registers.hl, x);
         return elapsed_cycles;
     };
 
@@ -251,7 +247,7 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
         return 4;
     };
     instructions[opcodes::XOR_HL] = [&]() {
-        this->xor8(this->mmu.read_byte(this->registers.hl));
+        this->xor8(this->m_mmu.read_byte(this->registers.hl));
         return 8;
     };
     instructions[opcodes::XOR_N] = [&]() {
@@ -273,13 +269,13 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
     };
     instructions[opcodes::JR] = [&]() { return this->jump_r(true); };
     instructions[opcodes::LDH_C_A] = [&]() {
-        this->mmu.write_byte(this->registers.c + 0xFF00, this->registers.a);
+        this->m_mmu.write_byte(this->registers.c + 0xFF00, this->registers.a);
         return 8;
     };
     instructions[opcodes::LDH_N_A] = [&]() {
-        uint16_t address = this->mmu.read_byte(this->registers.pc) + 0xFF00;
+        uint16_t address = this->m_mmu.read_byte(this->registers.pc) + 0xFF00;
         this->registers.pc++;
-        this->mmu.write_byte(address, this->registers.a);
+        this->m_mmu.write_byte(address, this->registers.a);
         return 12;
     };
     instructions[opcodes::LD_HL_A]
@@ -303,7 +299,7 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
 
     instructions[opcodes::CALL_NN] = [&]() {
         CallImmediate call{
-            Memory{mmu}, MutableStack{MutableMemory{mmu}, make_mutable_register<registers::SP>()},
+            Memory{m_mmu}, MutableStack{MutableMemory{m_mmu}, make_mutable_register<registers::SP>()},
             make_mutable_register<registers::PC>()};
         return call.execute();
     };
@@ -409,7 +405,7 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
 }
 
 t_cycle Cpu::ld8(uint8_t& input) {
-    const auto immediate = mmu.read_byte(registers.pc);
+    const auto immediate = m_mmu.read_byte(registers.pc);
     input = immediate;
     registers.pc++;
     return 8;
@@ -417,9 +413,9 @@ t_cycle Cpu::ld8(uint8_t& input) {
 
 t_cycle Cpu::indirect_hl(opcodes::OpCode op) {
     if (op == opcodes::LDD_HL_A or op == opcodes::LDI_HL_A) {
-        mmu.write_byte(registers.hl, registers.a);
+        m_mmu.write_byte(registers.hl, registers.a);
     } else if (op == opcodes::LDD_A_HL or op == opcodes::LDI_A_HL) {
-        registers.a = mmu.read_byte(registers.hl);
+        registers.a = m_mmu.read_byte(registers.hl);
     }
     if (op == opcodes::LDD_HL_A or op == opcodes::LDD_A_HL) {
         registers.hl--;
@@ -474,7 +470,7 @@ uint8_t Cpu::op_code_to_register(uint8_t opcode_byte) {
     case 5:
         return registers.l;
     case 6:
-        return mmu.read_byte(registers.hl);
+        return m_mmu.read_byte(registers.hl);
     case 7:
         return registers.a;
     default:
@@ -503,7 +499,7 @@ void Cpu::write_to_destination(uint8_t opcode_byte, uint8_t value) {
         registers.l = value;
         break;
     case 6:
-        mmu.write_byte(registers.hl, value);
+        m_mmu.write_byte(registers.hl, value);
         break;
     case 7:
         registers.a = value;
@@ -601,7 +597,7 @@ t_cycle Cpu::jump_r(bool condition_met) {
     // For C++20 this is defined behaviour since signed integers are twos complement
     // On older standards this is implementation defined
     // https://stackoverflow.com/questions/13150449/efficient-unsigned-to-signed-cast-avoiding-implementation-defined-behavior
-    auto immediate = static_cast<int8_t>(mmu.read_byte(registers.pc));
+    auto immediate = static_cast<int8_t>(m_mmu.read_byte(registers.pc));
     // We need to increment here, otherwise the jump is off by one address.
     // Reading = incrementing happens whether the jump happens or not.
     registers.pc++;
@@ -616,19 +612,19 @@ t_cycle Cpu::jump_r(bool condition_met) {
 }
 
 t_cycle Cpu::save_value_to_address(uint16_t address, uint8_t value) {
-    mmu.write_byte(address, value);
+    m_mmu.write_byte(address, value);
     return 8;
 }
 
 t_cycle Cpu::load_value_from_address(uint16_t address, uint8_t& value) {
-    value = mmu.read_byte(address);
+    value = m_mmu.read_byte(address);
     return 8;
 }
 
 opcodes::OpCode Cpu::fetch() {
-    auto opcode = opcodes::OpCode{mmu.read_byte(registers.pc)};
+    auto opcode = opcodes::OpCode{m_mmu.read_byte(registers.pc)};
     if (opcode == opcodes::CB) {
-        opcode = opcodes::OpCode{mmu.read_byte(registers.pc + 1), true};
+        opcode = opcodes::OpCode{m_mmu.read_byte(registers.pc + 1), true};
     }
     return opcode;
 }
@@ -655,8 +651,8 @@ std::string Cpu::get_minimal_debug_state() {
                        "PC: 00:{:04X} ({:02X} {:02X} {:02X} {:02X})",
                        registers.a, registers.f, registers.b, registers.c, registers.d, registers.e,
                        registers.h, registers.l, registers.sp, registers.pc,
-                       mmu.read_byte(registers.pc), mmu.read_byte(registers.pc + 1),
-                       mmu.read_byte(registers.pc + 2), mmu.read_byte(registers.pc + 3));
+                       m_mmu.read_byte(registers.pc), m_mmu.read_byte(registers.pc + 1),
+                       m_mmu.read_byte(registers.pc + 2), m_mmu.read_byte(registers.pc + 3));
 }
 
 void Cpu::print(std::string_view message, Verbosity level) {

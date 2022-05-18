@@ -1,11 +1,12 @@
 #pragma once
 
 #include "constants.h"
+#include "i_mmu.hpp"
 #include <array>
 #include <cstdint>
 
 
-class Mmu {
+class Mmu : public IMmu{
     std::array<uint8_t, constants::RAM_SIZE> ram = {0};
 
     /*
@@ -21,23 +22,23 @@ public:
     /**
      * Read memory value from address.
      */
-    [[nodiscard]] uint8_t read_byte(u_int16_t address) const;
+    [[nodiscard]] uint8_t read_byte(u_int16_t address) const override;
 
     /**
      * Read word from address.
      * Assumes that words are stored least significant byte first
      */
-    [[nodiscard]] uint16_t read_word(uint16_t address) const;
+    [[nodiscard]] uint16_t read_word(uint16_t address) const override;
 
     /**
      * Write value to ram at address.
      */
-    void write_byte(uint16_t address, uint8_t value);
+    void write_byte(uint16_t address, uint8_t value) override;
 
     /**
      * Write 2 byte wird to ram at address.
      */
-    void write_word(uint16_t address, uint16_t value);
+    void write_word(uint16_t address, uint16_t value) override;
 
     /**
      * Map boot rom at memory address 0x00

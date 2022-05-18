@@ -6,10 +6,10 @@
  * Facade for reading memory
  */
 class Memory {
-    const Mmu& m_mmu;
+    const IMmu& m_mmu;
 
 public:
-    explicit Memory(const Mmu& mmu);
+    explicit Memory(const IMmu& mmu);
 
     uint8_t read_byte(uint16_t address);
 
@@ -17,10 +17,10 @@ public:
 };
 
 class MutableMemory {
-    Mmu& m_mmu;
+    IMmu& m_mmu;
 
 public:
-    explicit MutableMemory(Mmu& mmu);
+    explicit MutableMemory(IMmu& mmu);
 
     uint8_t read_byte(uint16_t address);
 

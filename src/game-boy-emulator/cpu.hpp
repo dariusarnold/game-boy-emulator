@@ -5,10 +5,10 @@
 #include "facades/flag.hpp"
 #include "facades/programcounter.hpp"
 #include "facades/register.hpp"
-#include "mmu.hpp"
 #include "opcodes.hpp"
 
 #include "fmt/format.h"
+#include "i_mmu.hpp"
 
 #include <algorithm>
 #include <array>
@@ -105,7 +105,7 @@ enum class Verbosity {
 
 class Cpu {
     Registers registers = {};
-    Mmu mmu;
+    IMmu& m_mmu;
     // Number of cycles since execution start
     size_t cycles = 0;
     // Number of instructions executed since start
@@ -126,13 +126,8 @@ class Cpu {
     // Print considering the selected verbosity level
     void print(std::string_view message, Verbosity level);
 public:
-    Cpu();
-    explicit Cpu(Verbosity verbosity_);
-
-    /**
-     * Copy boot rom to first 256 bytes of ram.
-     */
-    void set_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom);
+    Cpu(IMmu& mmu);
+    explicit Cpu(IMmu& mmu, Verbosity verbosity_);
 
     /**
      * Start cpu.

@@ -4,6 +4,7 @@
 #include "cpu.hpp"
 
 #include "fmt/format.h"
+#include "mmu.hpp"
 
 #include <vector>
 #include <string>
@@ -52,8 +53,9 @@ TEST_CASE("Compare boot sequence") {
     auto boot_rom_path = std::filesystem::absolute(("dmg01-boot.bin"));
     auto boot_rom = load_boot_rom_file(boot_rom_path);
     REQUIRE(boot_rom);
-    Cpu cpu{Verbosity::LEVEL_NONE};
-    cpu.set_boot_rom(boot_rom.value());
+    Mmu mmu;
+    mmu.map_boot_rom(boot_rom.value());
+    Cpu cpu{mmu, Verbosity::LEVEL_NONE};
     for (auto i = 0; const auto& expected_line: expected_output) {
         auto actual_output = cpu.get_minimal_debug_state();
         INFO(fmt::format("Executing instruction number {}/{} ({:.2f}% done)", i, expected_output.size(), calculate_percentage(i, expected_output.size())));

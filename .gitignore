@@ -1,2 +1,5 @@
 *.asm
 *.bin
+
+.idea
+cmake-build-*

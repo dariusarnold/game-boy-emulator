@@ -1,5 +1,5 @@
 #include "constants.h"
-#include "cpu.hpp"
+#include "emulator.hpp"
 #include "io.hpp"
 #include "fmt/format.h"
 #include "fmt/ranges.h"
@@ -21,8 +21,7 @@ int main() {
         return -1;
     }
     print_container_hex(boot_rom.value());
-    Cpu cpu;
-    cpu.set_boot_rom(boot_rom.value());
-    cpu.run();
+    Emulator emulator(boot_rom);
+    emulator.run();
     return 0;
 }

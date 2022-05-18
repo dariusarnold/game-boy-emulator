@@ -36,6 +36,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/instructions/loadimmediateword.hpp
         game-boy-emulator/io.cpp
         game-boy-emulator/io.hpp
+        game-boy-emulator/emulator.cpp
+        game-boy-emulator/emulator.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

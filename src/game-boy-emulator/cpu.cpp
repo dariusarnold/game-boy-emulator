@@ -71,20 +71,20 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
     Register<registers::BC> bc{registers.bc};
     Register<registers::DE> de{registers.de};
     Register<registers::HL> hl{registers.hl};
-    MutableRegister<registers::A> a_mut{registers.a};
-    MutableRegister<registers::F> f_mut{registers.f};
-    MutableRegister<registers::B> b_mut{registers.b};
-    MutableRegister<registers::C> c_mut{registers.c};
-    MutableRegister<registers::D> d_mut{registers.d};
-    MutableRegister<registers::E> e_mut{registers.e};
-    MutableRegister<registers::H> h_mut{registers.h};
-    MutableRegister<registers::L> l_mut{registers.l};
-    MutableRegister<registers::SP> sp_mut{registers.sp};
-    MutableRegister<registers::PC> pc_mut{registers.pc};
-    MutableRegister<registers::AF> af_mut{registers.af};
-    MutableRegister<registers::BC> bc_mut{registers.bc};
-    MutableRegister<registers::DE> de_mut{registers.de};
-    MutableRegister<registers::HL> hl_mut{registers.hl};
+    Register<registers::A> a_mut{registers.a};
+    Register<registers::F> f_mut{registers.f};
+    Register<registers::B> b_mut{registers.b};
+    Register<registers::C> c_mut{registers.c};
+    Register<registers::D> d_mut{registers.d};
+    Register<registers::E> e_mut{registers.e};
+    Register<registers::H> h_mut{registers.h};
+    Register<registers::L> l_mut{registers.l};
+    Register<registers::SP> sp_mut{registers.sp};
+    Register<registers::PC> pc_mut{registers.pc};
+    Register<registers::AF> af_mut{registers.af};
+    Register<registers::BC> bc_mut{registers.bc};
+    Register<registers::DE> de_mut{registers.de};
+    Register<registers::HL> hl_mut{registers.hl};
     MutableMemory mem_mut{mmu};
     Memory mem{mmu};
     MutableStack stack_mut{mem_mut, sp_mut};
@@ -176,7 +176,7 @@ Cpu::Cpu(Verbosity verbosity_): verbosity(verbosity_) {
         auto x = this->mmu.read_byte(this->registers.hl);
         // TODO this is a workaround, there should be an Increment_Byte__Indirect to avoid passing
         // a fake template type
-        Increment<registers::L> ib{MutableRegister<registers::L>{x},
+        Increment<registers::L> ib{Register<registers::L>{x},
                                    make_mutable_flag<flags::zero>(),
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>()};

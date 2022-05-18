@@ -5,7 +5,7 @@ void ProgramCounterIncDec::increment() {
     m_pc.set(m_pc.get() + 1);
 }
 
-ProgramCounterIncDec::ProgramCounterIncDec(MutableRegister<registers::PC> pc) : m_pc(pc) {}
+ProgramCounterIncDec::ProgramCounterIncDec(Register<registers::PC> pc) : m_pc(pc) {}
 
 void ProgramCounterIncDec::decrement() {
     m_pc.set(m_pc.get() - 1);

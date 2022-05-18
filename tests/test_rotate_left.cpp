@@ -11,7 +11,7 @@ protected:
     MutableFlag<flags::half_carry> half_carry_flag{f};
     MutableFlag<flags::carry> carry_flag{f};
     uint8_t a;
-    MutableRegister<A> register_{a};
+    Register<A> register_{a};
 };
 
 TEST_CASE_METHOD(RotateLeftFixture, "Test rotate left instruction") {

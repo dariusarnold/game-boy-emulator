@@ -9,8 +9,8 @@ protected:
     uint8_t source_value = 0;
     uint8_t destination_value = 0;
     Register<A> source_register{source_value};
-    MutableRegister<A> sd_register{source_value};
-    MutableRegister<D> destination_register{destination_value};
+    Register<A> sd_register{source_value};
+    Register<D> destination_register{destination_value};
 
     void set_source_value(uint8_t val) {
         source_value = val;

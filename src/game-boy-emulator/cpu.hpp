@@ -157,35 +157,35 @@ private:
     Instruction decode(opcodes::OpCode opcode);
 
     template <typename T>
-    MutableRegister<T> make_mutable_register() {
+    Register<T> make_mutable_register() {
         if constexpr (std::is_same_v<T, registers::A>) {
-            return MutableRegister<T>{registers.a};
+            return Register<T>{registers.a};
         } else if constexpr (std::is_same_v<T, registers::B>) {
-            return MutableRegister<T>{registers.b};
+            return Register<T>{registers.b};
         } else if constexpr (std::is_same_v<T, registers::C>) {
-            return MutableRegister<T>{registers.c};
+            return Register<T>{registers.c};
         } else if constexpr (std::is_same_v<T, registers::D>) {
-            return MutableRegister<T>{registers.d};
+            return Register<T>{registers.d};
         } else if constexpr (std::is_same_v<T, registers::E>) {
-            return MutableRegister<T>{registers.e};
+            return Register<T>{registers.e};
         } else if constexpr (std::is_same_v<T, registers::F>) {
-            return MutableRegister<T>{registers.f};
+            return Register<T>{registers.f};
         } else if constexpr (std::is_same_v<T, registers::H>) {
-            return MutableRegister<T>{registers.h};
+            return Register<T>{registers.h};
         } else if constexpr (std::is_same_v<T, registers::L>) {
-            return MutableRegister<T>{registers.l};
+            return Register<T>{registers.l};
         } else if constexpr (std::is_same_v<T, registers::SP>) {
-            return MutableRegister<T>{registers.sp};
+            return Register<T>{registers.sp};
         } else if constexpr (std::is_same_v<T, registers::PC>) {
-            return MutableRegister<T>{registers.pc};
+            return Register<T>{registers.pc};
         } else if constexpr (std::is_same_v<T, registers::AF>) {
-            return MutableRegister<T>{registers.af};
+            return Register<T>{registers.af};
         } else if constexpr (std::is_same_v<T, registers::BC>) {
-            return MutableRegister<T>{registers.bc};
+            return Register<T>{registers.bc};
         } else if constexpr (std::is_same_v<T, registers::DE>) {
-            return MutableRegister<T>{registers.de};
+            return Register<T>{registers.de};
         } else if constexpr (std::is_same_v<T, registers::HL>) {
-            return MutableRegister<T>{registers.hl};
+            return Register<T>{registers.hl};
         }
     }
 

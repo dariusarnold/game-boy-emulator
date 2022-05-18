@@ -6,10 +6,10 @@ protected:
     Mmu mmu;
     MutableMemory mem{mmu};
     uint16_t sp = 0;
-    MutableRegister<registers::SP> register_sp{sp};
+    Register<registers::SP> register_sp{sp};
     MutableStack stack{mem, register_sp};
     uint16_t pc = 0;
-    MutableRegister<registers::PC> register_pc{pc};
+    Register<registers::PC> register_pc{pc};
     ProgramCounterJump program_counter{register_pc};
 };
 

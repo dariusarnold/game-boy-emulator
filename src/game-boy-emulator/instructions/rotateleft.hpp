@@ -9,20 +9,18 @@ class RotateLeft {
     MutableFlag<flags::subtract> subtract_flag;
     MutableFlag<flags::half_carry> half_carry_flag;
     MutableFlag<flags::carry> carry_flag;
-    MutableRegister<R> register_;
+    Register<R> register_;
     // If true, the bit which was rotated out is appended on the right side again.
     // If false, 0 will be appended.
     bool carry_bit = false;
 
 public:
     RotateLeft(MutableFlag<flags::zero> z, MutableFlag<flags::subtract> s,
-               MutableFlag<flags::half_carry> hc, MutableFlag<flags::carry> c,
-               MutableRegister<R> reg, bool carry_rotated_bit) :
+               MutableFlag<flags::half_carry> hc, MutableFlag<flags::carry> c, Register<R> reg, bool carry_rotated_bit) :
             zero_flag(z), subtract_flag(s), half_carry_flag(hc), carry_flag(c), register_(reg), carry_bit(carry_rotated_bit) {}
 
     RotateLeft(MutableFlag<flags::zero> z, MutableFlag<flags::subtract> s,
-               MutableFlag<flags::half_carry> hc, MutableFlag<flags::carry> c,
-               MutableRegister<R> reg) :
+               MutableFlag<flags::half_carry> hc, MutableFlag<flags::carry> c, Register<R> reg) :
             RotateLeft(z, s, hc, c, reg, false) {}
 
     unsigned int execute() {

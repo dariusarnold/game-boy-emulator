@@ -8,10 +8,10 @@
  */
 class CallImmediate {
     MutableStack stack;
-    MutableRegister<registers::PC> register_pc;
+    Register<registers::PC> register_pc;
     Memory memory;
 
 public:
-    CallImmediate(Memory mem, MutableStack push_stack, MutableRegister<registers::PC> reg_pc);
+    CallImmediate(Memory mem, MutableStack push_stack, Register<registers::PC> reg_pc);
     unsigned int execute();
 };

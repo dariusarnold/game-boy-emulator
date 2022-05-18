@@ -11,13 +11,13 @@
 template <typename T>
 class LoadImmediateWord {
 private:
-    MutableRegister<T> target_register;
-    MutableRegister<registers::PC> register_pc;
+    Register<T> target_register;
+    Register<registers::PC> register_pc;
     MutableStack stack;
     Memory memory;
 
 public:
-    LoadImmediateWord(MutableRegister<T> reg_target, MutableRegister<registers::PC> reg_pc,
+    LoadImmediateWord(Register<T> reg_target, Register<registers::PC> reg_pc,
                       MutableStack stack, Memory mem) :
             target_register(reg_target), register_pc(reg_pc), stack(stack), memory(mem) {}
 

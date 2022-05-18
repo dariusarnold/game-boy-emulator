@@ -1,6 +1,6 @@
 #include "callimmediate.hpp"
 
-CallImmediate::CallImmediate(Memory mem, MutableStack push_stack, MutableRegister<registers::PC> reg_pc) :
+CallImmediate::CallImmediate(Memory mem, MutableStack push_stack, Register<registers::PC> reg_pc) :
         stack(push_stack), register_pc(reg_pc), memory(mem) {}
 
 unsigned int CallImmediate::execute() {

@@ -9,7 +9,7 @@ protected:
     Register<BC> register_bc{bc};
     // Stack grows down, so we have to use a value != 0 here to avoid underflow
     uint16_t sp = 0x08;
-    MutableRegister<SP> register_sp{sp};
+    Register<SP> register_sp{sp};
     Mmu mmu;
     MutableMemory memory{mmu};
     MutableStack stack{memory, register_sp};

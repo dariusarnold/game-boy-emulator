@@ -7,10 +7,10 @@
  */
 class ProgramCounterIncDec {
 protected:
-    MutableRegister<registers::PC> m_pc;
+    Register<registers::PC> m_pc;
 
 public:
-    explicit ProgramCounterIncDec(MutableRegister<registers::PC> pc);
+    explicit ProgramCounterIncDec(Register<registers::PC> pc);
     void increment();
     void decrement();
 };

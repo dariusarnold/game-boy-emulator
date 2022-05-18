@@ -7,8 +7,8 @@ class IncrementTestFixture {
 protected:
     uint8_t a = 0;
     uint16_t hl = 0;
-    MutableRegister<A> a_register{a};
-    MutableRegister<HL> hl_register{hl};
+    Register<A> a_register{a};
+    Register<HL> hl_register{hl};
     uint8_t f = 0;
     MutableFlag<flags::half_carry> hc_flag{f};
     MutableFlag<flags::zero> zero_flag{f};

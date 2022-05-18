@@ -132,40 +132,19 @@ constexpr bool is_register_v = is_register<T>::value;
 
 
 /**
- * Facade for read only access to byte or word register.
- * @tparam T
- */
-template <typename T>
-class Register {
-    static_assert(registers::is_register_v<T>);
-
-public:
-    using underlying_type = std::conditional_t<registers::is_byte_register_v<T>, uint8_t, uint16_t>;
-
-    explicit Register(const underlying_type& input) : value(input) {}
-
-    const underlying_type& get() {
-        return value;
-    }
-
-private:
-    const underlying_type& value;
-};
-
-/**
  * Facade for read-write-access to a byte or word register.
  * @tparam T
  */
 template <typename T>
-struct MutableRegister {
+struct Register {
     static_assert(registers::is_register_v<T>);
 
 public:
     using underlying_type = std::conditional_t<registers::is_byte_register_v<T>, uint8_t, uint16_t>;
 
-    explicit MutableRegister(underlying_type& input) : value(input) {}
+    explicit Register(underlying_type& input) : value(input) {}
 
-    underlying_type get() {
+    underlying_type get() const {
         return value;
     }
 
@@ -173,7 +152,7 @@ public:
         value = new_value;
     }
 
-    void increment() {
+    void increment() const {
         value++;
     }
 

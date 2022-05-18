@@ -7,7 +7,7 @@
 
 template <typename T>
 class Increment {
-    MutableRegister<T> m_register;
+    Register<T> m_register;
     MutableFlag<flags::zero> zero_flag;
     MutableFlag<flags::subtract> subtract_flag;
     MutableFlag<flags::half_carry> half_carry_flag;
@@ -16,7 +16,7 @@ class Increment {
     struct WordRegisterTag {};
 
 public:
-    Increment(MutableRegister<T> reg, MutableFlag<flags::zero> z_flag,
+    Increment(Register<T> reg, MutableFlag<flags::zero> z_flag,
                    MutableFlag<flags::subtract> s_flag, MutableFlag<flags::half_carry> hc_flag) :
             m_register(reg), zero_flag(z_flag), subtract_flag(s_flag), half_carry_flag(hc_flag) {}
 

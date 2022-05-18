@@ -11,10 +11,10 @@
  */
 class MutableStack {
     MutableMemory mem;
-    MutableRegister<registers::SP> sp;
+    Register<registers::SP> sp;
 
 public:
-    MutableStack(MutableMemory m, MutableRegister<registers::SP> sp_register);
+    MutableStack(MutableMemory m, Register<registers::SP> sp_register);
     /**
      * Push word onto stack.
      */

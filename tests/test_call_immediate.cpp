@@ -10,10 +10,10 @@ protected:
     Memory memory{mmu};
     MutableMemory mutable_memory{mmu};
     uint16_t sp = 0;
-    MutableRegister<SP> register_sp{sp};
+    Register<SP> register_sp{sp};
     MutableStack stack{mutable_memory, register_sp};
     uint16_t pc = 0;
-    MutableRegister<PC> register_pc{pc};
+    Register<PC> register_pc{pc};
 
     /**
      * Writes target location in place of immediate data after pc.

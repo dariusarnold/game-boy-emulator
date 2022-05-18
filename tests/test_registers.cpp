@@ -44,10 +44,10 @@ TEST_CASE("Writing to the value should update all registers for that value") {
     CHECK(r1.get() == 1);
 }
 
-TEST_CASE("Writing through MutableRegister should update all registers for that value") {
+TEST_CASE("Writing through Register should update all registers for that value") {
     uint8_t a = 0;
-    MutableRegister<registers::A> r1{a};
-    MutableRegister<registers::A> r2{a};
+    Register<registers::A> r1{a};
+    Register<registers::A> r2{a};
     r2.set(1);
     CHECK(r1.get() == 1);
 }

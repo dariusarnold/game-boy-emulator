@@ -91,49 +91,49 @@ Cpu::Cpu(IMmu& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
     };
 
     instructions[opcodes::INC_A] = [&]() {
-        Increment<registers::A> ib{make_mutable_register<registers::A>(),
+        IncrementByte<registers::A> ib{make_mutable_register<registers::A>(),
                                    make_mutable_flag<flags::zero>(),
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>()};
         return ib.execute();
     };
     instructions[opcodes::INC_B] = [&]() {
-        Increment<registers::B> ib{make_mutable_register<registers::B>(),
+        IncrementByte<registers::B> ib{make_mutable_register<registers::B>(),
                                    make_mutable_flag<flags::zero>(),
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>()};
         return ib.execute();
     };
     instructions[opcodes::INC_C] = [&]() {
-        Increment<registers::C> ib{make_mutable_register<registers::C>(),
+        IncrementByte<registers::C> ib{make_mutable_register<registers::C>(),
                                    make_mutable_flag<flags::zero>(),
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>()};
         return ib.execute();
     };
     instructions[opcodes::INC_D] = [&]() {
-        Increment<registers::D> ib{make_mutable_register<registers::D>(),
+        IncrementByte<registers::D> ib{make_mutable_register<registers::D>(),
                                    make_mutable_flag<flags::zero>(),
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>()};
         return ib.execute();
     };
     instructions[opcodes::INC_E] = [&]() {
-        Increment<registers::E> ib{make_mutable_register<registers::E>(),
+        IncrementByte<registers::E> ib{make_mutable_register<registers::E>(),
                                    make_mutable_flag<flags::zero>(),
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>()};
         return ib.execute();
     };
     instructions[opcodes::INC_H] = [&]() {
-        Increment<registers::H> ib{make_mutable_register<registers::H>(),
+        IncrementByte<registers::H> ib{make_mutable_register<registers::H>(),
                                    make_mutable_flag<flags::zero>(),
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>()};
         return ib.execute();
     };
     instructions[opcodes::INC_L] = [&]() {
-        Increment<registers::L> ib{make_mutable_register<registers::L>(),
+        IncrementByte<registers::L> ib{make_mutable_register<registers::L>(),
                                    make_mutable_flag<flags::zero>(),
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>()};
@@ -141,31 +141,19 @@ Cpu::Cpu(IMmu& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
     };
 
     instructions[opcodes::INC_BC] = [&]() {
-        Increment<registers::BC> ib{make_mutable_register<registers::BC>(),
-                                    make_mutable_flag<flags::zero>(),
-                                    make_mutable_flag<flags::subtract>(),
-                                    make_mutable_flag<flags::half_carry>()};
+        IncrementWord<registers::BC> ib{make_mutable_register<registers::BC>()};
         return ib.execute();
     };
     instructions[opcodes::INC_DE] = [&]() {
-        Increment<registers::DE> ib{make_mutable_register<registers::DE>(),
-                                    make_mutable_flag<flags::zero>(),
-                                    make_mutable_flag<flags::subtract>(),
-                                    make_mutable_flag<flags::half_carry>()};
+        IncrementWord<registers::DE> ib{make_mutable_register<registers::DE>()};
         return ib.execute();
     };
     instructions[opcodes::INC_HL] = [&]() {
-        Increment<registers::HL> ib{make_mutable_register<registers::HL>(),
-                                    make_mutable_flag<flags::zero>(),
-                                    make_mutable_flag<flags::subtract>(),
-                                    make_mutable_flag<flags::half_carry>()};
+        IncrementWord<registers::HL> ib{make_mutable_register<registers::HL>()};
         return ib.execute();
     };
     instructions[opcodes::INC_SP] = [&]() {
-        Increment<registers::SP> ib{make_mutable_register<registers::SP>(),
-                                    make_mutable_flag<flags::zero>(),
-                                    make_mutable_flag<flags::subtract>(),
-                                    make_mutable_flag<flags::half_carry>()};
+        IncrementWord<registers::SP> ib{make_mutable_register<registers::SP>()};
         return ib.execute();
     };
 
@@ -173,7 +161,7 @@ Cpu::Cpu(IMmu& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
         auto x = this->m_mmu.read_byte(this->registers.hl);
         // TODO this is a workaround, there should be an Increment_Byte__Indirect to avoid passing
         // a fake template type
-        Increment<registers::L> ib{Register<registers::L>{x},
+        IncrementByte<registers::L> ib{Register<registers::L>{x},
                                    make_mutable_flag<flags::zero>(),
                                    make_mutable_flag<flags::subtract>(),
                                    make_mutable_flag<flags::half_carry>()};

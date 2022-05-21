@@ -16,7 +16,7 @@ bool Cpu::step() {
     current_instruction = fetch();
     auto instruction = decode(current_instruction);
     if (not instruction) {
-        print(fmt::format("Encountered unsupported opcode {:02X} at {:pc}.\n", current_instruction.value, registers), Verbosity::LEVEL_ERROR);
+        print(fmt::format("Encountered unsupported opcode {} at {:pc}.\n", current_instruction, registers), Verbosity::LEVEL_ERROR);
         print(get_minimal_debug_state() + "\n", Verbosity::LEVEL_ERROR);
         print(fmt::format("Ran for {} instructions.\n", instructions_executed), Verbosity::LEVEL_INFO);
         return false;

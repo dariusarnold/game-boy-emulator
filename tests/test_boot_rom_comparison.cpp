@@ -55,7 +55,7 @@ TEST_CASE("Compare boot sequence") {
     REQUIRE(boot_rom);
     Mmu mmu;
     mmu.map_boot_rom(boot_rom.value());
-    Cpu cpu{mmu, Verbosity::LEVEL_NONE};
+    Cpu cpu{mmu, Verbosity::LEVEL_ERROR};
     for (auto i = 0; const auto& expected_line: expected_output) {
         auto actual_output = cpu.get_minimal_debug_state();
         INFO(fmt::format("Executing instruction number {}/{} ({:.2f}% done. Last instruction: {})",
@@ -63,6 +63,6 @@ TEST_CASE("Compare boot sequence") {
                          cpu.get_current_instruction()));
         ++i;
         REQUIRE_THAT(actual_output, StringEqualAlignedOutput(expected_line));
-        cpu.step();
+        REQUIRE(cpu.step());
     }
 }

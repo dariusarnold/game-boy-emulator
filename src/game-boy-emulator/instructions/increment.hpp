@@ -36,16 +36,8 @@ public:
         bool bit_3_before = bitmanip::is_bit_set(m_register.get(), 3);
         m_register.set(m_register.get() + 1);
         bool bit_3_after = bitmanip::is_bit_set(m_register.get(), 3);
-        if (bit_3_before and not bit_3_after) {
-            half_carry_flag.set_active();
-        } else {
-            half_carry_flag.set_inactive();
-        }
-        if (m_register.get() == 0) {
-            zero_flag.set_active();
-        } else {
-            zero_flag.set_inactive();
-        }
+        half_carry_flag.set(bit_3_before and not bit_3_after);
+        zero_flag.set(m_register.get() == 0);
         subtract_flag.set_inactive();
         return 4;
     }
@@ -55,19 +47,7 @@ public:
      * @return Number of cycles for execution
      */
     unsigned int _execute(WordRegisterTag) {
-        bool bit_11_before = bitmanip::is_bit_set(m_register.get(), 11);
         m_register.set(m_register.get() + 1);
-        bool bit_11_after = bitmanip::is_bit_set(m_register.get(), 11);
-        if (bit_11_before and not bit_11_after) {
-            half_carry_flag.set_active();
-        } else {
-            half_carry_flag.set_inactive();
-        }
-        if (m_register.get() == 0) {
-            zero_flag.set_active();
-        } else {
-            zero_flag.set_inactive();
-        }        subtract_flag.set_inactive();
         return 8;
     }
 };

@@ -69,29 +69,29 @@ TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register") {
     CHECK(subtract_flag.read() == false);
 }
 
-TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register half carry flag") {
+TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register half carry flag unaffected") {
     hl = 0b0000'1111'1111'1111;
     Increment<HL> increment{hl_register, zero_flag, subtract_flag, hc_flag};
     auto cycles = increment.execute();
     CHECK(cycles == 8);
     CHECK(hl == 0b0000'1111'1111'1111 + 1);
-    CHECK(hc_flag.read() == true);
+    CHECK(hc_flag.read() == false);
     CHECK(zero_flag.read() == false);
     CHECK(subtract_flag.read() == false);
 }
 
-TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register setting zero flag") {
+TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register not setting zero flag") {
     hl = 0xFFFF;
     Increment<HL> increment{hl_register, zero_flag, subtract_flag, hc_flag};
     auto cycles = increment.execute();
     CHECK(cycles == 8);
     CHECK(hl == 0);
-    CHECK(hc_flag.read() == true);
-    CHECK(zero_flag.read() == true);
+    CHECK(hc_flag.read() == false);
+    CHECK(zero_flag.read() == false);
     CHECK(subtract_flag.read() == false);
 }
 
-TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register resetting zero flag") {
+TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register not resetting zero flag") {
     hl = 0x0101;
     zero_flag.set_active();
     Increment<HL> increment{hl_register, zero_flag, subtract_flag, hc_flag};
@@ -99,6 +99,6 @@ TEST_CASE_METHOD(IncrementTestFixture, "Test increment 2 byte register resetting
     CHECK(cycles == 8);
     CHECK(hl == 0x0102);
     CHECK(hc_flag.read() == false);
-    CHECK(zero_flag.read() == false);
+    CHECK(zero_flag.read() == true);
     CHECK(subtract_flag.read() == false);
 }

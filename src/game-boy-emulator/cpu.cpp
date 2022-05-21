@@ -182,6 +182,41 @@ Cpu::Cpu(IMmu& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
         return elapsed_cycles;
     };
 
+    instructions[opcodes::DEC_A] = [this]() {
+        this->dec8(registers.a);
+        return 4;
+    };
+
+    instructions[opcodes::DEC_B] = [this]() {
+        this->dec8(registers.b);
+        return 4;
+    };
+
+    instructions[opcodes::DEC_C] = [this]() {
+        this->dec8(registers.c);
+        return 4;
+    };
+
+    instructions[opcodes::DEC_D] = [this]() {
+        this->dec8(registers.d);
+        return 4;
+    };
+
+    instructions[opcodes::DEC_E] = [this]() {
+        this->dec8(registers.e);
+        return 4;
+    };
+
+    instructions[opcodes::DEC_H] = [this]() {
+        this->dec8(registers.h);
+        return 4;
+    };
+
+    instructions[opcodes::DEC_L] = [this]() {
+        this->dec8(registers.l);
+        return 4;
+    };
+
     instructions[opcodes::LD_B_N] = [&]() {
         return this->ld8(registers.b);
     };
@@ -668,6 +703,16 @@ opcodes::OpCode Cpu::get_current_instruction() {
 
 opcodes::OpCode Cpu::get_previous_instruction() {
     return previous_instruction;
+}
+
+void Cpu::dec8(uint8_t& input) {
+    bool hc = ((input & 0xf) - 1) == 0x10;
+    set_half_carry_flag(hc ? BitValues::Active : BitValues::Inactive);
+    input -= 1;
+    if (input == 0) {
+        set_zero_flag(BitValues::Active);
+    }
+    set_subtract_flag(BitValues::Active);
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

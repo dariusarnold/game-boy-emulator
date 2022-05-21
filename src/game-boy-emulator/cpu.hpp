@@ -221,6 +221,12 @@ private:
     void xor8(uint8_t input);
 
     /**
+     * Common function for all 1 byte decrement instructions
+     * @param input
+     */
+    void dec8(uint8_t& input);
+
+    /**
      * Common function for all 8 byte loads (LD).
      * @param input Reference to register into which to load the immediate value
      */

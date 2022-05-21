@@ -51,6 +51,14 @@ namespace opcodes {
     constexpr OpCode INC_DE{0x13};
     constexpr OpCode INC_HL{0x23};
     constexpr OpCode INC_SP{0x33};
+    // Decrement 1 byte register
+    constexpr OpCode DEC_A{0x3D};
+    constexpr OpCode DEC_B{0x05};
+    constexpr OpCode DEC_C{0x0D};
+    constexpr OpCode DEC_D{0x15};
+    constexpr OpCode DEC_E{0x1D};
+    constexpr OpCode DEC_H{0x25};
+    constexpr OpCode DEC_L{0x2D};
     // Load 2 byte immediate to register
     constexpr OpCode LD_BC_NN{0x01};
     constexpr OpCode LD_DE_NN{0x11};

@@ -12,16 +12,17 @@
 
 
 bool Cpu::step() {
-    auto opcode = fetch();
-    auto instruction = decode(opcode);
+    previous_instruction = current_instruction;
+    current_instruction = fetch();
+    auto instruction = decode(current_instruction);
     if (not instruction) {
-        print(fmt::format("Encountered unsupported opcode {:02X} at {:pc}.\n", opcode.value, registers), Verbosity::LEVEL_ERROR);
+        print(fmt::format("Encountered unsupported opcode {:02X} at {:pc}.\n", current_instruction.value, registers), Verbosity::LEVEL_ERROR);
         print(get_minimal_debug_state() + "\n", Verbosity::LEVEL_ERROR);
         print(fmt::format("Ran for {} instructions.\n", instructions_executed), Verbosity::LEVEL_INFO);
         return false;
     }
-    print(fmt::format("Executing {} 0x{:02X}\n", opcode.extendend ? "0xCB" : "", opcode.value), Verbosity::LEVEL_INFO);
-    registers.pc += opcode.extendend ? 2 : 1;
+    print(fmt::format("Executing {} 0x{:02X}\n", current_instruction.extendend ? "0xCB" : "", current_instruction.value), Verbosity::LEVEL_INFO);
+    registers.pc += current_instruction.extendend ? 2 : 1;
     cycles += instruction();
     instructions_executed++;
     return true;
@@ -659,6 +660,14 @@ void Cpu::print(std::string_view message, Verbosity level) {
     if (static_cast<int>(level) <= static_cast<int>(verbosity)) {
         fmt::print(message);
     }
+}
+
+opcodes::OpCode Cpu::get_current_instruction() {
+    return current_instruction;
+}
+
+opcodes::OpCode Cpu::get_previous_instruction() {
+    return previous_instruction;
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

@@ -111,6 +111,9 @@ class Cpu {
     // Number of instructions executed since start
     size_t instructions_executed = 0;
 
+    opcodes::OpCode current_instruction = opcodes::NOP;
+    opcodes::OpCode previous_instruction = opcodes::NOP;
+
     /**
      * Function which modifies CPU state according to the instruction and returns the number of
      * cycles.
@@ -141,6 +144,9 @@ public:
     bool step();
 
     std::string get_minimal_debug_state();
+
+    opcodes::OpCode get_current_instruction();
+    opcodes::OpCode get_previous_instruction();
 
 private:
 

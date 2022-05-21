@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <string>
+#include <fmt/format.h>
+
 
 namespace opcodes {
 
@@ -180,3 +182,37 @@ namespace std {
         }
     };
 } // namespace std
+
+
+template <>
+struct fmt::formatter<opcodes::OpCode> {
+
+    std::string format_string;
+
+    /**
+     * Parse until closing curly brace '}' is hit.
+     * @param context Contains format string after :, meaning '{:f}' becomes 'f}'.
+     * @return iterator past the end of the parsed range
+     */
+    auto parse(fmt::format_parse_context& context) {
+        if (context.begin() == context.end()) {
+            // No format string was specified
+            return context.begin();
+        }
+        auto it = std::find(context.begin(), context.end(), '}');
+        if (it == context.end()) {
+            throw fmt::format_error("Invalid format");
+        } else {
+            format_string.assign(context.begin(), it);
+        }
+        return it;
+    }
+
+    template <typename FormatContext>
+    auto format(const opcodes::OpCode& opcode, FormatContext& context) {
+        if (opcode.extendend) {
+            return format_to(context.out(), "0xCB {:02X}", opcode.value);
+        }
+        return format_to(context.out(), "{:02X}", opcode.value);
+    }
+};

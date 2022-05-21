@@ -34,6 +34,6 @@ namespace bitmanip {
 
     uint8_t rotate_left(uint8_t x);
 
-    uint8_t rotate_left_carry(uint8_t x);
+    uint8_t rotate_left_carry(uint8_t x, bool& carry_flag);
 
 } // namespace bitmanip

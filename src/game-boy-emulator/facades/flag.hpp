@@ -41,4 +41,13 @@ public:
     void set_inactive() {
         bitmanip::unset(flag_register, as_integral(f));
     }
+
+    bool set(bool new_value) {
+        if (new_value) {
+            set_active();
+        } else {
+            set_inactive();
+        }
+        return read();
+    }
 };

@@ -85,9 +85,37 @@ TEST_CASE_METHOD(RotateLeftFixture, "Test rotate left instruction resetting carr
     CHECK_FALSE(carry_flag.read());
 }
 
-TEST_CASE_METHOD(RotateLeftFixture, "Test rotate left instruction with carry bit") {
+TEST_CASE_METHOD(RotateLeftFixture, "Test rotate left instruction with carry through carry flag") {
     a = 0x80;
     RotateLeft rl{zero_flag, subtract_flag, half_carry_flag, carry_flag, register_, true};
     rl.execute();
+    CHECK(a == 0x00);
+    CHECK(carry_flag.read());
+}
+
+TEST_CASE_METHOD(RotateLeftFixture, "Test rotate left instruction with carry flag set") {
+    a = 0x80;
+    carry_flag.set_active();
+    RotateLeft rl{zero_flag, subtract_flag, half_carry_flag, carry_flag, register_, true};
+    rl.execute();
     CHECK(a == 0x01);
+    CHECK(carry_flag.read());
+}
+
+TEST_CASE_METHOD(RotateLeftFixture, "Test rotate left instruction with carry flag set2") {
+    a = 0xCE;
+    carry_flag.set_inactive();
+    RotateLeft rl{zero_flag, subtract_flag, half_carry_flag, carry_flag, register_, true};
+    rl.execute();
+    CHECK(a == 0x9C);
+    CHECK(carry_flag.read());
+}
+
+TEST_CASE_METHOD(RotateLeftFixture, "Test rotate left without carry flag set") {
+    a = 0xCE;
+    carry_flag.set_active();
+    RotateLeft rl{zero_flag, subtract_flag, half_carry_flag, carry_flag, register_, true};
+    rl.execute();
+    CHECK(a == 0x9D);
+    CHECK(carry_flag.read());
 }

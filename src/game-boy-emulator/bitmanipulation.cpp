@@ -33,8 +33,12 @@ namespace bitmanip {
         return (x << 1);
     }
 
-    uint8_t rotate_left_carry(uint8_t x) {
-        return (x << 1) | (x >> 7);
+    uint8_t rotate_left_carry(uint8_t x, bool& carry_flag) {
+        bool prev_carry_flag = carry_flag;
+        carry_flag = is_bit_set(x, 7);
+        x = x << 1;
+        set(x, 0, prev_carry_flag ? BitValues::Active : BitValues::Inactive);
+        return x;
     }
 
 

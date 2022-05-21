@@ -67,9 +67,26 @@ TEST_CASE("Rotate left") {
     CHECK(bitmanip::rotate_left(0xCE) == 0x9C);
 }
 
-TEST_CASE("Rotate left with carry") {
-    CHECK(bitmanip::rotate_left_carry(0x00) == 0x00);
-    CHECK(bitmanip::rotate_left_carry(0b0000'0001) == 0b0000'0010);
-    CHECK(bitmanip::rotate_left_carry(0b1000'0001) == 0b0000'0011);
-    CHECK(bitmanip::rotate_left_carry(0xCE) == 0x9D);
+TEST_CASE("Rotate left through carry bit without flag") {
+    bool flag = false;
+    CHECK(bitmanip::rotate_left_carry(0x00, flag) == 0x00);
+    CHECK_FALSE(flag);
+}
+
+TEST_CASE("Rotate left through carry bit with flag") {
+    bool flag = true;
+    CHECK(bitmanip::rotate_left_carry(0x00, flag) == 0x01);
+    CHECK_FALSE(flag);
+}
+
+TEST_CASE("Rotate left through carry bit with flag and with carrying") {
+    bool flag = true;
+    CHECK(bitmanip::rotate_left_carry(0b1100'1110, flag) == 0b1001'1101);
+    CHECK(flag);
+}
+
+TEST_CASE("Rotate left through carry bit without flag and with carrying") {
+    bool flag = false;
+    CHECK(bitmanip::rotate_left_carry(0b1100'1110, flag) == 0b1001'1100);
+    CHECK(flag);
 }

@@ -426,6 +426,23 @@ Cpu::Cpu(IMmu& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
         PopStack<registers::HL> pop_stack{hl_mut, stack_mut};
         return pop_stack.execute();
     };
+
+    instructions[opcodes::CP_A] = [this](){ return cp(registers.a, registers.a); };
+    instructions[opcodes::CP_B] = [this](){ return cp(registers.a, registers.b); };
+    instructions[opcodes::CP_C] = [this](){ return cp(registers.a, registers.c); };
+    instructions[opcodes::CP_D] = [this](){ return cp(registers.a, registers.d); };
+    instructions[opcodes::CP_E] = [this](){ return cp(registers.a, registers.e); };
+    instructions[opcodes::CP_H] = [this](){ return cp(registers.a, registers.h); };
+    instructions[opcodes::CP_L] = [this](){ return cp(registers.a, registers.l); };
+    instructions[opcodes::CP_HL] = [this]() {
+        auto value = m_mmu.read_byte(registers.hl);
+        return cp(registers.a, value);
+    };
+    instructions[opcodes::CP_N] = [&](){
+        auto value = m_mmu.read_byte(registers.pc);
+        registers.pc++;
+        return cp(registers.a, value);
+    };
 }
 
 t_cycle Cpu::ld8(uint8_t& input) {
@@ -694,13 +711,24 @@ opcodes::OpCode Cpu::get_previous_instruction() {
 }
 
 void Cpu::dec8(uint8_t& input) {
-    bool hc = ((input & 0xf) - 1) == 0x10;
+    bool hc = internal::was_half_carry(input, 1, std::minus<>());
     set_half_carry_flag(hc ? BitValues::Active : BitValues::Inactive);
     input -= 1;
     if (input == 0) {
         set_zero_flag(BitValues::Active);
     }
     set_subtract_flag(BitValues::Active);
+}
+
+t_cycle Cpu::cp(uint8_t a, uint8_t value) {
+    set_zero_flag(a == value ? BitValues::Active : BitValues::Inactive);
+    set_subtract_flag(BitValues::Active);
+
+    const auto hc = internal::was_half_carry(a, value, std::minus<>());
+    set_half_carry_flag(hc ? BitValues::Active : BitValues::Inactive);
+
+    set_carry_flag(a < value ? BitValues::Active : BitValues::Inactive);
+    return 8;
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

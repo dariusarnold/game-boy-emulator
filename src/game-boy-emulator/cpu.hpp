@@ -247,6 +247,14 @@ private:
     t_cycle cb(uint8_t instruction_byte);
 
     /**
+     * Base function for comparison opcodes
+     * @param value
+     * @param a
+     * @return
+     */
+    t_cycle cp(uint8_t a, uint8_t value);
+
+    /**
      * Common function for all bit test instructions.
      * Test if bit at position in value is set and sets zero flag accordingly.
      * @param value
@@ -296,4 +304,10 @@ namespace internal {
      * Resolve second byte of CB opcodes to bit position on which this instructions operates.
      */
     uint8_t op_code_to_bit(uint8_t opcode_byte);
+
+    template <typename F>
+    bool was_half_carry(uint8_t a, uint8_t b, const F& operation) {
+        bool hc = operation((a & 0xf), (b & 0xf)) == 0x10;
+        return hc;
+    }
 } // namespace internal

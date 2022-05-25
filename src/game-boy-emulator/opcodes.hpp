@@ -178,6 +178,16 @@ namespace opcodes {
     constexpr OpCode POP_DE{0xD1};
     constexpr OpCode POP_HL{0xE1};
     constexpr OpCode POP_AF{0xF1};
+    // Compare immediate value or register against register
+    constexpr OpCode CP_N{0xFE};
+    constexpr OpCode CP_A{0xBF};
+    constexpr OpCode CP_B{0xB8};
+    constexpr OpCode CP_C{0xB9};
+    constexpr OpCode CP_D{0xBA};
+    constexpr OpCode CP_E{0xBB};
+    constexpr OpCode CP_H{0xBC};
+    constexpr OpCode CP_L{0xBD};
+    constexpr OpCode CP_HL{0xBE};
 
 } // namespace opcodes
 

@@ -8,3 +8,6 @@ TEST_CASE("OpCode to bit mapping for CB instructions") {
     CHECK(internal::op_code_to_bit(static_cast<uint8_t>(step * 8 + i)) == step);
 }
 
+TEST_CASE("Half carry helper function") {
+    CHECK(internal::was_half_carry(62, 34, std::plus<>()));
+}

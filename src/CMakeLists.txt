@@ -90,6 +90,7 @@ if (WARNINGS_ENABLED)
             # Initializing a class member from itself is a nasty and hard to spot bug, so we turn it
             # into a warning. Clang has the flag but wont do anything, but gcc spots the error.
             -Werror=init-self
+            -Werror=delete-abstract-non-virtual-dtor
             )
     endif()
 endif()

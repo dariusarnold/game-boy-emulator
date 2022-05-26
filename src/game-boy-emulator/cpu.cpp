@@ -302,6 +302,12 @@ Cpu::Cpu(IMmu& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
         this->m_mmu.write_byte(address, this->registers.a);
         return 12;
     };
+    instructions[opcodes::LDH_A_N] = [this]() {
+        const uint16_t address = m_mmu.read_byte(registers.pc) + 0xFF00;
+        registers.pc++;
+        registers.a = m_mmu.read_byte(address);
+        return 12;
+    };
     instructions[opcodes::LD_HL_A]
         = [&]() { return this->save_value_to_address(this->registers.hl, this->registers.a); };
     instructions[opcodes::LD_HL_B]

@@ -86,6 +86,7 @@ namespace opcodes {
     constexpr OpCode LDH_C_A{0xE2};
     // Save A to address pointed at by 8 bit immediate + 0xFF00
     constexpr OpCode LDH_N_A{0xE0};
+    constexpr OpCode LDH_A_N{0xF0};
     // Save a to address pointed at by BC
     constexpr OpCode LD_A_BC{0x0A};
     // Save a to address pointed at by DE

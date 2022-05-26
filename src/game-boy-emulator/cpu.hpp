@@ -307,7 +307,7 @@ namespace internal {
 
     template <typename F>
     bool was_half_carry(uint8_t a, uint8_t b, const F& operation) {
-        bool hc = operation((a & 0xf), (b & 0xf)) == 0x10;
+        bool hc = operation((a & 0xf), (b & 0xf)) & 0x10;
         return hc;
     }
 } // namespace internal

@@ -444,6 +444,18 @@ Cpu::Cpu(IMmu& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
         registers.pc++;
         return cp(registers.a, value);
     };
+    instructions[opcodes::LD_NN_A] = [this]() {
+        const auto address = m_mmu.read_word(registers.pc);
+        registers.pc += 2;
+        m_mmu.write_byte(address, registers.a);
+        return 16;
+    };
+    instructions[opcodes::LD_A_NN] = [this]() {
+        const auto address = m_mmu.read_word(registers.pc);
+        registers.pc += 2;
+        registers.a = m_mmu.read_byte(address);
+        return 16;
+    };
 }
 
 t_cycle Cpu::ld8(uint8_t& input) {

@@ -188,6 +188,8 @@ namespace opcodes {
     constexpr OpCode CP_H{0xBC};
     constexpr OpCode CP_L{0xBD};
     constexpr OpCode CP_HL{0xBE};
+    constexpr OpCode LD_NN_A{0xEA};
+    constexpr OpCode LD_A_NN{0xFA};
 
 } // namespace opcodes
 

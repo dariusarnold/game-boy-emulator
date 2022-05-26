@@ -410,7 +410,8 @@ Cpu::Cpu(IMmu& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
         auto hc_flag = make_mutable_flag<flags::half_carry>();
         auto c_flag = make_mutable_flag<flags::carry>();
         RotateLeft<registers::A> rla(z_flag, s_flag, hc_flag, c_flag,
-                                     make_mutable_register<registers::A>(), true);
+                                     make_mutable_register<registers::A>(), true,
+                                     ZeroFlagSetMode::AlwaysOff);
         return rla.execute();
     };
 
@@ -594,37 +595,37 @@ t_cycle Cpu::cb(uint8_t instruction_byte) {
         auto c_flag = make_mutable_flag<flags::carry>();
         if (instruction_byte == opcodes::RL_A.value) {
             RotateLeft<registers::A> rla(z_flag, s_flag, hc_flag, c_flag,
-                                         make_mutable_register<registers::A>(), true);
+                                         make_mutable_register<registers::A>());
             return rla.execute();
         }
         if (instruction_byte == opcodes::RL_B.value) {
             RotateLeft<registers::B> rlb(z_flag, s_flag, hc_flag, c_flag,
-                                         make_mutable_register<registers::B>(), true);
+                                         make_mutable_register<registers::B>());
             return rlb.execute();
         }
         if (instruction_byte == opcodes::RL_C.value) {
             RotateLeft<registers::C> rlc(z_flag, s_flag, hc_flag, c_flag,
-                                         make_mutable_register<registers::C>(), true);
+                                         make_mutable_register<registers::C>());
             return rlc.execute();
         }
         if (instruction_byte == opcodes::RL_D.value) {
             RotateLeft<registers::D> rld(z_flag, s_flag, hc_flag, c_flag,
-                                         make_mutable_register<registers::D>(), true);
+                                         make_mutable_register<registers::D>());
             return rld.execute();
         }
         if (instruction_byte == opcodes::RL_E.value) {
             RotateLeft<registers::E> rle(z_flag, s_flag, hc_flag, c_flag,
-                                         make_mutable_register<registers::E>(), true);
+                                         make_mutable_register<registers::E>());
             return rle.execute();
         }
         if (instruction_byte == opcodes::RL_H.value) {
             RotateLeft<registers::H> rlh(z_flag, s_flag, hc_flag, c_flag,
-                                         make_mutable_register<registers::H>(), true);
+                                         make_mutable_register<registers::H>());
             return rlh.execute();
         }
         if (instruction_byte == opcodes::RL_L.value) {
             RotateLeft<registers::L> rll(z_flag, s_flag, hc_flag, c_flag,
-                                         make_mutable_register<registers::L>(), true);
+                                         make_mutable_register<registers::L>());
             return rll.execute();
         }
     } else {

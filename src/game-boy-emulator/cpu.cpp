@@ -715,9 +715,7 @@ void Cpu::dec8(uint8_t& input) {
     bool hc = internal::was_half_carry(input, 1, std::minus<>());
     set_half_carry_flag(hc ? BitValues::Active : BitValues::Inactive);
     input -= 1;
-    if (input == 0) {
-        set_zero_flag(BitValues::Active);
-    }
+    set_zero_flag(input == 0 ? BitValues::Active : BitValues::Inactive);
     set_subtract_flag(BitValues::Active);
 }
 

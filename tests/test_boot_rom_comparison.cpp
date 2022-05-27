@@ -64,9 +64,11 @@ TEST_CASE("Compare boot sequence") {
     Cpu cpu{mmu, Verbosity::LEVEL_ERROR};
     for (auto i = 0; const auto& expected_line: expected_output) {
         auto actual_output = cpu.get_minimal_debug_state();
-        INFO(fmt::format("Executing instruction number {}/{} ({:.2f}% done. Last instructions: {} {})",
+        INFO(fmt::format("Executing instruction number {}/{} ({:.2f}% done. Last instructions: {} "
+                         "{}.\n CPU state: {})",
                          i, expected_output.size(), calculate_percentage(i, expected_output.size()),
-                         cpu.get_current_instruction(), cpu.get_previous_instruction()));
+                         cpu.get_current_instruction(), cpu.get_previous_instruction(),
+                         cpu.get_minimal_debug_state()));
         ++i;
         REQUIRE_THAT(actual_output, StringEqualAlignedOutput(expected_line));
         REQUIRE(cpu.step());

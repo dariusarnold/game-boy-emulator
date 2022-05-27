@@ -473,6 +473,17 @@ Cpu::Cpu(IMemoryAccess& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbos
         auto value = m_mmu.read_byte(registers.hl);
         return sub(value);
     };
+    instructions[opcodes::ADD_A_A] = [this]() { return add(registers.a); };
+    instructions[opcodes::ADD_A_B] = [this]() { return add(registers.b); };
+    instructions[opcodes::ADD_A_C] = [this]() { return add(registers.c); };
+    instructions[opcodes::ADD_A_D] = [this]() { return add(registers.d); };
+    instructions[opcodes::ADD_A_E] = [this]() { return add(registers.e); };
+    instructions[opcodes::ADD_A_H] = [this]() { return add(registers.h); };
+    instructions[opcodes::ADD_A_L] = [this]() { return add(registers.l); };
+    instructions[opcodes::ADD_A_HL] = [this]() {
+        auto value = m_mmu.read_byte(registers.hl);
+        return add(value);
+    };
 }
 
 t_cycle Cpu::ld8(uint8_t& input) {
@@ -767,6 +778,17 @@ t_cycle Cpu::sub(uint8_t value) {
                             : BitValues::Inactive);
     set_carry_flag(registers.a < value ? BitValues::Active : BitValues::Inactive);
     registers.a -= value;
+    return 4;
+}
+
+t_cycle Cpu::add(uint8_t value) {
+    set_zero_flag(static_cast<int>(registers.a) + static_cast<int>(value) == 256 ? BitValues::Active : BitValues::Inactive);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(internal::was_half_carry(registers.a, value, std::plus<>())
+                            ? BitValues::Active
+                            : BitValues::Inactive);
+    set_carry_flag(internal::was_carry(registers.a, value, std::plus<>()) ? BitValues::Active : BitValues::Inactive);
+    registers.a += value;
     return 4;
 }
 

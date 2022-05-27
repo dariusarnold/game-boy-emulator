@@ -262,6 +262,13 @@ private:
     t_cycle sub(uint8_t value);
 
     /**
+     * Base function for add from a opcodes
+     * @param value
+     * @return
+     */
+    t_cycle add(uint8_t value);
+
+    /**
      * Common function for all bit test instructions.
      * Test if bit at position in value is set and sets zero flag accordingly.
      * @param value
@@ -316,5 +323,11 @@ namespace internal {
     bool was_half_carry(uint8_t a, uint8_t b, const F& operation) {
         bool hc = operation((a & 0xf), (b & 0xf)) & 0x10;
         return hc;
+    }
+
+    template <typename F>
+    bool was_carry(uint8_t a, uint8_t b, const F& operation) {
+        bool c = operation(static_cast<uint16_t>(a), static_cast<uint16_t>(b)) & 0x100;
+        return c;
     }
 } // namespace internal

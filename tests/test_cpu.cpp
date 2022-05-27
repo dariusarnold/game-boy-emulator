@@ -13,3 +13,8 @@ TEST_CASE("Half carry helper function") {
     CHECK_FALSE(internal::was_half_carry(0b01010000, 0b10100000, std::plus<>()));
     CHECK(internal::was_half_carry(16, 52, std::minus<>()));
 }
+
+TEST_CASE("Carry helper function") {
+    CHECK(internal::was_carry(255, 1, std::plus<>()));
+    CHECK_FALSE(internal::was_carry(254, 1, std::plus<>()));
+}

@@ -8,7 +8,7 @@ protected:
     uint16_t bc = 0x1234;
     Register<BC> register_bc{bc};
     // Stack grows down, so we have to use a value != 0 here to avoid underflow
-    uint16_t sp = 0x08;
+    uint16_t sp = 0xC100;
     Register<SP> register_sp{sp};
     Mmu mmu;
     MutableMemory memory{mmu};
@@ -24,6 +24,6 @@ TEST_CASE_METHOD(PopStackFixture, "Popping 2 bytes from stack into BC register")
     auto cycles = pop_stack.execute();
     CHECK(cycles == 12);
     CHECK(bc == val);
-    CHECK(sp == 0x08);
+    CHECK(sp == 0xC100);
 }
 

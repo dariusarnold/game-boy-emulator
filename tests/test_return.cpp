@@ -16,7 +16,7 @@ protected:
 TEST_CASE_METHOD(ReturnTestFixture, "Test return instruction") {
     // Setup: Push two addresses on stack. The first one (0xDEAD) will be the one at the top
     // of the stack after returning and the second one should be the new value of PC.
-    sp = 0x1234;
+    sp = 0xC101;
     stack.push(0xDEAD);
     stack.push(0xBEEF);
     Return r{stack, program_counter};

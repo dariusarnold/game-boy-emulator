@@ -8,7 +8,7 @@ protected:
     uint16_t bc = 0x1234;
     Register<BC> register_bc{bc};
     // Stack grows down, so we have to use a value != 0 here to avoid underflow
-    uint16_t sp = 0x08;
+    uint16_t sp = 0xC102;
     Register<SP> register_sp{sp};
     Mmu mmu;
     MutableMemory memory{mmu};
@@ -21,5 +21,5 @@ TEST_CASE_METHOD(PushRegisterFixture, "Pushing register to stack") {
     auto cycles = push_register_on_stack.execute();
     CHECK(cycles == 16);
     CHECK(stack.peek() == bc);
-    CHECK(sp == 0x06);
+    CHECK(sp == 0xC100);
 }

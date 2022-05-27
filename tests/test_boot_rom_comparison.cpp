@@ -5,6 +5,8 @@
 
 #include "fmt/format.h"
 #include "mmu.hpp"
+#include "gpu.hpp"
+#include "apu.hpp"
 
 #include <vector>
 #include <string>
@@ -54,13 +56,17 @@ TEST_CASE("Compare boot sequence") {
     auto boot_rom = load_boot_rom_file(boot_rom_path);
     REQUIRE(boot_rom);
     Mmu mmu;
+    Gpu gpu;
+    Apu apu;
     mmu.map_boot_rom(boot_rom.value());
+    mmu.map_memory_range(gpu.get_mappable_memory());
+    mmu.map_memory_range(apu.get_mappable_memory());
     Cpu cpu{mmu, Verbosity::LEVEL_ERROR};
     for (auto i = 0; const auto& expected_line: expected_output) {
         auto actual_output = cpu.get_minimal_debug_state();
-        INFO(fmt::format("Executing instruction number {}/{} ({:.2f}% done. Last instruction: {})",
+        INFO(fmt::format("Executing instruction number {}/{} ({:.2f}% done. Last instructions: {} {})",
                          i, expected_output.size(), calculate_percentage(i, expected_output.size()),
-                         cpu.get_current_instruction()));
+                         cpu.get_current_instruction(), cpu.get_previous_instruction()));
         ++i;
         REQUIRE_THAT(actual_output, StringEqualAlignedOutput(expected_line));
         REQUIRE(cpu.step());

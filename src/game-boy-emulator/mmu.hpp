@@ -2,23 +2,24 @@
 
 #include "constants.h"
 #include "i_mmu.hpp"
+#include "memory_range.hpp"
 #include <array>
 #include <cstdint>
+#include <span>
+#include <memory>
 
 
-class Mmu : public IMmu{
-    std::array<uint8_t, constants::RAM_SIZE> ram = {0};
 
-    /*
-     * Helpful for catching uninitialized reads during debugging.
-     * Since the ram size is fixed and small, we can just use a copy of the
-     * normal ram and dont have to bitpack it.
-     */
-    const uint8_t unitialized = 0;
-    const uint8_t initialized = 1;
-    std::array<uint8_t, constants::RAM_SIZE> shadow_ram = {unitialized};
+
+
+class Mmu : public IMemoryAccess {
+    std::vector<IMemoryRange*> memory_accessors;
+
+    // The returned reference may be invalidated by mapping further memory accessors.
+    [[nodiscard]] IMemoryRange& get_memory_accessor(uint16_t address) const;
 
 public:
+    Mmu();
     /**
      * Read memory value from address.
      */
@@ -44,4 +45,7 @@ public:
      * Map boot rom at memory address 0x00
      */
     void map_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom);
+
+    void map_memory_range(IMemoryRange* memory_range);
+    void map_memory_range(const std::vector<IMemoryRange*>& memory_ranges);
 };

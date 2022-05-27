@@ -90,3 +90,7 @@ TEST_CASE("Rotate left through carry bit without flag and with carrying") {
     CHECK(bitmanip::rotate_left_carry(0b1100'1110, flag) == 0b1001'1100);
     CHECK(flag);
 }
+
+TEST_CASE("Create word from two bytes") {
+    CHECK(bitmanip::word_from_bytes(0x12, 0x34) == 0x1234);
+}

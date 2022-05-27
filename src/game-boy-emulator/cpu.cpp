@@ -43,9 +43,9 @@ void Cpu::xor8(uint8_t value) {
     set_carry_flag(BitValues::Inactive);
 }
 
-Cpu::Cpu(IMmu& mmu): Cpu(mmu,Verbosity::LEVEL_INFO){}
+Cpu::Cpu(IMemoryAccess& mmu): Cpu(mmu,Verbosity::LEVEL_INFO){}
 
-Cpu::Cpu(IMmu& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
+Cpu::Cpu(IMemoryAccess& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbosity_) {
 
     // This function is just to save typing
     auto ld_helper = [=](auto source, auto destination) {

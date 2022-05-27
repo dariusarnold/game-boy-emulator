@@ -1,7 +1,7 @@
 #include "memory.hpp"
 
 
-Memory::Memory(const IMmu& mmu) : m_mmu(mmu) {}
+Memory::Memory(const IMemoryAccess& mmu) : m_mmu(mmu) {}
 
 uint8_t Memory::read_byte(uint16_t address) {
     return m_mmu.read_byte(address);
@@ -11,7 +11,7 @@ uint16_t Memory::read_word(uint16_t address) {
     return m_mmu.read_word(address);
 }
 
-MutableMemory::MutableMemory(IMmu& mmu): m_mmu(mmu) {}
+MutableMemory::MutableMemory(IMemoryAccess& mmu): m_mmu(mmu) {}
 
 uint8_t MutableMemory::read_byte(uint16_t address) {
     return m_mmu.read_byte(address);

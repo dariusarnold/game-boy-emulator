@@ -105,7 +105,7 @@ enum class Verbosity {
 
 class Cpu {
     Registers registers = {};
-    IMmu& m_mmu;
+    IMemoryAccess& m_mmu;
     // Number of cycles since execution start
     size_t cycles = 0;
     // Number of instructions executed since start
@@ -129,8 +129,8 @@ class Cpu {
     // Print considering the selected verbosity level
     void print(std::string_view message, Verbosity level);
 public:
-    Cpu(IMmu& mmu);
-    explicit Cpu(IMmu& mmu, Verbosity verbosity_);
+    Cpu(IMemoryAccess& mmu);
+    explicit Cpu(IMemoryAccess& mmu, Verbosity verbosity_);
 
     /**
      * Start cpu.

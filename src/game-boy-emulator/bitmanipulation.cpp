@@ -41,5 +41,9 @@ namespace bitmanip {
         return x;
     }
 
+    uint16_t word_from_bytes(uint8_t high_byte, uint8_t low_byte) {
+        return (high_byte << constants::BYTE_SIZE) + low_byte;
+    }
+
 
     } // namespace bitmanip

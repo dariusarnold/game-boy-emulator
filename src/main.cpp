@@ -20,8 +20,9 @@ int main() {
     if (!boot_rom) {
         return -1;
     }
+
     print_container_hex(boot_rom.value());
-    Emulator emulator(boot_rom);
+    Emulator emulator(boot_rom.value());
     emulator.run();
     return 0;
 }

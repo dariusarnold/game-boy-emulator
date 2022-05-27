@@ -20,9 +20,14 @@ int main() {
     if (!boot_rom) {
         return -1;
     }
+    auto rom_path = std::filesystem::absolute("../../PokemonRed.gb");
+    auto game_rom = load_rom_file(rom_path);
+    if (game_rom.empty()) {
+        return -1;
+    }
 
     print_container_hex(boot_rom.value());
-    Emulator emulator(boot_rom.value());
+    Emulator emulator(boot_rom.value(), game_rom);
     emulator.run();
     return 0;
 }

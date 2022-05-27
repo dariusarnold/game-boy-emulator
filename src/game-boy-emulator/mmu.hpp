@@ -45,6 +45,7 @@ public:
      * Map boot rom at memory address 0x00
      */
     void map_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom);
+    void map_cartridge(const std::vector<uint8_t>& game_rom);
     void unmap_boot_rom();
 
     void map_memory_range(IMemoryRange* memory_range);

@@ -45,6 +45,11 @@ void Mmu::map_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot
     map_memory_range(q);
 }
 
+void Mmu::map_cartridge(const std::vector<uint8_t>& game_rom) {
+    auto* p = new MemoryRange(0x0, game_rom.size() - 1, game_rom.begin(), game_rom.end());
+    map_memory_range(p);
+}
+
 uint16_t Mmu::read_word(uint16_t address) const {
     auto& p = get_memory_accessor(address);
     return p.read_word(address);

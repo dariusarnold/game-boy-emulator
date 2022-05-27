@@ -255,6 +255,13 @@ private:
     t_cycle cp(uint8_t a, uint8_t value);
 
     /**
+     * Base function for subtract from a opcodes
+     * @param value
+     * @return
+     */
+    t_cycle sub(uint8_t value);
+
+    /**
      * Common function for all bit test instructions.
      * Test if bit at position in value is set and sets zero flag accordingly.
      * @param value

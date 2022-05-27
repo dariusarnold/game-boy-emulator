@@ -191,6 +191,14 @@ namespace opcodes {
     constexpr OpCode CP_HL{0xBE};
     constexpr OpCode LD_NN_A{0xEA};
     constexpr OpCode LD_A_NN{0xFA};
+    constexpr OpCode SUB_A_B{0x90};
+    constexpr OpCode SUB_A_C{0x91};
+    constexpr OpCode SUB_A_D{0x92};
+    constexpr OpCode SUB_A_E{0x93};
+    constexpr OpCode SUB_A_H{0x94};
+    constexpr OpCode SUB_A_L{0x95};
+    constexpr OpCode SUB_A_HL{0x96};
+    constexpr OpCode SUB_A_A{0x97};
 
 } // namespace opcodes
 

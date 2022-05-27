@@ -102,6 +102,7 @@ if (WARNINGS_ENABLED)
             $<$<CXX_COMPILER_ID:GNU>:-Werror=overflow>
             -Werror=return-type
             -Werror=uninitialized
+            $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
             )
     endif()
 endif()

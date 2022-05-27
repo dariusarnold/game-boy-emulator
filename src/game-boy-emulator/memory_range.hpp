@@ -22,8 +22,8 @@ public:
     MemoryRange(uint16_t begin, uint16_t end);
     // Construct by filling with existing data
     template <typename It>
-    MemoryRange(uint16_t begin_address, uint16_t end_address, It begin_data, It end_data) :
-            memory(begin_data, end_data), begin_address(begin_address), end_address(end_address) {}
+    MemoryRange(uint16_t begin_addr, uint16_t end_addr, It begin_data, It end_data) :
+            memory(begin_data, end_data), begin_address(begin_addr), end_address(end_addr) {}
 
     [[nodiscard]] uint16_t get_begin_address() const override;
 

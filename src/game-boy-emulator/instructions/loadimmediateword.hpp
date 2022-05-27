@@ -18,8 +18,8 @@ private:
 
 public:
     LoadImmediateWord(Register<T> reg_target, Register<registers::PC> reg_pc,
-                      MutableStack stack, Memory mem) :
-            target_register(reg_target), register_pc(reg_pc), stack(stack), memory(mem) {}
+                      MutableStack stack_, Memory mem) :
+            target_register(reg_target), register_pc(reg_pc), stack(stack_), memory(mem) {}
 
     unsigned int execute() {
         auto immediate_data = memory.read_word(register_pc.get());

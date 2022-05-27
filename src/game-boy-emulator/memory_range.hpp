@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <vector>
+#include <cassert>
 
 
 /**
@@ -23,7 +24,10 @@ public:
     // Construct by filling with existing data
     template <typename It>
     MemoryRange(uint16_t begin_addr, uint16_t end_addr, It begin_data, It end_data) :
-            memory(begin_data, end_data), begin_address(begin_addr), end_address(end_addr) {}
+            memory(begin_data, end_data), begin_address(begin_addr), end_address(end_addr) {
+        assert(std::distance(begin_data, end_data) == (end_addr - begin_addr + 1)
+               && "MemoryRange data and address range differ");
+    }
 
     [[nodiscard]] uint16_t get_begin_address() const override;
 

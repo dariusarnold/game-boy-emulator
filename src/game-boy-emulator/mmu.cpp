@@ -17,7 +17,7 @@ void Mmu::write_byte(uint16_t address, uint8_t value) {
 }
 
 void Mmu::map_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom) {
-    auto*p = new MemoryRange(0x0, 0x100, boot_rom.begin(), boot_rom.end());
+    auto*p = new MemoryRange(0x0, 0xFF, boot_rom.begin(), boot_rom.end());
     map_memory_range(p);
 
     // The logo should be stored on the cartridge, but for now just use this since it is required
@@ -65,6 +65,8 @@ IMemoryRange& Mmu::get_memory_accessor(uint16_t address) const {
 }
 
 void Mmu::map_memory_range(IMemoryRange* memory_range) {
+    fmt::print("Mapping memory range {:#02x}-{:#02x}\n", memory_range->get_begin_address(),
+               memory_range->get_end_address());
     memory_accessors.push_back(memory_range);
 }
 
@@ -100,6 +102,7 @@ void Mmu::map_memory_range(const std::vector<IMemoryRange*>& memory_ranges) {
 }
 
 void Mmu::unmap_boot_rom() {
+    fmt::print("Unmapping boot rom after successful bootup\n");
     unmap_memory_range(0x100);
 }
 

@@ -489,6 +489,10 @@ Cpu::Cpu(IMemoryAccess& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbos
         registers.pc = address;
         return 16;
     };
+    instructions[opcodes::DI] = [this]() {
+        interrupt_master_enable_flag = false;
+        return 4;
+    };
 }
 
 t_cycle Cpu::ld8(uint8_t& input) {

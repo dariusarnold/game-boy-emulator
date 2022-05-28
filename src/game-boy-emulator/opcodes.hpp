@@ -209,8 +209,10 @@ namespace opcodes {
     constexpr OpCode ADD_A_A{0x87};
     // Unconditional jump
     constexpr OpCode JP_NN{0xC3};
+    // Disable interrupts
+    constexpr OpCode DI{0xF3};
 
-} // namespace opcodes
+    } // namespace opcodes
 
 // hash specialization for std::unordered_map
 namespace std {

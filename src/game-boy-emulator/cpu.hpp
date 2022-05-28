@@ -126,6 +126,8 @@ class Cpu {
     // Controlls logging to stdout
     Verbosity verbosity;
 
+    bool interrupt_master_enable_flag;
+
     // Print considering the selected verbosity level
     void print(std::string_view message, Verbosity level);
 public:

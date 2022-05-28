@@ -9,6 +9,7 @@
 
 #include "fmt/format.h"
 #include "i_mmu.hpp"
+#include "memory_range.hpp"
 
 #include <algorithm>
 #include <array>
@@ -128,6 +129,9 @@ class Cpu {
 
     bool interrupt_master_enable_flag;
 
+    MemoryRange interrupt_flag;
+    MemoryRange interrupt_enable;
+
     // Print considering the selected verbosity level
     void print(std::string_view message, Verbosity level);
 public:
@@ -144,6 +148,8 @@ public:
      * Execute single step. Returns false if opcode at current program counter is invalid, else true
      */
     bool step();
+
+    std::vector<IMemoryRange*> get_mappable_memory();
 
     std::string get_minimal_debug_state();
 

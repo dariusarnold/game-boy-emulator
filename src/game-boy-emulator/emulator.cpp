@@ -17,5 +17,6 @@ void Emulator::run() {
     mmu.map_memory_range(gpu.get_mappable_memory());
     mmu.map_memory_range(apu.get_mappable_memory());
     Cpu cpu(mmu);
+    mmu.map_memory_range(cpu.get_mappable_memory());
     cpu.run();
 }

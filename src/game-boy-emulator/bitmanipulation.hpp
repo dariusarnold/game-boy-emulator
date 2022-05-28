@@ -22,6 +22,12 @@ namespace bitmanip {
         return (input & (1 << position)) > 0;
     }
 
+    template <typename T>
+    uint8_t bit_value(T input, int position) {
+        static_assert(std::is_integral_v<T>);
+        return (input >> position) & 1;
+    }
+
     // Get most significant byte
     uint8_t get_high_byte(uint16_t x);
     // Get least significant byte
@@ -38,4 +44,6 @@ namespace bitmanip {
 
     uint16_t word_from_bytes(uint8_t high_byte, uint8_t low_byte);
 
-} // namespace bitmanip
+    std::array<uint8_t, 8> convert_tiles(uint8_t byte1, uint8_t byte2);
+
+    } // namespace bitmanip

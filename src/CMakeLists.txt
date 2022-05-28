@@ -58,6 +58,8 @@ add_executable(game_boy_emulator
         )
 target_link_libraries(game_boy_emulator PRIVATE
         game_boy_emulator_library
+        SFML::graphics
+        SFML::window
         )
 
 set(CMAKE_VERBOSE_MAKEFILE ON)

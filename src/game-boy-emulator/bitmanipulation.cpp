@@ -44,6 +44,15 @@ namespace bitmanip {
     uint16_t word_from_bytes(uint8_t high_byte, uint8_t low_byte) {
         return (high_byte << constants::BYTE_SIZE) + low_byte;
     }
+    std::array<uint8_t, 8> convert_tiles(uint8_t byte1, uint8_t byte2)  {
+        std::array<uint8_t, 8> pixels = {0};
+        for (int i = 7; i >= 0; --i) {
+            auto msb = bitmanip::bit_value(byte2, i);
+            auto lsb = bitmanip::bit_value(byte1, i);
+            pixels[7 - i] = (msb << 1) + lsb;
+        }
+        return pixels;
+    }
 
 
     } // namespace bitmanip

@@ -94,3 +94,34 @@ TEST_CASE("Rotate left through carry bit without flag and with carrying") {
 TEST_CASE("Create word from two bytes") {
     CHECK(bitmanip::word_from_bytes(0x12, 0x34) == 0x1234);
 }
+
+TEST_CASE("All bits set") {
+    uint8_t x = 0xFF;
+    auto i = GENERATE(range(0, 8));
+    CHECK(bitmanip::bit_value(x, i) == 1);
+}
+
+TEST_CASE("No bits set") {
+    uint8_t x = 0x0;
+    auto i = GENERATE(range(0, 8));
+    CHECK(bitmanip::bit_value(x, i) == 0);
+}
+
+TEST_CASE("Accessing bits") {
+    uint8_t x = 0b10101010;
+    CHECK(bitmanip::bit_value(x, 0) == 0);
+    CHECK(bitmanip::bit_value(x, 7) == 1);
+}
+
+TEST_CASE("Tile conversion1") {
+    auto result = bitmanip::convert_tiles(0x3C, 0x7E);
+    std::array<uint8_t, 8> expected_result = {0b00, 0b10, 0b11, 0b11, 0b11, 0b11, 0b10, 0b00};
+    CHECK(result == expected_result);
+}
+
+TEST_CASE("Tile conversion2") {
+
+    auto result = bitmanip::convert_tiles(0x7C, 0x56);
+    std::array<uint8_t, 8> expected_result = {0b00, 0b11, 0b01, 0b11, 0b01, 0b11, 0b10, 0b00};
+    CHECK(result == expected_result);
+}

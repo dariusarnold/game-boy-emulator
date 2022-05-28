@@ -51,5 +51,5 @@ public:
     void map_memory_range(IMemoryRange* memory_range);
     void map_memory_range(const std::vector<IMemoryRange*>& memory_ranges);
 
-    void unmap_memory_range(uint16_t address);
+    void unmap_memory_range(uint16_t begin_address, uint16_t end_address);
 };

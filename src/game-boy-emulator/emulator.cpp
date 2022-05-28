@@ -12,6 +12,7 @@ void Emulator::run() {
     Mmu mmu;
     Gpu gpu;
     Apu apu;
+    mmu.map_cartridge(m_game_rom);
     mmu.map_boot_rom(m_boot_rom);
     mmu.map_memory_range(gpu.get_mappable_memory());
     mmu.map_memory_range(apu.get_mappable_memory());

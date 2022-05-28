@@ -42,11 +42,11 @@ void Mmu::map_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot
         0x0, 0x0 /* global checksum */};
     auto* q = new MemoryRange(0x100, 0x100 + cartridge_header.size() - 1, cartridge_header.begin(),
                               cartridge_header.end());
-    map_memory_range(q);
+    //map_memory_range(q);
 }
 
 void Mmu::map_cartridge(const std::vector<uint8_t>& game_rom) {
-    auto* p = new MemoryRange(0x0, game_rom.size() - 1, game_rom.begin(), game_rom.end());
+    auto* p = new MemoryRange(0x0, 0x7FFF, game_rom.begin(), game_rom.begin() + 0x7FFF + 1);
     map_memory_range(p);
 }
 
@@ -108,16 +108,19 @@ void Mmu::map_memory_range(const std::vector<IMemoryRange*>& memory_ranges) {
 
 void Mmu::unmap_boot_rom() {
     fmt::print("Unmapping boot rom after successful bootup\n");
-    unmap_memory_range(0x100);
+    unmap_memory_range(0x0, 0xFF);
 }
 
-void Mmu::unmap_memory_range(uint16_t address) {
+void Mmu::unmap_memory_range(uint16_t begin_address, uint16_t end_address) {
     auto it = std::find_if(memory_accessors.begin(), memory_accessors.end(),
-                           [address](const IMemoryRange* accessor) {
-                               return accessor->is_address_in_mapped_range(address);
+                           [begin_address, end_address](const IMemoryRange* accessor) {
+                               return accessor->get_begin_address() == begin_address
+                                      && accessor->get_end_address() == end_address;
                            });
     if (it == memory_accessors.end()) {
-        throw std::logic_error(fmt::format("Trying to unmapped non mapped address {}", address));
+        throw std::logic_error(
+            fmt::format("Trying to unmapped non mapped address range {:#04X}-{:#04X}",
+                        begin_address, end_address));
     }
     memory_accessors.erase(it);
 }

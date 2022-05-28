@@ -484,6 +484,11 @@ Cpu::Cpu(IMemoryAccess& mmu, Verbosity verbosity_): m_mmu(mmu), verbosity(verbos
         auto value = m_mmu.read_byte(registers.hl);
         return add(value);
     };
+    instructions[opcodes::JP_NN] = [this]() {
+        auto address = m_mmu.read_word(registers.pc);
+        registers.pc = address;
+        return 16;
+    };
 }
 
 t_cycle Cpu::ld8(uint8_t& input) {

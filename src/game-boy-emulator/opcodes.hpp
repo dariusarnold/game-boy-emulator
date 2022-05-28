@@ -207,6 +207,8 @@ namespace opcodes {
     constexpr OpCode ADD_A_L{0x85};
     constexpr OpCode ADD_A_HL{0x86};
     constexpr OpCode ADD_A_A{0x87};
+    // Unconditional jump
+    constexpr OpCode JP_NN{0xC3};
 
 } // namespace opcodes
 

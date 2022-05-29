@@ -42,7 +42,8 @@ void Mmu::map_boot_rom(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot
         0x0, 0x0 /* global checksum */};
     auto* q = new MemoryRange(0x100, 0x100 + cartridge_header.size() - 1, cartridge_header.begin(),
                               cartridge_header.end());
-    //map_memory_range(q);
+    // This is required for unit tests
+    map_memory_range(q);
 }
 
 void Mmu::map_cartridge(const std::vector<uint8_t>& game_rom) {
@@ -108,6 +109,13 @@ void Mmu::map_memory_range(const std::vector<IMemoryRange*>& memory_ranges) {
 
 void Mmu::unmap_boot_rom() {
     fmt::print("Unmapping boot rom after successful bootup\n");
+    auto it = std::find_if(memory_accessors.begin(), memory_accessors.end(),
+                           [](const IMemoryRange* accessor) {
+                               return accessor->get_begin_address() == 0x8000
+                                      && accessor->get_end_address() == 0x9FFF;
+                           });
+    auto mem = dynamic_cast<MemoryRange*>(*it);
+    fmt::print("[{:#02X}]\n", fmt::join(mem->memory, ", "));
     unmap_memory_range(0x0, 0xFF);
 }
 

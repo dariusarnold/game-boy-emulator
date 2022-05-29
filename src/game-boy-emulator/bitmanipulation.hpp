@@ -2,6 +2,8 @@
 
 #include "constants.h"
 #include <cstdint>
+#include <span>
+#include "fmt/format.h"
 
 namespace bitmanip {
      /**
@@ -45,5 +47,12 @@ namespace bitmanip {
     uint16_t word_from_bytes(uint8_t high_byte, uint8_t low_byte);
 
     std::array<uint8_t, 8> convert_tiles(uint8_t byte1, uint8_t byte2);
+    std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data);
+
+    template <typename It>
+    void map_gb_color_to_rgba(It begin, It end) {
+        constexpr uint32_t palette[4] = {0xff0fbc9b, 0xff0fac8b, 0xff306230, 0xff0f380f,};
+        std::for_each(begin, end, [palette](auto& x) { x = palette[x]; });
+    }
 
     } // namespace bitmanip

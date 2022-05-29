@@ -1,3 +1,5 @@
+#include <span>
+#include <fmt/core.h>
 #include "bitmanipulation.hpp"
 
 namespace bitmanip {
@@ -44,6 +46,12 @@ namespace bitmanip {
     uint16_t word_from_bytes(uint8_t high_byte, uint8_t low_byte) {
         return (high_byte << constants::BYTE_SIZE) + low_byte;
     }
+
+    /*
+     * Convert two bytes of a tile (which represent a row of 8 pixels) to the 4 color values
+     * available on the game boy.
+     * Will return an array of values 0b0, 0b01, 0b10, 0b11, which has to be colorized by a palette.
+     */
     std::array<uint8_t, 8> convert_tiles(uint8_t byte1, uint8_t byte2)  {
         std::array<uint8_t, 8> pixels = {0};
         for (int i = 7; i >= 0; --i) {
@@ -53,6 +61,24 @@ namespace bitmanip {
         }
         return pixels;
     }
+
+    /**
+    * VRAM has space for 384 tiles, where each tile is 16 bytes.
+    * This takes one tile and converts it from the 2bpp format to rgba format
+     */
+    std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
+        std::array<uint32_t, 64> out;
+        for (int i = 0; i < 16; i += 2) {
+            auto row = bitmanip::convert_tiles(tile_data[i], tile_data[i + 1]);
+            for (int j = 0; j < row.size(); j++) {
+                auto index = (i / 2) * 8 + j;
+                out[index] = row[j];
+            }
+        }
+        return out;
+    }
+
+
 
 
     } // namespace bitmanip

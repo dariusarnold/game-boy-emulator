@@ -14,11 +14,10 @@
  * memory access for an address range.
  */
 class MemoryRange : public IMemoryRange {
-    std::vector<uint8_t> memory;
     uint16_t begin_address;
     uint16_t end_address;
-
 public:
+    std::vector<uint8_t> memory;
     // Construct with empty storage
     MemoryRange(uint16_t begin, uint16_t end);
     // Construct by filling with existing data

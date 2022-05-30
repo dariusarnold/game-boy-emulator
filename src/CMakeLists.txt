@@ -44,6 +44,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/memory_range.hpp
         game-boy-emulator/apu.cpp
         game-boy-emulator/apu.hpp
+        game-boy-emulator/graphics.cpp
+        game-boy-emulator/graphics.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC
@@ -51,6 +53,8 @@ target_include_directories(game_boy_emulator_library PUBLIC
         )
 target_link_libraries(game_boy_emulator_library PUBLIC
         fmt::fmt-header-only
+        imgui
+        stb::stb
         )
 
 add_executable(game_boy_emulator
@@ -58,8 +62,6 @@ add_executable(game_boy_emulator
         )
 target_link_libraries(game_boy_emulator PRIVATE
         game_boy_emulator_library
-        imgui
-        stb::stb
         )
 
 add_executable(imgui-example

@@ -12,7 +12,7 @@ add_executable(game_boy_emulator_tests
         test_return.cpp
         test_boot_rom_comparison.cpp
         test_pop_stack.cpp
-        )
+        test_graphics.cpp)
 
 
 target_link_libraries(game_boy_emulator_tests PRIVATE

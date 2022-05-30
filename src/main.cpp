@@ -1,23 +1,25 @@
-#include "SDL.h"
-#include "SDL_opengl.h"
+
 #include "bitmanipulation.hpp"
 #include "constants.h"
 #include "emulator.hpp"
 #include "io.hpp"
 #include "bitmanipulation.hpp"
+#include "graphics.hpp"
 
 #include "fmt/format.h"
 #include "fmt/ranges.h"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl.h"
+#include "SDL.h"
+#include "SDL_opengl.h"
 
-#include "imgui_impl_sdlrenderer.h"
 #include <filesystem>
 #include <fstream>
 #include <optional>
-#include <imgui_impl_sdl.h>
 #include <numeric>
 #include <span>
+#include <cstdlib>
 
 
 template <typename Container>
@@ -26,7 +28,7 @@ void print_container_hex(const Container& c) {
 }
 
 
-std::vector<uint8_t> vram{
+std::array<uint8_t, 8192> vram{
     0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,
     0X0,  0XF0, 0X0,  0XF0, 0X0,  0XFC, 0X0,  0XFC, 0X0,  0XFC, 0X0,  0XFC, 0X0,  0XF3, 0X0,
     0XF3, 0X0,  0X3C, 0X0,  0X3C, 0X0,  0X3C, 0X0,  0X3C, 0X0,  0X3C, 0X0,  0X3C, 0X0,  0X3C,
@@ -577,100 +579,16 @@ std::vector<uint8_t> vram{
 };
 
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-// Simple helper function to load an image into a OpenGL texture with common settings
-bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_width, int* out_height)
-{
-    // Load from file
-    int image_width = 0;
-    int image_height = 0;
-    unsigned char* image_data = stbi_load(filename, &image_width, &image_height, NULL, 4);
-    if (image_data == NULL)
-        return false;
-
-    // Create a OpenGL texture identifier
-    GLuint image_texture;
-    glGenTextures(1, &image_texture);
-    glBindTexture(GL_TEXTURE_2D, image_texture);
-
-    // Setup filtering parameters for display
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
-
-    // Upload pixels into texture
-#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#endif
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
-    stbi_image_free(image_data);
-
-    *out_texture = image_texture;
-    *out_width = image_width;
-    *out_height = image_height;
-
-    return true;
-}
-
-void LoadTextureFromVector(uint32_t* data, int width, int height, GLuint* out_texture) {
-    // Create a OpenGL texture identifier
-    GLuint image_texture;
-    glGenTextures(1, &image_texture);
-    glBindTexture(GL_TEXTURE_2D, image_texture);
-
-    // Setup filtering parameters for display
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
-
-    // Upload pixels into texture
-#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#endif
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-    *out_texture = image_texture;
-}
-
-uint32_t sdl_color_to_rgba(const SDL_Color color) {
-    Uint32 rmask, gmask, bmask, amask;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    int shift = 0;
-    rmask = 0xff000000 >> shift;
-    gmask = 0x00ff0000 >> shift;
-    bmask = 0x0000ff00 >> shift;
-    amask = 0x000000ff >> shift;
-#else // little endian, like x86
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-    SDL_PixelFormat pixel_format{0};
-    pixel_format.format = SDL_PIXELFORMAT_RGBA32;
-    pixel_format.BitsPerPixel = 32;
-    pixel_format.BytesPerPixel = 4;
-    pixel_format.Rmask = rmask;
-    pixel_format.Gmask = gmask;
-    pixel_format.Bmask = bmask;
-    pixel_format.Amask = amask;
-    return SDL_MapRGB(&pixel_format, color.r, color.g, color.b);
-}
 
 
-int main() {
-
+std::pair<SDL_GLContext, SDL_Window*> setup_graphics() {
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a minority of Windows systems,
     // depending on whether SDL_INIT_GAMECONTROLLER is enabled or disabled.. updating to latest version of SDL is recommended!)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
     {
         printf("Error: %s\n", SDL_GetError());
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     // GL 3.0 + GLSL 130
@@ -690,10 +608,6 @@ int main() {
     SDL_GL_MakeCurrent(window, gl_context);
     SDL_GL_SetSwapInterval(1); // Enable vsync
 
-//    SDL_RendererInfo info;
-//    SDL_GetRendererInfo(renderer, &info);
-//    SDL_Log("Current SDL_Renderer: %s", info.name);
-
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -707,46 +621,25 @@ int main() {
     // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
+    return {gl_context, window};
+}
+
+
+int main() {
+    auto [gl_context, window] = setup_graphics();
+    ImGuiIO& io = ImGui::GetIO();
 
     // Our state
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    float zoom = 4;
-    bool use_normal_palette = true;
+    float image_scale = 4;
     GLuint my_image_texture = 0;
     // Insgesamt 24*16 Tiles in VRAM, jedes 8x8 Pixel
-    constexpr int img_width_tiles = 24;
-    constexpr int img_height_tiles = 16;
-    constexpr int tile_width = 8;
-    constexpr int img_width_pixels = img_width_tiles * tile_width;
-    constexpr int img_height_pixels =  img_height_tiles * tile_width;
-    std::array<uint32_t, 384 * 64> complete_vram = {0xFFFFFFFF};
-    for (int y = 0; y < 16; ++y) {
-        for (int x = 0; x < 24; ++x) {
-            int offset = y * img_width_tiles + x;
-            auto s = std::span<uint8_t, 16>(vram.data() + offset * 16, 16);
-            auto tile = bitmanip::tile_to_gb_color(s);
-            int top_left_x = x * tile_width;
-            int top_left_y = y * tile_width;
-            for (int i = 0; i < tile.size(); ++i) {
-                int line_in_tile = i / 8;
-                auto vram_index = i % 8 + line_in_tile * img_width_pixels;
-                vram_index += y * 64 * img_width_tiles + x * 8;
-                complete_vram.at(vram_index) = tile.at(i);
-            }
-        }
-    }
-//    for (int offset = 0; offset < 384; ++offset) {
-//        auto s = std::span<uint8_t, 16>(vram.data() + offset * 16, 16);
-//        auto tile = bitmanip::tile_to_gb_color(s);
-//        for (int i = 0; i < tile.size(); ++i) {
-//            complete_vram[offset * tile.size() + i] = tile[i];
-//        }
-//    }
-    auto m = std::max_element(complete_vram.begin(), complete_vram.end());
-    auto pos = std::distance(complete_vram.begin(), m);
-    bitmanip::map_gb_color_to_rgba(complete_vram.begin(), complete_vram.end());
-    LoadTextureFromVector(complete_vram.data(), img_width_pixels, img_height_pixels, &my_image_texture);
-//    LoadTextureFromFile("../../image.jpg", &my_image_texture, &img_width, &img_height);
+    std::array<uint32_t, 384 * 64> tile_data_image = {0xFFFFFFFF};
+    const auto [img_width_pixels, img_height_pixels] = graphics::gb::tile_data_to_image(
+        std::span<uint8_t, 6143>{vram.data(), 6143}, tile_data_image, 24, 16);
+    graphics::gb::map_gb_color_to_rgba(tile_data_image.begin(), tile_data_image.end());
+    graphics::render::load_texture_rgba(tile_data_image.data(), img_width_pixels, img_height_pixels,
+                                        &my_image_texture);
 
     // Main loop
     bool done = false;
@@ -763,7 +656,8 @@ int main() {
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT)
                 done = true;
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE
+                && event.window.windowID == SDL_GetWindowID(window))
                 done = true;
         }
 
@@ -771,19 +665,13 @@ int main() {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         {
-            static float f = 0.0f;
-            static int counter = 0;
-
             ImGui::Begin("VRAM viewer");
             ImTextureID my_tex_id = (void*)(intptr_t)my_image_texture;
-            float my_tex_w = img_width_pixels * zoom;
-            float my_tex_h = img_height_pixels * zoom;
+            float my_tex_w = img_width_pixels * image_scale;
+            float my_tex_h = img_height_pixels * image_scale;
             {
-                ImGui::Checkbox("Alternative palette", &use_normal_palette);
                 ImGui::Text("%.0fx%.0f", my_tex_w, my_tex_h);
-                ImGui::Text("Mouse x %f y %f", io.MousePos.x, io.MousePos.y);
                 ImVec2 pos = ImGui::GetCursorScreenPos();
                 ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
                 ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
@@ -791,7 +679,6 @@ int main() {
                 ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
                 ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
                 auto min = ImGui::GetItemRectMin();
-                auto max = ImGui::GetItemRectMax();
                 if (ImGui::IsItemHovered()) {
                     ImGui::BeginTooltip();
                     ImGui::Text("Image x %f y %f", io.MousePos.x - min.x, io.MousePos.y - min.y);
@@ -803,11 +690,9 @@ int main() {
                     else if (region_x > my_tex_w - region_sz) { region_x = my_tex_w - region_sz; }
                     if (region_y < 0.0f) { region_y = 0.0f; }
                     else if (region_y > my_tex_h - region_sz) { region_y = my_tex_h - region_sz; }
-                    ImGui::Text("Min: (%.2f, %.2f)", region_x, region_y);
-                    ImGui::Text("Max: (%.2f, %.2f)", region_x + region_sz, region_y + region_sz);
                     ImVec2 uv0 = ImVec2((region_x) / my_tex_w, (region_y) / my_tex_h);
                     ImVec2 uv1 = ImVec2((region_x + region_sz) / my_tex_w, (region_y + region_sz) / my_tex_h);
-                    ImGui::Image(my_tex_id, ImVec2(region_sz * (zoom + tooltip_zoom), region_sz * (zoom + tooltip_zoom)), uv0, uv1, tint_col, border_col);
+                    ImGui::Image(my_tex_id, ImVec2(region_sz * (image_scale + tooltip_zoom), region_sz * (image_scale + tooltip_zoom)), uv0, uv1, tint_col, border_col);
                     ImGui::EndTooltip();
                 }
             }
@@ -835,16 +720,16 @@ int main() {
     auto boot_rom_path = std::filesystem::absolute(("../../dmg01-boot.bin"));
     auto boot_rom = load_boot_rom_file(boot_rom_path);
     if (!boot_rom) {
-        return -1;
+        return EXIT_FAILURE;
     }
     auto rom_path = std::filesystem::absolute("../../PokemonRed.gb");
     auto game_rom = load_rom_file(rom_path);
     if (game_rom.empty()) {
-        return -1;
+        return EXIT_FAILURE;
     }
 
     print_container_hex(boot_rom.value());
     Emulator emulator(boot_rom.value(), game_rom);
     emulator.run();
-    return 0;
+    return EXIT_SUCCESS;
 }

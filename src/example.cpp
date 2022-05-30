@@ -137,7 +137,7 @@ int main(int, char**)
     img_width = 8;
     img_height = 8;
     int offset = 1;
-    LoadTextureFromFile("../../image.jpg", &my_image_texture, &img_width, &img_height);
+    load_texture_from_file("../../image.jpg", &my_image_texture, &img_width, &img_height);
 
     // Main loop
     bool done = false;

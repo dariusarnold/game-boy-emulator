@@ -53,21 +53,27 @@ target_include_directories(game_boy_emulator_library PUBLIC
         )
 target_link_libraries(game_boy_emulator_library PUBLIC
         fmt::fmt-header-only
-        imgui
+        imgui::imgui
         stb::stb
         )
 
 add_executable(game_boy_emulator
         main.cpp
+        bindings/imgui_impl_opengl3.cpp
+        bindings/imgui_impl_sdl.cpp
         )
 target_link_libraries(game_boy_emulator PRIVATE
         game_boy_emulator_library
+        )
+target_include_directories(game_boy_emulator
+        PRIVATE
+        bindings
         )
 
 add_executable(imgui-example
         example.cpp)
 target_link_libraries(imgui-example PRIVATE
-        imgui
+        imgui::imgui
         stb::stb
         )
 

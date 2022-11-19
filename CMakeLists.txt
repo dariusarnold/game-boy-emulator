@@ -11,7 +11,6 @@ if (${CONAN_PATHS_FOUND} STREQUAL "NOTFOUND")
 endif()
 find_package(fmt REQUIRED)
 find_package(Catch2 REQUIRED)
-find_package(SFML COMPONENTS graphics window network audio system REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(stb REQUIRED)
 

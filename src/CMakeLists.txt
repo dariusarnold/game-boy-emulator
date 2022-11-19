@@ -54,7 +54,6 @@ target_include_directories(game_boy_emulator_library PUBLIC
 target_link_libraries(game_boy_emulator_library PUBLIC
         fmt::fmt-header-only
         imgui::imgui
-        stb::stb
         SDL2::SDL2
         OpenGL::GL
         )
@@ -70,13 +69,6 @@ target_link_libraries(game_boy_emulator PRIVATE
 target_include_directories(game_boy_emulator
         PRIVATE
         bindings
-        )
-
-add_executable(imgui-example
-        example.cpp)
-target_link_libraries(imgui-example PRIVATE
-        imgui::imgui
-        stb::stb
         )
 
 set(CMAKE_VERBOSE_MAKEFILE ON)

@@ -13,7 +13,6 @@ find_package(fmt REQUIRED)
 find_package(Catch2 REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(imgui REQUIRED)
-find_package(stb REQUIRED)
 find_package(OpenGL REQUIRED)
 
 add_subdirectory(src)

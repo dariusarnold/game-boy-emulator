@@ -55,6 +55,8 @@ target_link_libraries(game_boy_emulator_library PUBLIC
         fmt::fmt-header-only
         imgui::imgui
         stb::stb
+        SDL2::SDL2
+        OpenGL::GL
         )
 
 add_executable(game_boy_emulator

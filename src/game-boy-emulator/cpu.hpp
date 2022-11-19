@@ -9,6 +9,7 @@
 
 #include "fmt/format.h"
 #include "i_mmu.hpp"
+#include "interrupthandler.hpp"
 #include "memory_range.hpp"
 
 #include <algorithm>
@@ -127,10 +128,7 @@ class Cpu {
     // Controlls logging to stdout
     Verbosity verbosity;
 
-    bool interrupt_master_enable_flag;
-
-    MemoryRange interrupt_flag;
-    MemoryRange interrupt_enable;
+    InterruptHandler interrupt_handler;
 
     // Print considering the selected verbosity level
     void print(std::string_view message, Verbosity level);

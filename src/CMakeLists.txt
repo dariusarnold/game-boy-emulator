@@ -46,6 +46,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/apu.hpp
         game-boy-emulator/graphics.cpp
         game-boy-emulator/graphics.hpp
+        game-boy-emulator/interrupthandler.cpp
+        game-boy-emulator/interrupthandler.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

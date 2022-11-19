@@ -45,11 +45,7 @@ void Cpu::xor8(uint8_t value) {
 
 Cpu::Cpu(IMemoryAccess& mmu): Cpu(mmu,Verbosity::LEVEL_INFO){}
 
-Cpu::Cpu(IMemoryAccess& mmu, Verbosity verbosity_) :
-        m_mmu(mmu),
-        verbosity(verbosity_),
-        interrupt_flag(0xFF0F, 0xFF0F),
-        interrupt_enable(0xFFFF, 0xFFFF) {
+Cpu::Cpu(IMemoryAccess& mmu, Verbosity verbosity_) : m_mmu(mmu), verbosity(verbosity_) {
 
     // This function is just to save typing
     auto ld_helper = [=](auto source, auto destination) {
@@ -494,7 +490,7 @@ Cpu::Cpu(IMemoryAccess& mmu, Verbosity verbosity_) :
         return 16;
     };
     instructions[opcodes::DI] = [this]() {
-        interrupt_master_enable_flag = false;
+        interrupt_handler.set_enable_flag(false);
         return 4;
     };
 }
@@ -806,7 +802,7 @@ t_cycle Cpu::add(uint8_t value) {
 }
 
 std::vector<IMemoryRange*> Cpu::get_mappable_memory() {
-    return {&interrupt_flag, &interrupt_enable};
+    return interrupt_handler.get_mappable_memory();
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

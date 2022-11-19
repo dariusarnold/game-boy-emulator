@@ -1,5 +1,8 @@
 *.asm
 *.bin
+*.gb
 
 .idea
 cmake-build-*
+
+src/bindings/*

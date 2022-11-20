@@ -1,20 +1,217 @@
 #pragma once
 
+#include "bitmanipulation.hpp"
+
+#include <magic_enum.hpp>
+
 #include <cstdint>
-#include <string>
 #include <fmt/format.h>
+#include <string>
 
 
 namespace opcodes {
 
-    struct OpCode {
-        uint8_t value;
-        bool extendend = false;
+enum class InstructionType {
+    NONE,
+    NOP,
+    LD,
+    ADD,
+    INC,
+    DEC,
+    // Rotate left with carry
+    RLC,
+    // Rotate right with carry
+    RRC,
+    // Rotate right
+    RR,
+    // Rotate left
+    RL,
+    STOP,
+    // Relative jump by signed immediate
+    JR,
+    // Adjust for BCD addition
+    DAA,
+    // Complement (Logical NOT)
+    CPL,
+};
+
+enum class RegisterType {
+    None,
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
+    F,
+    AF,
+    BC,
+    DE,
+    HL,
+    SP,
+    PC,
+};
+
+enum class InteractionType {
+    None,
+    ImmediateByte,
+    ImmediateWord,
+    // Load immediate word into register
+    WordToRegister,
+    // Load immediate byte into register
+    ByteToRegister,
+    // Save register value to address pointed at by other register
+    AddressRegister_Register,
+    // Load register value from address pointed at by other register
+    Register_AddressRegister,
+    // Save register to address pointed at by register and increment address register
+    AddressRegisterIncrement_Register,
+    // Load register from address pointed at by register and increment address register
+    Register_AddressRegisterIncrement,
+    // Operate on a single register
+    Register,
+    // Save register to address given by immediate word
+    AddressWord_Register,
+    // Operation between two registers where one is modified
+    Register_Register,
+};
+
+enum class ConditionType {
+    None,
+    NonZero,
+    Zero,
+    NonCarry,
+};
+
+struct Instruction {
+    InstructionType instruction_type = InstructionType::NONE;
+    InteractionType interaction_type = InteractionType::None;
+    RegisterType register_type_left = RegisterType::None;
+    RegisterType register_type_right = RegisterType::None;
+    ConditionType condition_type = ConditionType::None;
+};
+
+
+constexpr std::array<Instruction, 0xFF> instructions{
+    // 0x00
+    Instruction{InstructionType::NOP},
+    // 0x01 Load 16 bit immediate into BC
+    Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::BC},
+    // 0x02 Save A to address pointed by BC
+    Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::BC,
+                RegisterType::A},
+    // 0x03
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::BC},
+    // 0x04
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::B},
+    // 0x05
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::B},
+    // 0x06 Load immediate byte into B
+    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::B},
+    // 0x07 Rotate A left with carry
+    Instruction{InstructionType::RLC, InteractionType::Register, RegisterType::A},
+    // 0x08 Save SP to address given by immediate word
+    Instruction{InstructionType::LD, InteractionType::AddressWord_Register, RegisterType::None, RegisterType::SP},
+    // 0x09 Add BC to HL
+    Instruction{InstructionType::ADD, InteractionType::Register_Register, RegisterType::HL, RegisterType::BC},
+    // 0x0A Load A from address pointed to by BC
+    Instruction{InstructionType::LD, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::BC},
+    // 0x0B
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::B},
+    // 0x0C
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::C},
+    // 0x0D
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::C},
+    // 0x0E
+    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::C},
+    // 0x0F
+    Instruction{InstructionType::RRC, InteractionType::Register, RegisterType::A},
+    // 0x10 STOP
+    Instruction{InstructionType::STOP},
+    // 0x11
+    Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::DE},
+    // 0x12
+    Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::DE, RegisterType::A},
+    // 0x13
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::DE},
+    // 0x14
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::DE},
+    // 0x15
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::D},
+    // 0x16
+    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::D},
+    // 0x17
+    Instruction{InstructionType::RL, InteractionType::Register, RegisterType::A},
+    // 0x18
+    Instruction{InstructionType::JR, InteractionType::ImmediateByte},
+    // 0x19
+    Instruction{InstructionType::ADD, InteractionType::Register_Register, RegisterType::HL, RegisterType::DE},
+    // 0x1A
+    Instruction{InstructionType::LD, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::DE},
+    // 0x1B
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::DE},
+    // 0x1C
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::E},
+    // 0x1D
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::E},
+    // 0x1E
+    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::E},
+    // 0x1F
+    Instruction{InstructionType::RR, InteractionType::Register, RegisterType::A},
+    // 0x20 Jump if last result was non zero
+    Instruction{InstructionType::JR, InteractionType::ImmediateByte, RegisterType::None, RegisterType::None, ConditionType::NonZero},
+    // 0x21
+    Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::HL},
+    // 0x22
+    Instruction{InstructionType::LD, InteractionType::AddressRegisterIncrement_Register, RegisterType::HL, RegisterType::A},
+    // 0x23
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::HL},
+    // 0x24
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::H},
+    // 0x25
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::H},
+    // 0x26
+    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::H},
+    // 0x27 This instruction only exists for register A, so we don't have to specify the register here
+    Instruction{InstructionType::DAA},
+    // 0x28 Jump if last result was zero
+    Instruction{InstructionType::JR, InteractionType::ImmediateByte, RegisterType::None, RegisterType::None, ConditionType::Zero},
+    // 0x29
+    Instruction{InstructionType::ADD, InteractionType::Register_Register, RegisterType::HL, RegisterType::HL},
+    // 0x2A
+    Instruction{InstructionType::LD, InteractionType::Register_AddressRegisterIncrement, RegisterType::A, RegisterType::HL},
+    // 0x2B
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::HL},
+    // 0x2C
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::L},
+    // 0x2D
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::L},
+    // 0x2E
+    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::L},
+    // 0x2F This instruction only exists for register A, so we don't have to specify the register here
+    Instruction{InstructionType::CPL},
+    // 0x30
+    Instruction{InstructionType::JR, InteractionType::ImmediateByte, RegisterType::None, RegisterType::None, ConditionType::NonCarry},
+    // 0x31
+    Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::SP}
+};
+
+inline Instruction get_instruction_by_value(uint8_t value) {
+    return instructions[value];
+}
+
+
+struct OpCode {
+        uint16_t value;
+        std::string_view label;
+        int immediate_data;
+        bool extended() const {return bitmanip::get_high_byte(value) == 0xCB;}
     };
 
     // Comparison operator for std::unordered_map
     inline bool operator==(const OpCode& op1, const OpCode& op2) {
-        return op1.value == op2.value && op1.extendend == op2.extendend;
+        return op1.value == op2.value;
     }
 
     constexpr OpCode NOP{0x00};
@@ -251,9 +448,49 @@ struct fmt::formatter<opcodes::OpCode> {
 
     template <typename FormatContext>
     auto format(const opcodes::OpCode& opcode, FormatContext& context) {
-        if (opcode.extendend) {
+        if (opcode.extended()) {
             return format_to(context.out(), "0xCB {:02X}", opcode.value);
         }
         return format_to(context.out(), "{:02X}", opcode.value);
+    }
+};
+
+
+/**
+ * Formatted output for Instructions
+ */
+template <>
+struct fmt::formatter<opcodes::Instruction> {
+
+    std::string format_string;
+
+    /**
+     * Parse until closing curly brace '}' is hit.
+     * @param context Contains format string after :, meaning '{:f}' becomes 'f}'.
+     * @return iterator past the end of the parsed range
+     */
+    auto parse(fmt::format_parse_context& context) {
+        if (context.begin() == context.end()) {
+            // No format string was specified
+            return context.begin();
+        }
+        auto it = std::find(context.begin(), context.end(), '}');
+        if (it == context.end()) {
+            throw fmt::format_error("Invalid format");
+        } else {
+            format_string.assign(context.begin(), it);
+        }
+        return it;
+    }
+
+    template <typename FormatContext>
+    auto format(const opcodes::Instruction& instruction, FormatContext& context) {
+        namespace me = magic_enum;
+        return format_to(context.out(), "Instruction {} {} {} {} {}",
+                         me::enum_name(instruction.instruction_type),
+                         me::enum_name(instruction.interaction_type),
+                         me::enum_name(instruction.register_type_left),
+                         me::enum_name(instruction.register_type_right),
+                         me::enum_name(instruction.condition_type));
     }
 };

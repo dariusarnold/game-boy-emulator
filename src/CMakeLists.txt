@@ -68,6 +68,7 @@ target_link_libraries(game_boy_emulator_library PUBLIC
         imgui::imgui
         SDL2::SDL2
         OpenGL::GL
+        magic_enum::magic_enum
         )
 
 add_executable(game_boy_emulator

@@ -28,6 +28,8 @@ void Emulator::run() {
         m_cpu->run();
     } catch (const LogicError& error) {
         abort_execution(error.what());
+    } catch (const NotImplementedError& error) {
+        abort_execution(error.what());
     }
 }
 
@@ -41,7 +43,8 @@ std::shared_ptr<AddressBus> Emulator::get_bus() const {
 
 void Emulator::abort_execution(std::string error_msg) {
     // TODO Dump current state
-    throw std::runtime_error(error_msg);
+    fmt::print(error_msg);
+    std::exit(1);
 }
 
 std::shared_ptr<Ram> Emulator::get_ram() const {
@@ -58,4 +61,8 @@ bool Emulator::is_booting() const {
 
 void Emulator::signal_boot_ended() {
     m_is_booting = false;
+}
+
+void Emulator::elapse_cycles(size_t cycles) {
+    m_state.cycles += cycles;
 }

@@ -2,6 +2,7 @@
 fmt/7.1.3
 catch2/2.13.6
 imgui/1.88
+magic_enum/0.8.1
 
 [options]
 fmt:header_only=True

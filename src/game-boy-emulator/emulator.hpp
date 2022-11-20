@@ -13,6 +13,10 @@ class Gpu;
 class AddressBus;
 class BootRom;
 
+struct EmulatorState {
+    // Number of m cycles since execution start
+    size_t cycles = 0;
+};
 
 /**
  * Main class for emulation, instantiates all parts, connects and manages them.
@@ -25,6 +29,7 @@ public:
     void abort_execution(std::string error_msg);
     bool is_booting() const;
     void signal_boot_ended();
+    void elapse_cycles(size_t cycles);
 
     [[nodiscard]] std::shared_ptr<AddressBus> get_bus() const;
     [[nodiscard]] std::shared_ptr<Ram> get_ram() const;
@@ -34,7 +39,7 @@ private:
     bool m_is_booting = true;
     // TODO This should be its on class (Cartridge)
     std::vector<uint8_t> m_game_rom;
-
+    EmulatorState m_state;
     std::shared_ptr<BootRom> m_boot_rom;
     std::shared_ptr<AddressBus> m_address_bus;
     std::shared_ptr<Ram> m_ram;

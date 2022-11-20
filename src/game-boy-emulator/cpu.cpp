@@ -1,32 +1,34 @@
 #include "cpu.hpp"
+#include "addressbus.hpp"
 #include "bitmanipulation.hpp"
+#include "emulator.hpp"
+#include "exceptions.hpp"
 #include "instructions/callimmediate.hpp"
 #include "instructions/copyregister.hpp"
 #include "instructions/increment.hpp"
+#include "instructions/loadimmediateword.hpp"
+#include "instructions/popstack.hpp"
 #include "instructions/pushregister.hpp"
 #include "instructions/return.hpp"
 #include "instructions/rotateleft.hpp"
-#include "instructions/popstack.hpp"
-#include "instructions/loadimmediateword.hpp"
-#include "emulator.hpp"
-#include "addressbus.hpp"
 
 #include <unordered_set>
 
 
 bool Cpu::step() {
     previous_instruction = current_instruction;
-    current_instruction = fetch();
-    auto instruction = decode(current_instruction);
-    if (not instruction) {
-        print(fmt::format("Encountered unsupported opcode {} at {:pc}.\n", current_instruction, registers), Verbosity::LEVEL_ERROR);
-        print(get_minimal_debug_state() + "\n", Verbosity::LEVEL_ERROR);
-        print(fmt::format("Ran for {} instructions.\n", instructions_executed), Verbosity::LEVEL_INFO);
-        return false;
+    current_instruction = fetch_instruction();
+    print(fmt::format("Executing {}\n", current_instruction), Verbosity::LEVEL_INFO);
+    auto data = fetch_data();
+    switch (current_instruction.instruction_type) {
+    case opcodes::InstructionType::LD:
+        instructionLD(current_instruction, data);
+        break;
+    default:
+        abort_execution<NotImplementedError>(
+            fmt::format("Instruction type {} not implemented",
+                        magic_enum::enum_name(current_instruction.instruction_type)));
     }
-    print(fmt::format("Executing {} 0x{:02X}\n", current_instruction.extendend ? "0xCB" : "", current_instruction.value), Verbosity::LEVEL_INFO);
-    registers.pc += current_instruction.extendend ? 2 : 1;
-    cycles += instruction();
     instructions_executed++;
     return true;
 }
@@ -716,35 +718,52 @@ t_cycle Cpu::cb(uint8_t instruction_byte) {
 //    return 8;
 //}
 
-opcodes::OpCode Cpu::fetch() {
+opcodes::Instruction Cpu::fetch_instruction() {
     auto byte = m_emulator->get_bus()->read_byte(registers.pc);
-    auto opcode = opcodes::OpCode{byte};
-    if (opcode == opcodes::CB) {
-        opcode = opcodes::OpCode{m_emulator->get_bus()->read_byte(registers.pc + 1), true};
+    if (byte == 0xCB) {
+        auto byte2 = m_emulator->get_bus()->read_byte(registers.pc + 1);
+        abort_execution<NotImplementedError>(fmt::format("CB {} Prefixed opcode not supported", byte2));
     }
-    return opcode;
+    auto instruction = opcodes::get_instruction_by_value(byte);
+    if (instruction.instruction_type == opcodes::InstructionType::NONE) {
+        abort_execution<NotImplementedError>(
+            fmt::format("Encountered unsupported opcode {:02X} at pc {:04X}", byte, registers.pc));
+    }
+    registers.pc++;
+    print(fmt::format("Fetched opcode {:02X}\n", byte), Verbosity::LEVEL_DEBUG);
+    m_emulator->elapse_cycles(1);
+    return instruction;
 }
 
-Cpu::Instruction Cpu::decode(opcodes::OpCode opcode) {
-    if (opcode.extendend) {
-        return [&, opcode]() {
-            auto v = opcode.value;
-            return this->cb(v);
-        };
+uint16_t Cpu::fetch_data() {
+    uint8_t high_byte = 0;
+    uint8_t low_byte = 0;
+    switch (current_instruction.interaction_type) {
+    case opcodes::InteractionType::None:
+        return 0;
+    case opcodes::InteractionType::WordToRegister:
+        low_byte = m_emulator->get_bus()->read_byte(registers.pc);
+        registers.pc++;
+        m_emulator->elapse_cycles(1);
+        high_byte = m_emulator->get_bus()->read_byte(registers.pc);
+        registers.pc++;
+        m_emulator->elapse_cycles(1);
+        return bitmanip::word_from_bytes(high_byte, low_byte);
+    default:
+        abort_execution<NotImplementedError>(
+            fmt::format("InteractionType {} not implemented",
+                        magic_enum::enum_name(current_instruction.interaction_type)));
     }
-    auto instruction = instructions.find(opcode);
-    if (instruction == instructions.end()) {
-        return {};
-    }
-    return instruction->second;
+    return 0;
 }
+
 
 std::string Cpu::get_minimal_debug_state() {
     // Format: [registers] (mem[pc] mem[pc+1] mem[pc+2] mem[pc+3])
     // Thanks to https://github.com/wheremyfoodat/Gameboy-logs
     return fmt::format("A: {:02X} F: {:02X} B: {:02X} C: {:02X} D: {:02X} E: {:02X} H: {:02X} L: "
                        "{:02X} SP: {:04X} "
-                       "PC: 00:{:04X} ({:02X} {:02X} {:02X} {:02X})",
+                       "PC: {:04X} ({:02X} {:02X} {:02X} {:02X})",
                        registers.a, registers.f, registers.b, registers.c, registers.d, registers.e,
                        registers.h, registers.l, registers.sp, registers.pc,
                        m_emulator->get_bus()->read_byte(registers.pc),
@@ -759,11 +778,11 @@ void Cpu::print(std::string_view message, Verbosity level) {
     }
 }
 
-opcodes::OpCode Cpu::get_current_instruction() {
+opcodes::Instruction Cpu::get_current_instruction() {
     return current_instruction;
 }
 
-opcodes::OpCode Cpu::get_previous_instruction() {
+opcodes::Instruction Cpu::get_previous_instruction() {
     return previous_instruction;
 }
 
@@ -810,6 +829,103 @@ t_cycle Cpu::add(uint8_t value) {
 
 std::vector<IMemoryRange*> Cpu::get_mappable_memory() {
     return interrupt_handler.get_mappable_memory();
+}
+
+void Cpu::set_register_value(opcodes::RegisterType register_type, uint16_t value) {
+    switch (register_type) {
+    case opcodes::RegisterType::A:
+        registers.a = bitmanip::get_low_byte(value);
+        return;
+    case opcodes::RegisterType::F:
+        registers.f = bitmanip::get_low_byte(value);
+        return;
+    case opcodes::RegisterType::B:
+        registers.b = bitmanip::get_low_byte(value);
+        return;
+    case opcodes::RegisterType::C:
+        registers.c = bitmanip::get_low_byte(value);
+        return;
+    case opcodes::RegisterType::D:
+        registers.d = bitmanip::get_low_byte(value);
+        return;
+    case opcodes::RegisterType::E:
+        registers.e = bitmanip::get_low_byte(value);
+        return;
+    case opcodes::RegisterType::H:
+        registers.h = bitmanip::get_low_byte(value);
+        return;
+    case opcodes::RegisterType::L:
+        registers.l = bitmanip::get_low_byte(value);
+        return;
+    case opcodes::RegisterType::SP:
+        registers.sp = value;
+        return;
+    case opcodes::RegisterType::PC:
+        registers.pc = value;
+        return;
+    case opcodes::RegisterType::AF:
+        registers.af = value;
+        return;
+    case opcodes::RegisterType::BC:
+        registers.bc = value;
+        return;
+    case opcodes::RegisterType::DE:
+        registers.de = value;
+        return;
+    case opcodes::RegisterType::HL:
+        registers.hl = value;
+        return;
+    }
+}
+
+uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) {
+    switch (register_type) {
+    case opcodes::RegisterType::A:
+        return registers.a;
+    case opcodes::RegisterType::F:
+        return registers.f;
+    case opcodes::RegisterType::B:
+        return registers.b;
+    case opcodes::RegisterType::C:
+        return registers.c;
+    case opcodes::RegisterType::D:
+        return registers.d;
+    case opcodes::RegisterType::E:
+        return registers.e;
+    case opcodes::RegisterType::H:
+        return registers.h;
+    case opcodes::RegisterType::L:
+        return registers.l;
+    case opcodes::RegisterType::SP:
+        return registers.sp;
+    case opcodes::RegisterType::PC:
+        return registers.pc;
+    case opcodes::RegisterType::AF:
+        return registers.af;
+    case opcodes::RegisterType::BC:
+        return registers.bc;
+    case opcodes::RegisterType::DE:
+        return registers.de;
+    case opcodes::RegisterType::HL:
+        return registers.hl;
+    default:
+        // This can't happen since we checked all enum values above, but the compiler still warns
+        // about the missing return type (even with the unconditional throw in abort_execution).
+        abort_execution<LogicError>(fmt::format("Unknown register value {}", register_type));
+        return 0;
+    }
+}
+
+void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
+    switch (instruction.interaction_type) {
+    case opcodes::InteractionType::WordToRegister:
+        set_register_value(instruction.register_type_left, data);
+        return;
+    default:
+        abort_execution<NotImplementedError>(
+            fmt::format("LD with InteractionType {} not implemented",
+                        magic_enum::enum_name(instruction.interaction_type)));
+    }
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

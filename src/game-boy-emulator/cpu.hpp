@@ -35,13 +35,11 @@ enum class Verbosity {
 class Cpu {
     Registers registers = {};
     Emulator* m_emulator;
-    // Number of cycles since execution start
-    size_t cycles = 0;
     // Number of instructions executed since start
     size_t instructions_executed = 0;
 
-    opcodes::OpCode current_instruction = opcodes::NOP;
-    opcodes::OpCode previous_instruction = opcodes::NOP;
+    opcodes::Instruction current_instruction;
+    opcodes::Instruction previous_instruction;
 
     /**
      * Function which modifies CPU state according to the instruction and returns the number of
@@ -60,7 +58,7 @@ class Cpu {
     // Print considering the selected verbosity level
     void print(std::string_view message, Verbosity level);
 public:
-    Cpu(Emulator* emulator);
+    explicit Cpu(Emulator* emulator);
     explicit Cpu(Emulator* emulator, Verbosity verbosity_);
 
     /**
@@ -78,17 +76,16 @@ public:
 
     std::string get_minimal_debug_state();
 
-    opcodes::OpCode get_current_instruction();
-    opcodes::OpCode get_previous_instruction();
+    opcodes::Instruction get_current_instruction();
+    opcodes::Instruction get_previous_instruction();
 
 private:
-
-    /**
-     * Finds the instruction associated with an opcode
-     * @param opcode
-     * @return
-     */
-    Instruction decode(opcodes::OpCode opcode);
+    template <typename T>
+    void abort_execution(std::string_view msg) {
+        auto complete_msg = fmt::format("CPU ERROR: {}\n{}\nRan for {} instructions.", msg,
+                                        get_minimal_debug_state(), instructions_executed);
+        throw T{complete_msg};
+    }
 
     template <typename T>
     Register<T> make_mutable_register() {
@@ -242,7 +239,14 @@ private:
      * the opcode read
      * @return
      */
-    opcodes::OpCode fetch();
+    opcodes::Instruction fetch_instruction();
+
+    uint16_t fetch_data();
+
+    void set_register_value(opcodes::RegisterType register_type, uint16_t value);
+    uint16_t get_register_value(opcodes::RegisterType register_type);
+
+    void instructionLD(opcodes::Instruction instruction, uint16_t data);
 
 };
 

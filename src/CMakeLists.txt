@@ -49,6 +49,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/interrupthandler.cpp
         game-boy-emulator/interrupthandler.hpp
         game-boy-emulator/registers.hpp
+        game-boy-emulator/addressbus.cpp
+        game-boy-emulator/addressbus.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

@@ -8,6 +8,9 @@
 #include "instructions/rotateleft.hpp"
 #include "instructions/popstack.hpp"
 #include "instructions/loadimmediateword.hpp"
+#include "emulator.hpp"
+#include "addressbus.hpp"
+
 #include <unordered_set>
 
 
@@ -43,10 +46,10 @@ void Cpu::xor8(uint8_t value) {
     set_carry_flag(BitValues::Inactive);
 }
 
-Cpu::Cpu(IMemoryAccess& mmu): Cpu(mmu,Verbosity::LEVEL_INFO){}
+Cpu::Cpu(Emulator* emulator): Cpu(emulator,Verbosity::LEVEL_INFO){}
 
-Cpu::Cpu(IMemoryAccess& mmu, Verbosity verbosity_) : m_mmu(mmu), verbosity(verbosity_) {
-
+Cpu::Cpu(Emulator* emulator, Verbosity verbosity_) : m_emulator(emulator), verbosity(verbosity_) {
+    /*
     // This function is just to save typing
     auto ld_helper = [=](auto source, auto destination) {
         return [=]() {
@@ -82,8 +85,8 @@ Cpu::Cpu(IMemoryAccess& mmu, Verbosity verbosity_) : m_mmu(mmu), verbosity(verbo
     Register<registers::BC> bc_mut{registers.bc};
     Register<registers::DE> de_mut{registers.de};
     Register<registers::HL> hl_mut{registers.hl};
-    MutableMemory mem_mut{m_mmu};
-    Memory mem{m_mmu};
+    MutableMemory mem_mut{*m_emulator->get_mmu().get()};
+    Memory mem{*m_emulator->get_mmu().get()};
     MutableStack stack_mut{mem_mut, sp_mut};
 
     instructions[opcodes::NOP] = [&]() {
@@ -493,28 +496,29 @@ Cpu::Cpu(IMemoryAccess& mmu, Verbosity verbosity_) : m_mmu(mmu), verbosity(verbo
         interrupt_handler.set_enable_flag(false);
         return 4;
     };
+     */
 }
 
-t_cycle Cpu::ld8(uint8_t& input) {
-    const auto immediate = m_mmu.read_byte(registers.pc);
-    input = immediate;
-    registers.pc++;
-    return 8;
-}
+//t_cycle Cpu::ld8(uint8_t& input) {
+//    const auto immediate = m_mmu.read_byte(registers.pc);
+//    input = immediate;
+//    registers.pc++;
+//    return 8;
+//}
 
-t_cycle Cpu::indirect_hl(opcodes::OpCode op) {
-    if (op == opcodes::LDD_HL_A or op == opcodes::LDI_HL_A) {
-        m_mmu.write_byte(registers.hl, registers.a);
-    } else if (op == opcodes::LDD_A_HL or op == opcodes::LDI_A_HL) {
-        registers.a = m_mmu.read_byte(registers.hl);
-    }
-    if (op == opcodes::LDD_HL_A or op == opcodes::LDD_A_HL) {
-        registers.hl--;
-    } else {
-        registers.hl++;
-    }
-    return 8;
-}
+//t_cycle Cpu::indirect_hl(opcodes::OpCode op) {
+//    if (op == opcodes::LDD_HL_A or op == opcodes::LDI_HL_A) {
+//        m_mmu.write_byte(registers.hl, registers.a);
+//    } else if (op == opcodes::LDD_A_HL or op == opcodes::LDI_A_HL) {
+//        registers.a = m_mmu.read_byte(registers.hl);
+//    }
+//    if (op == opcodes::LDD_HL_A or op == opcodes::LDD_A_HL) {
+//        registers.hl--;
+//    } else {
+//        registers.hl++;
+//    }
+//    return 8;
+//}
 
 void Cpu::set_subtract_flag(BitValues value) {
     bitmanip::set(registers.f, as_integral(flags::subtract), value);
@@ -561,7 +565,7 @@ uint8_t Cpu::op_code_to_register(uint8_t opcode_byte) {
     case 5:
         return registers.l;
     case 6:
-        return m_mmu.read_byte(registers.hl);
+        return m_emulator->get_bus()->read_byte(registers.hl);
     case 7:
         return registers.a;
     default:
@@ -590,7 +594,7 @@ void Cpu::write_to_destination(uint8_t opcode_byte, uint8_t value) {
         registers.l = value;
         break;
     case 6:
-        m_mmu.write_byte(registers.hl, value);
+        m_emulator->get_bus()->write_byte(registers.hl, value);
         break;
     case 7:
         registers.a = value;
@@ -684,38 +688,39 @@ t_cycle Cpu::cb(uint8_t instruction_byte) {
     return 0;
 }
 
-t_cycle Cpu::jump_r(bool condition_met) {
-    // For C++20 this is defined behaviour since signed integers are twos complement
-    // On older standards this is implementation defined
-    // https://stackoverflow.com/questions/13150449/efficient-unsigned-to-signed-cast-avoiding-implementation-defined-behavior
-    auto immediate = static_cast<int8_t>(m_mmu.read_byte(registers.pc));
-    // We need to increment here, otherwise the jump is off by one address.
-    // Reading = incrementing happens whether the jump happens or not.
-    registers.pc++;
-    if (condition_met) {
-        registers.pc += immediate;
-    }
-    // If the action was taken, one additional m-cycle is used.
-    if (condition_met) {
-        return 12;
-    }
-    return 8;
-}
+//t_cycle Cpu::jump_r(bool condition_met) {
+//    // For C++20 this is defined behaviour since signed integers are twos complement
+//    // On older standards this is implementation defined
+//    // https://stackoverflow.com/questions/13150449/efficient-unsigned-to-signed-cast-avoiding-implementation-defined-behavior
+//    auto immediate = static_cast<int8_t>(m_mmu.read_byte(registers.pc));
+//    // We need to increment here, otherwise the jump is off by one address.
+//    // Reading = incrementing happens whether the jump happens or not.
+//    registers.pc++;
+//    if (condition_met) {
+//        registers.pc += immediate;
+//    }
+//    // If the action was taken, one additional m-cycle is used.
+//    if (condition_met) {
+//        return 12;
+//    }
+//    return 8;
+//}
 
-t_cycle Cpu::save_value_to_address(uint16_t address, uint8_t value) {
-    m_mmu.write_byte(address, value);
-    return 8;
-}
-
-t_cycle Cpu::load_value_from_address(uint16_t address, uint8_t& value) {
-    value = m_mmu.read_byte(address);
-    return 8;
-}
+//t_cycle Cpu::save_value_to_address(uint16_t address, uint8_t value) {
+//    m_mmu.write_byte(address, value);
+//    return 8;
+//}
+//
+//t_cycle Cpu::load_value_from_address(uint16_t address, uint8_t& value) {
+//    value = m_mmu.read_byte(address);
+//    return 8;
+//}
 
 opcodes::OpCode Cpu::fetch() {
-    auto opcode = opcodes::OpCode{m_mmu.read_byte(registers.pc)};
+    auto byte = m_emulator->get_bus()->read_byte(registers.pc);
+    auto opcode = opcodes::OpCode{byte};
     if (opcode == opcodes::CB) {
-        opcode = opcodes::OpCode{m_mmu.read_byte(registers.pc + 1), true};
+        opcode = opcodes::OpCode{m_emulator->get_bus()->read_byte(registers.pc + 1), true};
     }
     return opcode;
 }
@@ -742,8 +747,10 @@ std::string Cpu::get_minimal_debug_state() {
                        "PC: 00:{:04X} ({:02X} {:02X} {:02X} {:02X})",
                        registers.a, registers.f, registers.b, registers.c, registers.d, registers.e,
                        registers.h, registers.l, registers.sp, registers.pc,
-                       m_mmu.read_byte(registers.pc), m_mmu.read_byte(registers.pc + 1),
-                       m_mmu.read_byte(registers.pc + 2), m_mmu.read_byte(registers.pc + 3));
+                       m_emulator->get_bus()->read_byte(registers.pc),
+                       m_emulator->get_bus()->read_byte(registers.pc + 1),
+                       m_emulator->get_bus()->read_byte(registers.pc + 2),
+                       m_emulator->get_bus()->read_byte(registers.pc + 3));
 }
 
 void Cpu::print(std::string_view message, Verbosity level) {

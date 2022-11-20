@@ -7,15 +7,18 @@
 #include "facades/register.hpp"
 #include "opcodes.hpp"
 #include "registers.hpp"
-
-#include "fmt/format.h"
-#include "i_mmu.hpp"
 #include "interrupthandler.hpp"
 #include "memory_range.hpp"
+
+#include "fmt/format.h"
 
 #include <algorithm>
 #include <array>
 #include <cstdint>
+
+
+class Emulator;
+
 
 
 // Typedef for clock cycles.
@@ -31,7 +34,7 @@ enum class Verbosity {
 
 class Cpu {
     Registers registers = {};
-    IMemoryAccess& m_mmu;
+    Emulator* m_emulator;
     // Number of cycles since execution start
     size_t cycles = 0;
     // Number of instructions executed since start
@@ -57,8 +60,8 @@ class Cpu {
     // Print considering the selected verbosity level
     void print(std::string_view message, Verbosity level);
 public:
-    Cpu(IMemoryAccess& mmu);
-    explicit Cpu(IMemoryAccess& mmu, Verbosity verbosity_);
+    Cpu(Emulator* emulator);
+    explicit Cpu(Emulator* emulator, Verbosity verbosity_);
 
     /**
      * Start cpu.

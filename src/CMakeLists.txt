@@ -51,6 +51,13 @@ add_library(game_boy_emulator_library
         game-boy-emulator/registers.hpp
         game-boy-emulator/addressbus.cpp
         game-boy-emulator/addressbus.hpp
+        game-boy-emulator/ram.cpp
+        game-boy-emulator/ram.hpp
+        game-boy-emulator/memorymap.hpp
+        game-boy-emulator/exceptions.cpp
+        game-boy-emulator/exceptions.hpp
+        game-boy-emulator/bootrom.cpp
+        game-boy-emulator/bootrom.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

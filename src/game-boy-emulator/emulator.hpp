@@ -34,6 +34,7 @@ public:
     [[nodiscard]] std::shared_ptr<AddressBus> get_bus() const;
     [[nodiscard]] std::shared_ptr<Ram> get_ram() const;
     [[nodiscard]] std::shared_ptr<BootRom> get_boot_rom() const;
+    [[nodiscard]] std::shared_ptr<Gpu> get_gpu() const;
 
 private:
     bool m_is_booting = true;

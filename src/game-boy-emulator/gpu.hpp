@@ -12,5 +12,7 @@ class Gpu {
 public:
     Gpu();
 
+
+
     std::vector<IMemoryRange*> get_mappable_memory();
 };

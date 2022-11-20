@@ -42,8 +42,7 @@ std::shared_ptr<AddressBus> Emulator::get_bus() const {
 }
 
 void Emulator::abort_execution(std::string error_msg) {
-    // TODO Dump current state
-    fmt::print(error_msg);
+    fmt::print("{} - CPU state {}",error_msg, m_cpu->get_minimal_debug_state());
     std::exit(1);
 }
 
@@ -65,4 +64,8 @@ void Emulator::signal_boot_ended() {
 
 void Emulator::elapse_cycles(size_t cycles) {
     m_state.cycles += cycles;
+}
+
+std::shared_ptr<Gpu> Emulator::get_gpu() const {
+    return m_gpu;
 }

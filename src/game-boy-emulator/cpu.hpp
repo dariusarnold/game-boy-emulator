@@ -82,8 +82,8 @@ public:
 private:
     template <typename T>
     void abort_execution(std::string_view msg) {
-        auto complete_msg = fmt::format("CPU ERROR: {}\n{}\nRan for {} instructions.", msg,
-                                        get_minimal_debug_state(), instructions_executed);
+        auto complete_msg
+            = fmt::format("CPU ERROR: {}\nRan for {} instructions.", msg, instructions_executed);
         throw T{complete_msg};
     }
 

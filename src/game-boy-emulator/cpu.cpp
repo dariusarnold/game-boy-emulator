@@ -753,10 +753,11 @@ uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
         m_emulator->elapse_cycles(1);
         return bitmanip::word_from_bytes(high_byte, low_byte);
     case opcodes::InteractionType::Register_Register:
-        return 0;
+    case opcodes::InteractionType::AddressRegisterDecrement_Register:
+        return get_register_value(instruction.register_type_source);
     default:
         abort_execution<NotImplementedError>(
-            fmt::format("InteractionType {} not implemented",
+            fmt::format("fetch_data: InteractionType {} not implemented",
                         magic_enum::enum_name(current_instruction.interaction_type)));
     }
     return 0;
@@ -924,7 +925,12 @@ uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) {
 void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
     switch (instruction.interaction_type) {
     case opcodes::InteractionType::WordToRegister:
-        set_register_value(instruction.register_type_left, data);
+        set_register_value(instruction.register_type_destination, data);
+        return;
+    case opcodes::InteractionType::AddressRegisterDecrement_Register:
+        m_emulator->get_bus()->write_byte(get_register_value(instruction.register_type_destination), data);
+        set_register_value(instruction.register_type_destination,
+                           get_register_value(instruction.register_type_destination) - 1);
         return;
     default:
         abort_execution<NotImplementedError>(
@@ -934,7 +940,7 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
 }
 
 void Cpu::instructionXOR(opcodes::Instruction instruction) {
-    registers.a = registers.a ^ get_register_value(instruction.register_type_right);
+    registers.a = registers.a ^ get_register_value(instruction.register_type_source);
     if (registers.a == 0) {
         set_zero_flag(BitValues::Active);
     }

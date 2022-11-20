@@ -68,6 +68,9 @@ enum class InteractionType {
     Register_AddressRegister,
     // Save register to address pointed at by register and increment address register
     AddressRegisterIncrement_Register,
+    // Save register to address pointed at by register and decrement address register
+    // Destination AddressRegister _ Source Register
+    AddressRegisterDecrement_Register,
     // Load register from address pointed at by register and increment address register
     Register_AddressRegisterIncrement,
     // Operate on a single register
@@ -75,6 +78,7 @@ enum class InteractionType {
     // Save register to address given by immediate word
     AddressWord_Register,
     // Operation between two registers where one is modified
+    // Destination _ Source
     Register_Register,
 };
 
@@ -88,8 +92,8 @@ enum class ConditionType {
 struct Instruction {
     InstructionType instruction_type = InstructionType::NONE;
     InteractionType interaction_type = InteractionType::None;
-    RegisterType register_type_left = RegisterType::None;
-    RegisterType register_type_right = RegisterType::None;
+    RegisterType register_type_destination = RegisterType::None;
+    RegisterType register_type_source = RegisterType::None;
     ConditionType condition_type = ConditionType::None;
 };
 
@@ -196,8 +200,8 @@ constexpr std::array<Instruction, 0xFF> instructions{
     Instruction{InstructionType::JR, InteractionType::ImmediateByte, RegisterType::None, RegisterType::None, ConditionType::NonCarry},
     // 0x31
     Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::SP},
-    // 0x32
-    Instruction{},
+    // 0x32 Save A to address pointed at by HL and decrement HL
+    Instruction{InstructionType::LD, InteractionType::AddressRegisterDecrement_Register, RegisterType::HL, RegisterType::A},
     // 0x33
     Instruction{},
     // 0x34
@@ -743,8 +747,8 @@ struct fmt::formatter<opcodes::Instruction> {
         return format_to(context.out(), "Instruction {} {} {} {} {}",
                          me::enum_name(instruction.instruction_type),
                          me::enum_name(instruction.interaction_type),
-                         me::enum_name(instruction.register_type_left),
-                         me::enum_name(instruction.register_type_right),
+                         me::enum_name(instruction.register_type_destination),
+                         me::enum_name(instruction.register_type_source),
                          me::enum_name(instruction.condition_type));
     }
 };

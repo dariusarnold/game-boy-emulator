@@ -32,7 +32,7 @@ public:
 
     [[nodiscard]] uint16_t get_end_address() const override;
 
-    [[nodiscard]] uint8_t read_byte(u_int16_t address) const override;
+    [[nodiscard]] uint8_t read_byte(uint16_t address) const override;
 
     [[nodiscard]] uint16_t read_word(uint16_t address) const override;
 

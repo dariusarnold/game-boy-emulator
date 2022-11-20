@@ -23,7 +23,7 @@ public:
     /**
      * Read memory value from address.
      */
-    [[nodiscard]] uint8_t read_byte(u_int16_t address) const override;
+    [[nodiscard]] uint8_t read_byte(uint16_t address) const override;
 
     /**
      * Read word from address.

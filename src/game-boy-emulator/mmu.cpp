@@ -6,7 +6,7 @@
 #include <fmt/format.h>
 
 
-uint8_t Mmu::read_byte(u_int16_t address) const {
+uint8_t Mmu::read_byte(uint16_t address) const {
     auto& p = get_memory_accessor(address);
     return p.read_byte(address);
 }

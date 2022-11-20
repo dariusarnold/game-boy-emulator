@@ -12,7 +12,7 @@ public:
     /**
      * Read memory value from address.
      */
-    [[nodiscard]] virtual uint8_t read_byte(u_int16_t address) const = 0;
+    [[nodiscard]] virtual uint8_t read_byte(uint16_t address) const = 0;
 
     /**
      * Read word from address.
@@ -26,7 +26,7 @@ public:
     virtual void write_byte(uint16_t address, uint8_t value) = 0;
 
     /**
-     * Write 2 byte wird to ram at address.
+     * Write 2 byte word to ram at address.
      */
     virtual void write_word(uint16_t address, uint16_t value) = 0;
 };

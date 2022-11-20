@@ -16,7 +16,7 @@ uint16_t MemoryRange::get_end_address() const {
     return end_address;
 }
 
-uint8_t MemoryRange::read_byte(u_int16_t address) const {
+uint8_t MemoryRange::read_byte(uint16_t address) const {
     assert(is_address_in_mapped_range(address) && "Reading from invalid address");
     return memory[address - get_begin_address()];
 }

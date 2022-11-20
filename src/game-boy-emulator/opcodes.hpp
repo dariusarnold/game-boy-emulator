@@ -33,6 +33,7 @@ enum class InstructionType {
     DAA,
     // Complement (Logical NOT)
     CPL,
+    XOR,
 };
 
 enum class RegisterType {
@@ -194,7 +195,260 @@ constexpr std::array<Instruction, 0xFF> instructions{
     // 0x30
     Instruction{InstructionType::JR, InteractionType::ImmediateByte, RegisterType::None, RegisterType::None, ConditionType::NonCarry},
     // 0x31
-    Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::SP}
+    Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::SP},
+    // 0x32
+    Instruction{},
+    // 0x33
+    Instruction{},
+    // 0x34
+    Instruction{},
+    // 0x35
+    Instruction{},
+    // 0x36
+    Instruction{},
+    // 0x37
+    Instruction{},
+    // 0x38
+    Instruction{},
+    // 0x39
+    Instruction{},
+    // 0x3A
+    Instruction{},
+    // 0x3B
+    Instruction{},
+    // 0x3C
+    Instruction{},
+    // 0x3D
+    Instruction{},
+    // 0x3E
+    Instruction{},
+    // 0x3F
+    Instruction{},
+    // 0x40
+    Instruction{},
+    // 0x41
+    Instruction{},
+    // 0x42
+    Instruction{},
+    // 0x43
+    Instruction{},
+    // 0x44
+    Instruction{},
+    // 0x45
+    Instruction{},
+    // 0x46
+    Instruction{},
+    // 0x47
+    Instruction{},
+    // 0x48
+    Instruction{},
+    // 0x49
+    Instruction{},
+    // 0x4A
+    Instruction{},
+    // 0x4B
+    Instruction{},
+    // 0x4C
+    Instruction{},
+    // 0x4D
+    Instruction{},
+    // 0x4E
+    Instruction{},
+    // 0x4F
+    Instruction{},
+    // 0x50
+    Instruction{},
+    // 0x51
+    Instruction{},
+    // 0x52
+    Instruction{},
+    // 0x53
+    Instruction{},
+    // 0x54
+    Instruction{},
+    // 0x55
+    Instruction{},
+    // 0x56
+    Instruction{},
+    // 0x57
+    Instruction{},
+    // 0x58
+    Instruction{},
+    // 0x59
+    Instruction{},
+    // 0x5A
+    Instruction{},
+    // 0x5B
+    Instruction{},
+    // 0x5C
+    Instruction{},
+    // 0x5D
+    Instruction{},
+    // 0x5E
+    Instruction{},
+    // 0x5F
+    Instruction{},
+    // 0x60
+    Instruction{},
+    // 0x61
+    Instruction{},
+    // 0x62
+    Instruction{},
+    // 0x63
+    Instruction{},
+    // 0x64
+    Instruction{},
+    // 0x65
+    Instruction{},
+    // 0x66
+    Instruction{},
+    // 0x67
+    Instruction{},
+    // 0x68
+    Instruction{},
+    // 0x69
+    Instruction{},
+    // 0x6A
+    Instruction{},
+    // 0x6B
+    Instruction{},
+    // 0x6C
+    Instruction{},
+    // 0x6D
+    Instruction{},
+    // 0x6E
+    Instruction{},
+    // 0x6F
+    Instruction{},
+    // 0x70
+    Instruction{},
+    // 0x71
+    Instruction{},
+    // 0x72
+    Instruction{},
+    // 0x73
+    Instruction{},
+    // 0x74
+    Instruction{},
+    // 0x75
+    Instruction{},
+    // 0x76
+    Instruction{},
+    // 0x77
+    Instruction{},
+    // 0x78
+    Instruction{},
+    // 0x79
+    Instruction{},
+    // 0x7A
+    Instruction{},
+    // 0x7B
+    Instruction{},
+    // 0x7C
+    Instruction{},
+    // 0x7D
+    Instruction{},
+    // 0x7E
+    Instruction{},
+    // 0x7F
+    Instruction{},
+    // 0x80
+    Instruction{},
+    // 0x81
+    Instruction{},
+    // 0x82
+    Instruction{},
+    // 0x83
+    Instruction{},
+    // 0x84
+    Instruction{},
+    // 0x85
+    Instruction{},
+    // 0x86
+    Instruction{},
+    // 0x87
+    Instruction{},
+    // 0x88
+    Instruction{},
+    // 0x89
+    Instruction{},
+    // 0x8A
+    Instruction{},
+    // 0x8B
+    Instruction{},
+    // 0x8C
+    Instruction{},
+    // 0x8D
+    Instruction{},
+    // 0x8E
+    Instruction{},
+    // 0x8F
+    Instruction{},
+    // 0x90
+    Instruction{},
+    // 0x91
+    Instruction{},
+    // 0x92
+    Instruction{},
+    // 0x93
+    Instruction{},
+    // 0x94
+    Instruction{},
+    // 0x95
+    Instruction{},
+    // 0x96
+    Instruction{},
+    // 0x97
+    Instruction{},
+    // 0x98
+    Instruction{},
+    // 0x99
+    Instruction{},
+    // 0x9A
+    Instruction{},
+    // 0x9B
+    Instruction{},
+    // 0x9C
+    Instruction{},
+    // 0x9D
+    Instruction{},
+    // 0x9E
+    Instruction{},
+    // 0x9F
+    Instruction{},
+    // 0xA0
+    Instruction{},
+    // 0xA1
+    Instruction{},
+    // 0xA2
+    Instruction{},
+    // 0xA3
+    Instruction{},
+    // 0xA4
+    Instruction{},
+    // 0xA5
+    Instruction{},
+    // 0xA6
+    Instruction{},
+    // 0xA7
+    Instruction{},
+    // 0xA8 A = A XOR B
+    Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A, RegisterType::B},
+    // 0xA9
+    Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A, RegisterType::C},
+    // 0xAA
+    Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A, RegisterType::D},
+    // 0xAB
+    Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A, RegisterType::E},
+    // 0xAC
+    Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A, RegisterType::H},
+    // 0xAD
+    Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A, RegisterType::L},
+    // 0xAE
+    Instruction{},
+    // 0xAF
+    Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A, RegisterType::A},
+
 };
 
 inline Instruction get_instruction_by_value(uint8_t value) {

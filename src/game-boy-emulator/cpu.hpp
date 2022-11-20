@@ -241,13 +241,14 @@ private:
      */
     opcodes::Instruction fetch_instruction();
 
-    uint16_t fetch_data();
+    uint16_t fetch_data(opcodes::Instruction instruction);
 
     void set_register_value(opcodes::RegisterType register_type, uint16_t value);
     uint16_t get_register_value(opcodes::RegisterType register_type);
 
     void instructionLD(opcodes::Instruction instruction, uint16_t data);
 
+    void instructionXOR(opcodes::Instruction instruction);
 };
 
 namespace internal {

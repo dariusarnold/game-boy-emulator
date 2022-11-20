@@ -19,10 +19,13 @@ bool Cpu::step() {
     previous_instruction = current_instruction;
     current_instruction = fetch_instruction();
     print(fmt::format("Executing {}\n", current_instruction), Verbosity::LEVEL_INFO);
-    auto data = fetch_data();
+    auto data = fetch_data(current_instruction);
     switch (current_instruction.instruction_type) {
     case opcodes::InstructionType::LD:
         instructionLD(current_instruction, data);
+        break;
+    case opcodes::InstructionType::XOR:
+        instructionXOR(current_instruction);
         break;
     default:
         abort_execution<NotImplementedError>(
@@ -735,10 +738,10 @@ opcodes::Instruction Cpu::fetch_instruction() {
     return instruction;
 }
 
-uint16_t Cpu::fetch_data() {
+uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
     uint8_t high_byte = 0;
     uint8_t low_byte = 0;
-    switch (current_instruction.interaction_type) {
+    switch (instruction.interaction_type) {
     case opcodes::InteractionType::None:
         return 0;
     case opcodes::InteractionType::WordToRegister:
@@ -749,6 +752,8 @@ uint16_t Cpu::fetch_data() {
         registers.pc++;
         m_emulator->elapse_cycles(1);
         return bitmanip::word_from_bytes(high_byte, low_byte);
+    case opcodes::InteractionType::Register_Register:
+        return 0;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("InteractionType {} not implemented",
@@ -926,6 +931,10 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
             fmt::format("LD with InteractionType {} not implemented",
                         magic_enum::enum_name(instruction.interaction_type)));
     }
+}
+
+void Cpu::instructionXOR(opcodes::Instruction instruction) {
+    registers.a = registers.a ^ get_register_value(instruction.register_type_right);
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

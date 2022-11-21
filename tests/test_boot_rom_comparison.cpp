@@ -3,15 +3,16 @@
 #include "io.hpp"
 #include "cpu.hpp"
 
-#include "fmt/format.h"
-#include "mmu.hpp"
-#include "gpu.hpp"
 #include "apu.hpp"
+#include "emulator.hpp"
+#include "fmt/format.h"
+#include "gpu.hpp"
+#include "mmu.hpp"
 
-#include <vector>
-#include <string>
-#include <fstream>
 #include <filesystem>
+#include <fstream>
+#include <string>
+#include <vector>
 
 
 std::vector<std::string> read_bootrom_log_file() {
@@ -55,22 +56,16 @@ TEST_CASE("Compare boot sequence") {
     auto boot_rom_path = std::filesystem::absolute(("dmg01-boot.bin"));
     auto boot_rom = load_boot_rom_file(boot_rom_path);
     REQUIRE(boot_rom);
-    Mmu mmu;
-    Gpu gpu;
-    Apu apu;
-    mmu.map_boot_rom(boot_rom.value());
-    mmu.map_memory_range(gpu.get_mappable_memory());
-    mmu.map_memory_range(apu.get_mappable_memory());
-    Cpu cpu{mmu, Verbosity::LEVEL_ERROR};
+    Emulator emulator{boot_rom.value(), {}};
     for (auto i = 0; const auto& expected_line: expected_output) {
-        auto actual_output = cpu.get_minimal_debug_state();
+        auto actual_output = emulator.get_cpu_debug_state();
         INFO(fmt::format("Executing instruction number {}/{} ({:.2f}% done. Last instructions: {} "
                          "{}.\n CPU state: {})",
                          i, expected_output.size(), calculate_percentage(i, expected_output.size()),
-                         cpu.get_current_instruction(), cpu.get_previous_instruction(),
-                         cpu.get_minimal_debug_state()));
+                         emulator.get_current_instruction(), emulator.get_previous_instruction(),
+                         emulator.get_cpu_debug_state()));
         ++i;
         REQUIRE_THAT(actual_output, StringEqualAlignedOutput(expected_line));
-        REQUIRE(cpu.step());
+        REQUIRE(emulator.step());
     }
 }

@@ -69,3 +69,19 @@ void Emulator::elapse_cycles(size_t cycles) {
 std::shared_ptr<Gpu> Emulator::get_gpu() const {
     return m_gpu;
 }
+
+std::string Emulator::get_cpu_debug_state() const {
+    return m_cpu->get_minimal_debug_state();
+}
+
+bool Emulator::step() {
+    return m_cpu->step();
+}
+
+opcodes::Instruction Emulator::get_current_instruction() const {
+    return m_cpu->get_current_instruction();
+}
+
+opcodes::Instruction Emulator::get_previous_instruction() const {
+    return m_cpu->get_previous_instruction();
+}

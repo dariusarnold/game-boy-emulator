@@ -753,6 +753,11 @@ uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
         registers.pc++;
         m_emulator->elapse_cycles(1);
         return low_byte;
+    case opcodes::InteractionType::ByteToRegister:
+        low_byte = m_emulator->get_bus()->read_byte(registers.pc);
+        registers.pc++;
+        m_emulator->elapse_cycles(1);
+        return low_byte;
     case opcodes::InteractionType::WordToRegister:
         low_byte = m_emulator->get_bus()->read_byte(registers.pc);
         registers.pc++;
@@ -933,6 +938,7 @@ uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) {
 
 void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
     switch (instruction.interaction_type) {
+    case opcodes::InteractionType::ByteToRegister:
     case opcodes::InteractionType::WordToRegister:
         set_register_value(instruction.register_type_destination, data);
         return;

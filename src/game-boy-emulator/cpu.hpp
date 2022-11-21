@@ -252,6 +252,8 @@ private:
 
     // data is the second byte of the whole CB instruction
     void instructionCB(uint8_t cb_opcode);
+
+    void instructionJR(opcodes::Instruction instruction, uint8_t data);
 };
 
 namespace internal {

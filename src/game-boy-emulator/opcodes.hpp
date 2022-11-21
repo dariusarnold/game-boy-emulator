@@ -87,6 +87,7 @@ enum class ConditionType {
     None,
     NonZero,
     Zero,
+    Carry,
     NonCarry,
 };
 
@@ -214,7 +215,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x37
     Instruction{},
     // 0x38
-    Instruction{},
+    Instruction{InstructionType::JR, InteractionType::ImmediateByte, RegisterType::None, RegisterType::None, ConditionType::Carry},
     // 0x39
     Instruction{},
     // 0x3A

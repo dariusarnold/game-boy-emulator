@@ -32,6 +32,9 @@ bool Cpu::step() {
         // Here the data is the second byte of the CB instruction.
         instructionCB(data);
         break;
+    case opcodes::InstructionType::JR:
+        instructionJR(current_instruction, data);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -1003,6 +1006,37 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
     } else {
         abort_execution<NotImplementedError>("CB suffix {:02X} not implemented");
     }
+}
+
+void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
+    bool jump_condition = [&] {
+        switch (instruction.condition_type) {
+        case opcodes::ConditionType::None:
+            return true;
+        case opcodes::ConditionType::NonCarry:
+            return !is_flag_set(flags::carry);
+        case opcodes::ConditionType::NonZero:
+            return !is_flag_set(flags::zero);
+        case opcodes::ConditionType::Zero:
+            return is_flag_set(flags::zero);
+        case opcodes::ConditionType::Carry:
+            return is_flag_set(flags::carry);
+        default:
+            abort_execution<LogicError>(
+                fmt::format("JR {:02X} could not handle {}", data,
+                            magic_enum::enum_name(instruction.condition_type)));
+            return false;
+        }
+    }();
+    if (!jump_condition) {
+        return;
+    }
+    // For C++20 this is defined behaviour since signed integers are twos complement
+    // On older standards this is implementation defined
+    // https://stackoverflow.com/questions/13150449/efficient-unsigned-to-signed-cast-avoiding-implementation-defined-behavior
+    auto immediate = static_cast<int8_t>(data);
+    registers.pc += immediate;
+    m_emulator->elapse_cycles(1);
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

@@ -935,6 +935,12 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
 
 void Cpu::instructionXOR(opcodes::Instruction instruction) {
     registers.a = registers.a ^ get_register_value(instruction.register_type_right);
+    if (registers.a == 0) {
+        set_zero_flag(BitValues::Active);
+    }
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+    set_carry_flag(BitValues::Inactive);
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

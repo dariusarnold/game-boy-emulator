@@ -249,6 +249,9 @@ private:
     void instructionLD(opcodes::Instruction instruction, uint16_t data);
 
     void instructionXOR(opcodes::Instruction instruction);
+
+    // data is the second byte of the whole CB instruction
+    void instructionCB(uint8_t cb_opcode);
 };
 
 namespace internal {

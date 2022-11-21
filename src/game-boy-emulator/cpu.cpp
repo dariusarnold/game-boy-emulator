@@ -19,6 +19,7 @@ bool Cpu::step() {
     previous_instruction = current_instruction;
     current_instruction = fetch_instruction();
     print(fmt::format("Executing {}\n", current_instruction), Verbosity::LEVEL_INFO);
+    // TODO: the additional fetch could be done conditionally
     auto data = fetch_data(current_instruction);
     switch (current_instruction.instruction_type) {
     case opcodes::InstructionType::LD:
@@ -26,6 +27,10 @@ bool Cpu::step() {
         break;
     case opcodes::InstructionType::XOR:
         instructionXOR(current_instruction);
+        break;
+    case opcodes::InstructionType::CB:
+        // Here the data is the second byte of the CB instruction.
+        instructionCB(data);
         break;
     default:
         abort_execution<NotImplementedError>(
@@ -723,10 +728,6 @@ t_cycle Cpu::cb(uint8_t instruction_byte) {
 
 opcodes::Instruction Cpu::fetch_instruction() {
     auto byte = m_emulator->get_bus()->read_byte(registers.pc);
-    if (byte == 0xCB) {
-        auto byte2 = m_emulator->get_bus()->read_byte(registers.pc + 1);
-        abort_execution<NotImplementedError>(fmt::format("CB {} Prefixed opcode not supported", byte2));
-    }
     auto instruction = opcodes::get_instruction_by_value(byte);
     if (instruction.instruction_type == opcodes::InstructionType::NONE) {
         abort_execution<NotImplementedError>(
@@ -744,6 +745,11 @@ uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
     switch (instruction.interaction_type) {
     case opcodes::InteractionType::None:
         return 0;
+    case opcodes::InteractionType::ImmediateByte:
+        low_byte = m_emulator->get_bus()->read_byte(registers.pc);
+        registers.pc++;
+        m_emulator->elapse_cycles(1);
+        return low_byte;
     case opcodes::InteractionType::WordToRegister:
         low_byte = m_emulator->get_bus()->read_byte(registers.pc);
         registers.pc++;
@@ -947,6 +953,56 @@ void Cpu::instructionXOR(opcodes::Instruction instruction) {
     set_subtract_flag(BitValues::Inactive);
     set_half_carry_flag(BitValues::Inactive);
     set_carry_flag(BitValues::Inactive);
+}
+
+void Cpu::instructionCB(uint8_t cb_opcode) {
+    // For all CB-prefixed instructions the register follows a regular pattern.
+    constexpr static opcodes::RegisterType cb_registers[]
+        = {opcodes::RegisterType::B,  opcodes::RegisterType::C, opcodes::RegisterType::D,
+           opcodes::RegisterType::E,  opcodes::RegisterType::H, opcodes::RegisterType::L,
+           opcodes::RegisterType::HL, opcodes::RegisterType::A};
+    opcodes::RegisterType register_type = cb_registers[cb_opcode & 0b111];
+    auto bit = internal::op_code_to_bit(cb_opcode);
+    uint8_t value = [&] {
+        if (register_type == opcodes::RegisterType::HL) {
+            // Indirect access
+            auto x = m_emulator->get_bus()->read_byte(registers.hl);
+            m_emulator->elapse_cycles(1);
+            return x;
+        } else {
+            return static_cast<uint8_t>(get_register_value(register_type));
+        }
+    }();
+    if (cb_opcode >= 0xC0) {
+        // Set bit instruction or Reset bit instruction. Since only the operation differs and the
+        // write back stays the same, handle them accordingly.
+        if (cb_opcode >= 0x80) {
+            print(fmt::format("Prefix CB Reset bit {} in {}\n", bit,
+                              magic_enum::enum_name(register_type)),
+                  Verbosity::LEVEL_INFO);
+            bitmanip::unset(value, bit);
+        } else {
+            print(fmt::format("Prefix CB Set bit {} in {}\n", bit,
+                              magic_enum::enum_name(register_type)),
+                  Verbosity::LEVEL_INFO);
+            bitmanip::set(value, bit);
+        }
+        if (register_type == opcodes::RegisterType::HL) {
+            // Indirect access
+            m_emulator->get_bus()->write_byte(registers.hl, value);
+            m_emulator->elapse_cycles(1);
+        } else {
+            set_register_value(register_type, value);
+        }
+    } else if (cb_opcode >= 0x40) {
+        // Bit test instruction (This just sets flags and doesn't modify registers or memory)
+        print(
+            fmt::format("Prefix CB Test bit {} in {}\n", bit, magic_enum::enum_name(register_type)),
+            Verbosity::LEVEL_INFO);
+        test_bit(value, bit);
+    } else {
+        abort_execution<NotImplementedError>("CB suffix {:02X} not implemented");
+    }
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

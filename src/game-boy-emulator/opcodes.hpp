@@ -34,6 +34,7 @@ enum class InstructionType {
     // Complement (Logical NOT)
     CPL,
     XOR,
+    CB,
 };
 
 enum class RegisterType {
@@ -98,7 +99,7 @@ struct Instruction {
 };
 
 
-constexpr std::array<Instruction, 0xFF> instructions{
+constexpr std::array<Instruction, 0x100> instructions{
     // 0x00
     Instruction{InstructionType::NOP},
     // 0x01 Load 16 bit immediate into BC
@@ -452,7 +453,166 @@ constexpr std::array<Instruction, 0xFF> instructions{
     Instruction{},
     // 0xAF
     Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A, RegisterType::A},
-
+    // 0xB0
+    Instruction{},
+    // 0xB1
+    Instruction{},
+    // 0xB2
+    Instruction{},
+    // 0xB3
+    Instruction{},
+    // 0xB4
+    Instruction{},
+    // 0xB5
+    Instruction{},
+    // 0xB6
+    Instruction{},
+    // 0xB7
+    Instruction{},
+    // 0xB8
+    Instruction{},
+    // 0xB9
+    Instruction{},
+    // 0xBA
+    Instruction{},
+    // 0xBB
+    Instruction{},
+    // 0xBC
+    Instruction{},
+    // 0xBD
+    Instruction{},
+    // 0xBE
+    Instruction{},
+    // 0xBF
+    Instruction{},
+    // 0xC0
+    Instruction{},
+    // 0xC1
+    Instruction{},
+    // 0xC2
+    Instruction{},
+    // 0xC3
+    Instruction{},
+    // 0xC4
+    Instruction{},
+    // 0xC5
+    Instruction{},
+    // 0xC6
+    Instruction{},
+    // 0xC7
+    Instruction{},
+    // 0xC8
+    Instruction{},
+    // 0xC9
+    Instruction{},
+    // 0xCA
+    Instruction{},
+    // 0xCB
+    Instruction{InstructionType::CB, InteractionType::ImmediateByte},
+    // 0xCC
+    Instruction{},
+    // 0xCD
+    Instruction{},
+    // 0xCE
+    Instruction{},
+    // 0xCF
+    Instruction{},
+    // 0xD0
+    Instruction{},
+    // 0xD1
+    Instruction{},
+    // 0xD2
+    Instruction{},
+    // 0xD3
+    Instruction{},
+    // 0xD4
+    Instruction{},
+    // 0xD5
+    Instruction{},
+    // 0xD6
+    Instruction{},
+    // 0xD7
+    Instruction{},
+    // 0xD8
+    Instruction{},
+    // 0xD9
+    Instruction{},
+    // 0xDA
+    Instruction{},
+    // 0xDB
+    Instruction{},
+    // 0xDC
+    Instruction{},
+    // 0xDD
+    Instruction{},
+    // 0xDE
+    Instruction{},
+    // 0xDF
+    Instruction{},
+    // 0xE0
+    Instruction{},
+    // 0xE1
+    Instruction{},
+    // 0xE2
+    Instruction{},
+    // 0xE3
+    Instruction{},
+    // 0xE4
+    Instruction{},
+    // 0xE5
+    Instruction{},
+    // 0xE6
+    Instruction{},
+    // 0xE7
+    Instruction{},
+    // 0xE8
+    Instruction{},
+    // 0xE9
+    Instruction{},
+    // 0xEA
+    Instruction{},
+    // 0xEB
+    Instruction{},
+    // 0xEC
+    Instruction{},
+    // 0xED
+    Instruction{},
+    // 0xEE
+    Instruction{},
+    // 0xEF
+    Instruction{},
+    // 0xF0
+    Instruction{},
+    // 0xF1
+    Instruction{},
+    // 0xF2
+    Instruction{},
+    // 0xF3
+    Instruction{},
+    // 0xF4
+    Instruction{},
+    // 0xF5
+    Instruction{},
+    // 0xF6
+    Instruction{},
+    // 0xF7
+    Instruction{},
+    // 0xF8
+    Instruction{},
+    // 0xF9
+    Instruction{},
+    // 0xFA
+    Instruction{},
+    // 0xFB
+    Instruction{},
+    // 0xFC
+    Instruction{},
+    // 0xFD
+    Instruction{},
+    // 0xFE
+    Instruction{},
+    // 0xFF
+    Instruction{}
 };
 
 inline Instruction get_instruction_by_value(uint8_t value) {

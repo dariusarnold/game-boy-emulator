@@ -57,12 +57,10 @@ enum class RegisterType {
 
 enum class InteractionType {
     None,
+    // Read immediate byte
     ImmediateByte,
+    // Read immediate word
     ImmediateWord,
-    // Load immediate word into register
-    WordToRegister,
-    // Load immediate byte into register
-    ByteToRegister,
     // Save register value to address pointed at by other register
     AddressRegister_Register,
     // Load register value from address pointed at by other register
@@ -104,7 +102,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x00
     Instruction{InstructionType::NOP},
     // 0x01 Load 16 bit immediate into BC
-    Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::BC},
+    Instruction{InstructionType::LD, InteractionType::ImmediateWord, RegisterType::BC},
     // 0x02 Save A to address pointed by BC
     Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::BC,
                 RegisterType::A},
@@ -115,7 +113,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x05
     Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::B},
     // 0x06 Load immediate byte into B
-    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::B},
+    Instruction{InstructionType::LD, InteractionType::ImmediateByte, RegisterType::B},
     // 0x07 Rotate A left with carry
     Instruction{InstructionType::RLC, InteractionType::Register, RegisterType::A},
     // 0x08 Save SP to address given by immediate word
@@ -131,13 +129,13 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x0D
     Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::C},
     // 0x0E
-    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::C},
+    Instruction{InstructionType::LD, InteractionType::ImmediateByte, RegisterType::C},
     // 0x0F
     Instruction{InstructionType::RRC, InteractionType::Register, RegisterType::A},
     // 0x10 STOP
     Instruction{InstructionType::STOP},
     // 0x11
-    Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::DE},
+    Instruction{InstructionType::LD, InteractionType::ImmediateWord, RegisterType::DE},
     // 0x12
     Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::DE, RegisterType::A},
     // 0x13
@@ -147,7 +145,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x15
     Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::D},
     // 0x16
-    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::D},
+    Instruction{InstructionType::LD, InteractionType::ImmediateByte, RegisterType::D},
     // 0x17
     Instruction{InstructionType::RL, InteractionType::Register, RegisterType::A},
     // 0x18
@@ -163,13 +161,13 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x1D
     Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::E},
     // 0x1E
-    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::E},
+    Instruction{InstructionType::LD, InteractionType::ImmediateByte, RegisterType::E},
     // 0x1F
     Instruction{InstructionType::RR, InteractionType::Register, RegisterType::A},
     // 0x20 Jump if last result was non zero
     Instruction{InstructionType::JR, InteractionType::ImmediateByte, RegisterType::None, RegisterType::None, ConditionType::NonZero},
     // 0x21
-    Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::HL},
+    Instruction{InstructionType::LD, InteractionType::ImmediateWord, RegisterType::HL},
     // 0x22
     Instruction{InstructionType::LD, InteractionType::AddressRegisterIncrement_Register, RegisterType::HL, RegisterType::A},
     // 0x23
@@ -179,7 +177,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x25
     Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::H},
     // 0x26
-    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::H},
+    Instruction{InstructionType::LD, InteractionType::ImmediateByte, RegisterType::H},
     // 0x27 This instruction only exists for register A, so we don't have to specify the register here
     Instruction{InstructionType::DAA},
     // 0x28 Jump if last result was zero
@@ -195,13 +193,13 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x2D
     Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::L},
     // 0x2E
-    Instruction{InstructionType::LD, InteractionType::ByteToRegister, RegisterType::L},
+    Instruction{InstructionType::LD, InteractionType::ImmediateByte, RegisterType::L},
     // 0x2F This instruction only exists for register A, so we don't have to specify the register here
     Instruction{InstructionType::CPL},
     // 0x30
     Instruction{InstructionType::JR, InteractionType::ImmediateByte, RegisterType::None, RegisterType::None, ConditionType::NonCarry},
     // 0x31
-    Instruction{InstructionType::LD, InteractionType::WordToRegister, RegisterType::SP},
+    Instruction{InstructionType::LD, InteractionType::ImmediateWord, RegisterType::SP},
     // 0x32 Save A to address pointed at by HL and decrement HL
     Instruction{InstructionType::LD, InteractionType::AddressRegisterDecrement_Register, RegisterType::HL, RegisterType::A},
     // 0x33

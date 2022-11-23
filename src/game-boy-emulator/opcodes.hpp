@@ -15,6 +15,14 @@ enum class InstructionType {
     NONE,
     NOP,
     LD,
+    // Load with address register increment
+    LDI,
+    // Load with address register decrement
+    LDD,
+    // Load with offset 0xFF00
+    LDH,
+    // Add signed immediate byte to SP and save in HL
+    LDHL,
     ADD,
     INC,
     DEC,
@@ -55,30 +63,47 @@ enum class RegisterType {
     PC,
 };
 
+/**
+ * For the load instructions there are the following options:
+ *    | Destination                    | Source                  | Additional variants
+ * ---------------------------------------------------------------------
+ * 01 | Register                       | Immediate Byte          |
+ * 02 | Register                       | Immediate Word          |
+ * 03 | Register                       | Register                |
+ * 04 | AddressRegister                | Register                | Increment/decrement AddressRegister
+ * 05 | Register                       | AddressRegister         | Increment/decrement AddressRegister
+ * 06 | AddressRegister                | ImmediateByte           |
+ * 07 | AddressWord                    | Register                |
+ * 08 | AddressByte + fixed Offset     | RegisterA               |
+ * 09 | AddressRegister + fixed Offset | RegisterA               |
+ * 10 | RegisterA                      | AddressByte + fixedOffset |
+ * 11 | RegisterHL                     | RegisterSP + OffsetByte |
+ * 12 | RegisterA                      | AddressWord             |
+ *
+ * Increment/decrement are implemented as instruction types LDI/LDD.
+ * Fixed offsets are implemented as instruction type LDH.
+ * 11 is implemented as instruction type LDHL
+ */
 enum class InteractionType {
     None,
-    // Read immediate byte
-    ImmediateByte,
-    // Read immediate word
-    ImmediateWord,
-    // Save register value to address pointed at by other register
-    AddressRegister_Register,
-    // Load register value from address pointed at by other register
-    Register_AddressRegister,
-    // Save register to address pointed at by register and increment address register
-    AddressRegisterIncrement_Register,
-    // Save register to address pointed at by register and decrement address register
-    // Destination AddressRegister _ Source Register
-    AddressRegisterDecrement_Register,
-    // Load register from address pointed at by register and increment address register
-    Register_AddressRegisterIncrement,
     // Operate on a single register
     Register,
-    // Save register to address given by immediate word
-    AddressWord_Register,
-    // Operation between two registers where one is modified
-    // Destination _ Source
+    // 01 - Read immediate byte
+    ImmediateByte,
+    // 02 - Read immediate word
+    ImmediateWord,
+    // 03 - Operation between two registers where one is modified
     Register_Register,
+    // 04 - Save register value to address pointed at by other register
+    AddressRegister_Register,
+    // 05 - Load register value from address pointed at by other register
+    Register_AddressRegister,
+    // 06 - Save immediate byte to address pointed at by register
+    AddressRegister_ImmediateByte,
+    // 07 - Save register to address given by immediate word
+    AddressWord_Register,
+    // 12 - Load register from address given by immediate word
+    Register_AddressWord,
 };
 
 enum class ConditionType {
@@ -169,7 +194,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x21
     Instruction{InstructionType::LD, InteractionType::ImmediateWord, RegisterType::HL},
     // 0x22
-    Instruction{InstructionType::LD, InteractionType::AddressRegisterIncrement_Register, RegisterType::HL, RegisterType::A},
+    Instruction{InstructionType::LDI, InteractionType::AddressRegister_Register, RegisterType::HL, RegisterType::A},
     // 0x23
     Instruction{InstructionType::INC, InteractionType::Register, RegisterType::HL},
     // 0x24
@@ -185,7 +210,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x29
     Instruction{InstructionType::ADD, InteractionType::Register_Register, RegisterType::HL, RegisterType::HL},
     // 0x2A
-    Instruction{InstructionType::LD, InteractionType::Register_AddressRegisterIncrement, RegisterType::A, RegisterType::HL},
+    Instruction{InstructionType::LDI, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
     // 0x2B
     Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::HL},
     // 0x2C
@@ -201,7 +226,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x31
     Instruction{InstructionType::LD, InteractionType::ImmediateWord, RegisterType::SP},
     // 0x32 Save A to address pointed at by HL and decrement HL
-    Instruction{InstructionType::LD, InteractionType::AddressRegisterDecrement_Register, RegisterType::HL, RegisterType::A},
+    Instruction{InstructionType::LDD, InteractionType::AddressRegister_Register, RegisterType::HL, RegisterType::A},
     // 0x33
     Instruction{},
     // 0x34
@@ -209,7 +234,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x35
     Instruction{},
     // 0x36
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::AddressRegister_ImmediateByte, RegisterType::HL},
     // 0x37
     Instruction{},
     // 0x38
@@ -217,7 +242,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x39
     Instruction{},
     // 0x3A
-    Instruction{},
+    Instruction{InstructionType::LDD, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
     // 0x3B
     Instruction{},
     // 0x3C
@@ -225,137 +250,137 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x3D
     Instruction{},
     // 0x3E
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::ImmediateByte, RegisterType::A},
     // 0x3F
     Instruction{},
     // 0x40
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::B, RegisterType::B},
     // 0x41
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::B, RegisterType::C},
     // 0x42
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::B, RegisterType::D},
     // 0x43
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::B, RegisterType::E},
     // 0x44
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::B, RegisterType::H},
     // 0x45
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::B, RegisterType::L},
     // 0x46
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_AddressRegister, RegisterType::B, RegisterType::HL},
     // 0x47
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::B, RegisterType::A},
     // 0x48
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::C, RegisterType::B},
     // 0x49
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::C, RegisterType::C},
     // 0x4A
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::C, RegisterType::D},
     // 0x4B
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::C, RegisterType::E},
     // 0x4C
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::C, RegisterType::H},
     // 0x4D
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::C, RegisterType::L},
     // 0x4E
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_AddressRegister, RegisterType::C, RegisterType::HL},
     // 0x4F
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::C, RegisterType::A},
     // 0x50
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::D, RegisterType::B},
     // 0x51
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::D, RegisterType::C},
     // 0x52
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::D, RegisterType::D},
     // 0x53
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::D, RegisterType::E},
     // 0x54
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::D, RegisterType::H},
     // 0x55
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::D, RegisterType::L},
     // 0x56
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_AddressRegister, RegisterType::D, RegisterType::HL},
     // 0x57
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::D, RegisterType::A},
     // 0x58
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::E, RegisterType::B},
     // 0x59
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::E, RegisterType::C},
     // 0x5A
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::E, RegisterType::D},
     // 0x5B
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::E, RegisterType::E},
     // 0x5C
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::E, RegisterType::H},
     // 0x5D
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::E, RegisterType::L},
     // 0x5E
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_AddressRegister, RegisterType::E, RegisterType::HL},
     // 0x5F
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::E, RegisterType::A},
     // 0x60
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::H, RegisterType::B},
     // 0x61
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::H, RegisterType::C},
     // 0x62
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::H, RegisterType::D},
     // 0x63
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::H, RegisterType::E},
     // 0x64
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::H, RegisterType::H},
     // 0x65
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::H, RegisterType::L},
     // 0x66
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_AddressRegister, RegisterType::H, RegisterType::HL},
     // 0x67
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::H, RegisterType::A},
     // 0x68
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::L, RegisterType::B},
     // 0x69
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::L, RegisterType::C},
     // 0x6A
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::L, RegisterType::D},
     // 0x6B
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::L, RegisterType::E},
     // 0x6C
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::L, RegisterType::H},
     // 0x6D
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::L, RegisterType::L},
     // 0x6E
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_AddressRegister, RegisterType::L, RegisterType::HL},
     // 0x6F
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::L, RegisterType::A},
     // 0x70
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::HL, RegisterType::B},
     // 0x71
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::HL, RegisterType::C},
     // 0x72
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::HL, RegisterType::D},
     // 0x73
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::HL, RegisterType::E},
     // 0x74
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::HL, RegisterType::H},
     // 0x75
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::HL, RegisterType::L},
     // 0x76
     Instruction{},
     // 0x77
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::HL, RegisterType::A},
     // 0x78
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::A, RegisterType::B},
     // 0x79
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::A, RegisterType::C},
     // 0x7A
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::A, RegisterType::D},
     // 0x7B
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::A, RegisterType::E},
     // 0x7C
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::A, RegisterType::H},
     // 0x7D
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::A, RegisterType::L},
     // 0x7E
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
     // 0x7F
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::A, RegisterType::A},
     // 0x80
     Instruction{},
     // 0x81
@@ -549,11 +574,11 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xDF
     Instruction{},
     // 0xE0
-    Instruction{},
+    Instruction{InstructionType::LDH, InteractionType::ImmediateByte, RegisterType::None, RegisterType::A},
     // 0xE1
     Instruction{},
     // 0xE2
-    Instruction{},
+    Instruction{InstructionType::LDH, InteractionType::None, RegisterType::C, RegisterType::A},
     // 0xE3
     Instruction{},
     // 0xE4
@@ -569,7 +594,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xE9
     Instruction{},
     // 0xEA
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::AddressWord_Register, RegisterType::None, RegisterType::A},
     // 0xEB
     Instruction{},
     // 0xEC
@@ -581,7 +606,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xEF
     Instruction{},
     // 0xF0
-    Instruction{},
+    Instruction{InstructionType::LDH, InteractionType::ImmediateByte, RegisterType::A},
     // 0xF1
     Instruction{},
     // 0xF2
@@ -597,11 +622,11 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xF7
     Instruction{},
     // 0xF8
-    Instruction{},
+    Instruction{InstructionType::LDHL, InteractionType::ImmediateByte, RegisterType::HL, RegisterType::SP},
     // 0xF9
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::SP, RegisterType::HL},
     // 0xFA
-    Instruction{},
+    Instruction{InstructionType::LD, InteractionType::Register_AddressWord, RegisterType::A},
     // 0xFB
     Instruction{},
     // 0xFC

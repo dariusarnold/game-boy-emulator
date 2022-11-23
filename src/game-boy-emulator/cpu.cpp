@@ -23,7 +23,15 @@ bool Cpu::step() {
     auto data = fetch_data(current_instruction);
     switch (current_instruction.instruction_type) {
     case opcodes::InstructionType::LD:
+    case opcodes::InstructionType::LDD:
+    case opcodes::InstructionType::LDI:
         instructionLD(current_instruction, data);
+        break;
+    case opcodes::InstructionType::LDH:
+        instructionLDH(current_instruction, data);
+        break;
+    case opcodes::InstructionType::LDHL:
+        registers.hl = registers.sp + data;
         break;
     case opcodes::InstructionType::XOR:
         instructionXOR(current_instruction);
@@ -747,13 +755,20 @@ uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
     uint8_t low_byte = 0;
     switch (instruction.interaction_type) {
     case opcodes::InteractionType::None:
+    case opcodes::InteractionType::Register:
+    case opcodes::InteractionType::Register_Register:
+    case opcodes::InteractionType::AddressRegister_Register:
+    case opcodes::InteractionType::Register_AddressRegister:
         return 0;
     case opcodes::InteractionType::ImmediateByte:
+    case opcodes::InteractionType::AddressRegister_ImmediateByte:
         low_byte = m_emulator->get_bus()->read_byte(registers.pc);
         registers.pc++;
         m_emulator->elapse_cycles(1);
         return low_byte;
     case opcodes::InteractionType::ImmediateWord:
+    case opcodes::InteractionType::Register_AddressWord:
+    case opcodes::InteractionType::AddressWord_Register:
         low_byte = m_emulator->get_bus()->read_byte(registers.pc);
         registers.pc++;
         m_emulator->elapse_cycles(1);
@@ -761,9 +776,6 @@ uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
         registers.pc++;
         m_emulator->elapse_cycles(1);
         return bitmanip::word_from_bytes(high_byte, low_byte);
-    case opcodes::InteractionType::Register_Register:
-    case opcodes::InteractionType::AddressRegisterDecrement_Register:
-        return get_register_value(instruction.register_type_source);
     default:
         abort_execution<NotImplementedError>(
             fmt::format("fetch_data: InteractionType {} not implemented",
@@ -932,20 +944,78 @@ uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) {
 }
 
 void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
+    uint16_t value = 0;
     switch (instruction.interaction_type) {
     case opcodes::InteractionType::ImmediateByte:
     case opcodes::InteractionType::ImmediateWord:
         set_register_value(instruction.register_type_destination, data);
         return;
-    case opcodes::InteractionType::AddressRegisterDecrement_Register:
-        m_emulator->get_bus()->write_byte(get_register_value(instruction.register_type_destination), data);
-        set_register_value(instruction.register_type_destination,
-                           get_register_value(instruction.register_type_destination) - 1);
+    case opcodes::InteractionType::Register_Register:
+        value = get_register_value(instruction.register_type_source);
+        set_register_value(instruction.register_type_destination, value);
+        return;
+    case opcodes::InteractionType::AddressRegister_Register:
+        // This is actually the address of the destination.
+        value = get_register_value(instruction.register_type_destination);
+        m_emulator->get_bus()->write_byte(value,
+                                          get_register_value(instruction.register_type_source));
+        m_emulator->elapse_cycles(1);
+        if (instruction.instruction_type == opcodes::InstructionType::LDD) {
+            set_register_value(instruction.register_type_destination, value - 1);
+        } else if (instruction.instruction_type == opcodes::InstructionType::LDI) {
+            set_register_value(instruction.register_type_destination, value + 1);
+        }
+        return;
+    case opcodes::InteractionType::Register_AddressRegister:
+        value = m_emulator->get_bus()->read_byte(
+            get_register_value(instruction.register_type_source));
+        m_emulator->elapse_cycles(1);
+        set_register_value(instruction.register_type_destination, value);
+        if (instruction.instruction_type == opcodes::InstructionType::LDD) {
+            set_register_value(instruction.register_type_source, value - 1);
+        } else if (instruction.instruction_type == opcodes::InstructionType::LDI) {
+            set_register_value(instruction.register_type_source, value + 1);
+        }
+        return;
+    case opcodes::InteractionType::AddressRegister_ImmediateByte:
+        // read address register
+        value = get_register_value(instruction.register_type_destination);
+        m_emulator->get_bus()->write_byte(value, data);
+        m_emulator->elapse_cycles(1);
+        return;
+    case opcodes::InteractionType::AddressWord_Register:
+        m_emulator->get_bus()->write_byte(data,
+                                          get_register_value(instruction.register_type_source));
+        m_emulator->elapse_cycles(1);
+        return;
+    case opcodes::InteractionType::Register_AddressWord:
+        value = m_emulator->get_bus()->read_byte(data);
+        m_emulator->elapse_cycles(1);
+        set_register_value(instruction.register_type_destination, value);
         return;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("LD with InteractionType {} not implemented",
                         magic_enum::enum_name(instruction.interaction_type)));
+    }
+}
+
+void Cpu::instructionLDH(opcodes::Instruction instruction, uint16_t data) {
+    const uint16_t offset = 0xFF00;
+    if (instruction.interaction_type == opcodes::InteractionType::ImmediateByte) {
+        if (instruction.register_type_destination == opcodes::RegisterType::None) {
+            // 0xE0 LDH (n),A data is the address where we have to store A
+            m_emulator->get_bus()->write_byte(data + offset, registers.a);
+            m_emulator->elapse_cycles(1);
+        } else {
+            // 0xF0 LDH A,(n)
+            registers.a = m_emulator->get_bus()->read_byte(data + offset);
+            m_emulator->elapse_cycles(1);
+        }
+    } else {
+        // 0xF2 LDH (C),A
+        m_emulator->get_bus()->write_byte(registers.c + offset, registers.a);
+        m_emulator->elapse_cycles(1);
     }
 }
 

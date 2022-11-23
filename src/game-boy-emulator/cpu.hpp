@@ -247,6 +247,7 @@ private:
     uint16_t get_register_value(opcodes::RegisterType register_type);
 
     void instructionLD(opcodes::Instruction instruction, uint16_t data);
+    void instructionLDH(opcodes::Instruction instruction, uint16_t data);
 
     void instructionXOR(opcodes::Instruction instruction);
 

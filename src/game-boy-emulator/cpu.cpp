@@ -43,6 +43,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::JR:
         instructionJR(current_instruction, data);
         break;
+    case opcodes::InstructionType::INC:
+        instructionINC(current_instruction);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -557,6 +560,22 @@ void Cpu::set_carry_flag(BitValues value) {
     bitmanip::set(registers.f, as_integral(flags::carry), value);
 }
 
+void Cpu::set_zero_flag(bool flag_set) {
+    set_zero_flag(flag_set ? BitValues::Active : BitValues::Inactive);
+}
+
+void Cpu::set_subtract_flag(bool flag_set) {
+    set_subtract_flag(flag_set ? BitValues::Active : BitValues::Inactive);
+}
+
+void Cpu::set_half_carry_flag(bool flag_set) {
+    set_half_carry_flag(flag_set ? BitValues::Active : BitValues::Inactive);
+}
+
+void Cpu::set_carry_flag(bool flag_set) {
+    set_carry_flag(flag_set ? BitValues::Active : BitValues::Inactive);
+}
+
 bool Cpu::is_flag_set(flags flag) const {
     return bitmanip::is_bit_set(registers.f, as_integral(flag));
 }
@@ -756,6 +775,7 @@ uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
     switch (instruction.interaction_type) {
     case opcodes::InteractionType::None:
     case opcodes::InteractionType::Register:
+    case opcodes::InteractionType::AddressRegister:
     case opcodes::InteractionType::Register_Register:
     case opcodes::InteractionType::AddressRegister_Register:
     case opcodes::InteractionType::Register_AddressRegister:
@@ -1109,6 +1129,45 @@ void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
     registers.pc += immediate;
     m_emulator->elapse_cycles(1);
 }
+
+void Cpu::instructionINC(opcodes::Instruction instruction) {
+    if (instruction.interaction_type == opcodes::InteractionType::AddressRegister) {
+        // Indirect increment
+        auto address = get_register_value(instruction.register_type_destination);
+        auto value = m_emulator->get_bus()->read_byte(address);
+        m_emulator->get_bus()->write_byte(address, value + 1);
+        m_emulator->elapse_cycles(3);
+    } else {
+        // Direct increment
+        auto value = get_register_value(instruction.register_type_destination);
+        auto bit_3_before = bitmanip::is_bit_set(value, 3);
+        set_register_value(instruction.register_type_destination, value + 1);
+
+        //        bool bit_3_before = bitmanip::is_bit_set(m_register.get(), 3);
+        //        m_register.set(m_register.get() + 1);
+        //        bool bit_3_after = bitmanip::is_bit_set(m_register.get(), 3);
+        //        half_carry_flag.set(bit_3_before and not bit_3_after);
+        //        zero_flag.set(m_register.get() == 0);
+        //        subtract_flag.set_inactive();
+
+        switch (instruction.register_type_destination) {
+        case opcodes::RegisterType::BC:
+        case opcodes::RegisterType::DE:
+        case opcodes::RegisterType::HL:
+        case opcodes::RegisterType::SP:
+            m_emulator->elapse_cycles(2);
+            break;
+        default:
+            bool bit_3_before = bitmanip::is_bit_set(value, 3);
+            bool bit_3_after = bitmanip::is_bit_set(value + 1, 3);
+            set_half_carry_flag(bit_3_before && !bit_3_after);
+            set_zero_flag(value + 1 == 0);
+            set_subtract_flag(BitValues::Inactive);
+            m_emulator->elapse_cycles(1);
+        }
+    }
+}
+
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {
     // Divide by lowest opcode which is regular (part of a 4x16 block in op table)

@@ -88,6 +88,8 @@ enum class InteractionType {
     None,
     // Operate on a single register
     Register,
+    // Operate on value pointed at by address register
+    AddressRegister,
     // 01 - Read immediate byte
     ImmediateByte,
     // 02 - Read immediate word
@@ -166,7 +168,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x13
     Instruction{InstructionType::INC, InteractionType::Register, RegisterType::DE},
     // 0x14
-    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::DE},
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::D},
     // 0x15
     Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::D},
     // 0x16
@@ -228,9 +230,9 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x32 Save A to address pointed at by HL and decrement HL
     Instruction{InstructionType::LDD, InteractionType::AddressRegister_Register, RegisterType::HL, RegisterType::A},
     // 0x33
-    Instruction{},
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::SP},
     // 0x34
-    Instruction{},
+    Instruction{InstructionType::INC, InteractionType::AddressRegister, RegisterType::HL},
     // 0x35
     Instruction{},
     // 0x36
@@ -246,7 +248,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x3B
     Instruction{},
     // 0x3C
-    Instruction{},
+    Instruction{InstructionType::INC, InteractionType::Register, RegisterType::A},
     // 0x3D
     Instruction{},
     // 0x3E

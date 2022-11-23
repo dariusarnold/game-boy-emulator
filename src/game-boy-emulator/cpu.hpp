@@ -138,6 +138,10 @@ private:
     void set_subtract_flag(BitValues value);
     void set_half_carry_flag(BitValues value);
     void set_carry_flag(BitValues value);
+    void set_zero_flag(bool flag_set);
+    void set_subtract_flag(bool flag_set);
+    void set_half_carry_flag(bool flag_set);
+    void set_carry_flag(bool flag_set);
 
     /**
      * Return true if flag is set, otherwise return false.
@@ -255,6 +259,8 @@ private:
     void instructionCB(uint8_t cb_opcode);
 
     void instructionJR(opcodes::Instruction instruction, uint8_t data);
+
+    void instructionINC(opcodes::Instruction instruction);
 };
 
 namespace internal {

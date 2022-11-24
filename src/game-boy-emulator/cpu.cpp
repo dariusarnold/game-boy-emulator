@@ -50,6 +50,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::CALL:
         instructionCALL(current_instruction, data);
         break;
+    case opcodes::InstructionType::PUSH:
+        instructionPUSH(current_instruction);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -1099,7 +1102,8 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
             Verbosity::LEVEL_INFO);
         test_bit(value, bit);
     } else {
-        abort_execution<NotImplementedError>("CB suffix {:02X} not implemented");
+        abort_execution<NotImplementedError>(
+            fmt::format("CB suffix {:02X} not implemented", cb_opcode));
     }
 }
 
@@ -1199,6 +1203,13 @@ void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
         m_emulator->elapse_cycles(2);
         registers.pc = data;
     }
+}
+void Cpu::instructionPUSH(opcodes::Instruction instruction) {
+    m_emulator->elapse_cycles(1);
+    m_emulator->get_bus()->write_word(registers.sp,
+                                      get_register_value(instruction.register_type_destination));
+    registers.sp -= 2;
+    m_emulator->elapse_cycles(2);
 }
 
 

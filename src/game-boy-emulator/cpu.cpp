@@ -929,6 +929,9 @@ void Cpu::set_register_value(opcodes::RegisterType register_type, uint16_t value
     case opcodes::RegisterType::HL:
         registers.hl = value;
         return;
+    default:
+        abort_execution<LogicError>(
+            fmt::format("Unhandled register type {}", magic_enum::enum_name(register_type)));
     }
 }
 
@@ -963,9 +966,8 @@ uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) {
     case opcodes::RegisterType::HL:
         return registers.hl;
     default:
-        // This can't happen since we checked all enum values above, but the compiler still warns
-        // about the missing return type (even with the unconditional throw in abort_execution).
-        abort_execution<LogicError>(fmt::format("Unknown register value {}", register_type));
+        abort_execution<LogicError>(
+            fmt::format("Unknown register value {}", magic_enum::enum_name(register_type)));
         return 0;
     }
 }
@@ -1056,13 +1058,17 @@ void Cpu::instructionXOR(opcodes::Instruction instruction) {
     set_carry_flag(BitValues::Inactive);
 }
 
-void Cpu::instructionCB(uint8_t cb_opcode) {
+opcodes::RegisterType get_register_cb(uint8_t cb_opcode) {
     // For all CB-prefixed instructions the register follows a regular pattern.
     constexpr static opcodes::RegisterType cb_registers[]
         = {opcodes::RegisterType::B,  opcodes::RegisterType::C, opcodes::RegisterType::D,
            opcodes::RegisterType::E,  opcodes::RegisterType::H, opcodes::RegisterType::L,
            opcodes::RegisterType::HL, opcodes::RegisterType::A};
-    opcodes::RegisterType register_type = cb_registers[cb_opcode & 0b111];
+    return cb_registers[cb_opcode & 0b111];
+}
+
+void Cpu::instructionCB(uint8_t cb_opcode) {
+    auto register_type = get_register_cb(cb_opcode);
     auto bit = internal::op_code_to_bit(cb_opcode);
     uint8_t value = [&] {
         if (register_type == opcodes::RegisterType::HL) {
@@ -1101,6 +1107,16 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
             fmt::format("Prefix CB Test bit {} in {}\n", bit, magic_enum::enum_name(register_type)),
             Verbosity::LEVEL_INFO);
         test_bit(value, bit);
+    } else if (cb_opcode >= 0x10 && cb_opcode <= 0x17) {
+        // Rotate left instruction
+        auto register_ = get_register_cb(cb_opcode);
+        bool cf = is_flag_set(flags::carry);
+        auto value = get_register_value(register_);
+        set_register_value(register_, bitmanip::rotate_left_carry(value, cf));
+        set_carry_flag(cf);
+        set_zero_flag(get_register_value(register_) == 0);
+        set_subtract_flag(BitValues::Inactive);
+        set_half_carry_flag(BitValues::Inactive);
     } else {
         abort_execution<NotImplementedError>(
             fmt::format("CB suffix {:02X} not implemented", cb_opcode));

@@ -261,6 +261,8 @@ private:
     void instructionJR(opcodes::Instruction instruction, uint8_t data);
 
     void instructionINC(opcodes::Instruction instruction);
+
+    void instructionCALL(opcodes::Instruction instruction, uint16_t data);
 };
 
 namespace internal {

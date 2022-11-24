@@ -21,6 +21,7 @@ bool Cpu::step() {
     print(fmt::format("Executing {}\n", current_instruction), Verbosity::LEVEL_INFO);
     // TODO: the additional fetch could be done conditionally
     auto data = fetch_data(current_instruction);
+    print(fmt::format("Data {:04X}\n", data), Verbosity::LEVEL_INFO);
     switch (current_instruction.instruction_type) {
     case opcodes::InstructionType::LD:
     case opcodes::InstructionType::LDD:
@@ -45,6 +46,9 @@ bool Cpu::step() {
         break;
     case opcodes::InstructionType::INC:
         instructionINC(current_instruction);
+        break;
+    case opcodes::InstructionType::CALL:
+        instructionCALL(current_instruction, data);
         break;
     default:
         abort_execution<NotImplementedError>(
@@ -1165,6 +1169,35 @@ void Cpu::instructionINC(opcodes::Instruction instruction) {
             set_subtract_flag(BitValues::Inactive);
             m_emulator->elapse_cycles(1);
         }
+    }
+}
+
+void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
+    bool condition_met =     [&] {
+        switch (instruction.condition_type) {
+        case opcodes::ConditionType::None:
+            return true;
+        case opcodes::ConditionType::NonCarry:
+            return !is_flag_set(flags::carry);
+        case opcodes::ConditionType::NonZero:
+            return !is_flag_set(flags::zero);
+        case opcodes::ConditionType::Zero:
+            return is_flag_set(flags::zero);
+        case opcodes::ConditionType::Carry:
+            return is_flag_set(flags::carry);
+        default:
+            abort_execution<LogicError>(
+                fmt::format("CALL {:04X} could not handle {}", data,
+                            magic_enum::enum_name(instruction.condition_type)));
+            return false;
+        }
+    }();
+    if (condition_met) {
+        m_emulator->elapse_cycles(1);
+        registers.sp -= 2;
+        m_emulator->get_bus()->write_word(registers.sp, registers.pc);
+        m_emulator->elapse_cycles(2);
+        registers.pc = data;
     }
 }
 

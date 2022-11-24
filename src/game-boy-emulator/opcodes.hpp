@@ -43,6 +43,7 @@ enum class InstructionType {
     CPL,
     XOR,
     CB,
+    CALL,
 };
 
 enum class RegisterType {
@@ -520,7 +521,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xC3
     Instruction{},
     // 0xC4
-    Instruction{},
+    Instruction{InstructionType::CALL, InteractionType::ImmediateWord, RegisterType::None, RegisterType::None, ConditionType::NonZero},
     // 0xC5
     Instruction{},
     // 0xC6
@@ -536,9 +537,9 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xCB
     Instruction{InstructionType::CB, InteractionType::ImmediateByte},
     // 0xCC
-    Instruction{},
+    Instruction{InstructionType::CALL, InteractionType::ImmediateWord, RegisterType::None, RegisterType::None, ConditionType::Zero},
     // 0xCD
-    Instruction{},
+    Instruction{InstructionType::CALL, InteractionType::ImmediateWord},
     // 0xCE
     Instruction{},
     // 0xCF
@@ -552,7 +553,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xD3
     Instruction{},
     // 0xD4
-    Instruction{},
+    Instruction{InstructionType::CALL, InteractionType::ImmediateWord, RegisterType::None, RegisterType::None, ConditionType::NonCarry},
     // 0xD5
     Instruction{},
     // 0xD6
@@ -568,7 +569,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xDB
     Instruction{},
     // 0xDC
-    Instruction{},
+    Instruction{InstructionType::CALL, InteractionType::ImmediateWord, RegisterType::None, RegisterType::None, ConditionType::Carry},
     // 0xDD
     Instruction{},
     // 0xDE

@@ -53,6 +53,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::PUSH:
         instructionPUSH(current_instruction);
         break;
+    case opcodes::InstructionType::RL:
+        instructionRL(current_instruction);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -1226,6 +1229,19 @@ void Cpu::instructionPUSH(opcodes::Instruction instruction) {
                                       get_register_value(instruction.register_type_destination));
     registers.sp -= 2;
     m_emulator->elapse_cycles(2);
+}
+
+void Cpu::instructionRL(opcodes::Instruction instruction) {
+    if (instruction.instruction_type == opcodes::InstructionType::RL) {
+        bool cf = is_flag_set(flags::carry);
+        registers.a =  bitmanip::rotate_left_carry(registers.a, cf);
+        set_carry_flag(cf);
+        set_zero_flag(BitValues::Inactive);
+        set_subtract_flag(BitValues::Inactive);
+        set_half_carry_flag(BitValues::Inactive);
+    } else {
+        abort_execution<LogicError>(fmt::format("Unexpected instruction {} in RL", instruction));
+    }
 }
 
 

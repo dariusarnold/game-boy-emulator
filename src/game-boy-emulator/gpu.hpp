@@ -12,7 +12,9 @@ class Gpu {
 public:
     Gpu();
 
+    uint8_t read_byte(uint16_t address);
 
+    void write_byte(uint16_t address, uint8_t value);
 
     std::vector<IMemoryRange*> get_mappable_memory();
 };

@@ -1,10 +1,11 @@
 #pragma once
 
-#include "memory_range.hpp"
+#include "memorymap.hpp"
 
+#include <array>
 
 class Gpu {
-    MemoryRange vram;
+    std::array<uint8_t, memmap::VRamSize> vram;
 public:
     Gpu();
 

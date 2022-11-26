@@ -5,7 +5,6 @@
 #include "opcodes.hpp"
 #include "registers.hpp"
 #include "interrupthandler.hpp"
-#include "memory_range.hpp"
 
 #include "fmt/format.h"
 
@@ -59,8 +58,6 @@ public:
      * Execute single step. Returns false if opcode at current program counter is invalid, else true
      */
     bool step();
-
-    std::vector<IMemoryRange*> get_mappable_memory();
 
     std::string get_minimal_debug_state();
 

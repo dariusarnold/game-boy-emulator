@@ -1,7 +1,5 @@
 #pragma once
 
-class IMemoryRange;
-#include "memory_range.hpp"
 
 class InterruptHandler {
     bool interrupt_master_enable_flag;

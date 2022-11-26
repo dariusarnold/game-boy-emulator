@@ -12,8 +12,6 @@ add_library(game_boy_emulator_library
         game-boy-emulator/emulator.hpp
         game-boy-emulator/gpu.cpp
         game-boy-emulator/gpu.hpp
-        game-boy-emulator/memory_range.cpp
-        game-boy-emulator/memory_range.hpp
         game-boy-emulator/graphics.cpp
         game-boy-emulator/graphics.hpp
         game-boy-emulator/interrupthandler.cpp

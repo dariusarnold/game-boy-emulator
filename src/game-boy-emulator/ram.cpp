@@ -7,10 +7,10 @@ Ram::Ram(Emulator* emulator) : m_emulator(emulator) {}
 
 uint8_t Ram::read_byte(uint16_t address) const {
     if (memmap::isIn(address, memmap::InternalRamBank0)) {
-        address -= memmap::InternalRamBank0Size;
+        address -= memmap::InternalRamBank0Begin;
         return internalRam[address];
     } else if (memmap::isIn(address, memmap::HighRam)) {
-        address -= memmap::HighRamSize;
+        address -= memmap::HighRamBegin;
         return highRam[address];
     }
     throw LogicError(fmt::format("Invalid ram read of address {:04X}", address));
@@ -24,10 +24,10 @@ uint16_t Ram::read_word(uint16_t address) const {
 
 void Ram::write_byte(uint16_t address, uint8_t value) {
     if (memmap::isIn(address, memmap::InternalRamBank0)) {
-        address -= memmap::InternalRamBank0Size;
+        address -= memmap::InternalRamBank0Begin;
         internalRam[address] = value;
     } else if (memmap::isIn(address, memmap::HighRam)) {
-        address -= memmap::HighRamSize;
+        address -= memmap::HighRamBegin;
         highRam[address] = value;
     } else {
         throw LogicError(

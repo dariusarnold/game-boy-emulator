@@ -23,9 +23,6 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
         return m_emulator->get_ram()->read_byte(address);
     } else if (memmap::isIn(address, memmap::VRam)) {
         return m_emulator->get_gpu()->read_byte(address);
-    } else if (memmap::isIn(address, memmap::BGMapData)
-               || memmap::isIn(address, memmap::CharacterRam)) {
-        return m_emulator->get_gpu()->read_byte(address);
     } else if (memmap::isIn(address, memmap::IORegisters)) {
         // TODO Those special cases are required for booting correctly
         if (address == 0xFF44) {

@@ -9,7 +9,7 @@
 
 // Begin and End are both inclusive
 #define X_MEMORY_MAP                                                                               \
-    X(0x0000, 0x0100, BootRom)                                                                     \
+    X(0x0000, 0x00FF, BootRom)                                                                     \
     X(0x0000, 0x7FFF, CartridgeRom)                                                                \
     X(0x0000, 0x00FF, RestartInterruptVectors)                                                     \
     X(0x0100, 0x104F, CardridgeHeader)                                                             \

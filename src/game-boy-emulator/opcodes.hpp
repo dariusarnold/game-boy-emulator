@@ -24,6 +24,7 @@ enum class InstructionType {
     // Add signed immediate byte to SP and save in HL
     LDHL,
     ADD,
+    SUB,
     INC,
     DEC,
     // Rotate left with carry
@@ -422,21 +423,21 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x8F
     Instruction{},
     // 0x90
-    Instruction{},
+    Instruction{InstructionType::SUB, InteractionType::Register_Register, RegisterType::A, RegisterType::B},
     // 0x91
-    Instruction{},
+    Instruction{InstructionType::SUB, InteractionType::Register_Register, RegisterType::A, RegisterType::C},
     // 0x92
-    Instruction{},
+    Instruction{InstructionType::SUB, InteractionType::Register_Register, RegisterType::A, RegisterType::D},
     // 0x93
-    Instruction{},
+    Instruction{InstructionType::SUB, InteractionType::Register_Register, RegisterType::A, RegisterType::E},
     // 0x94
-    Instruction{},
+    Instruction{InstructionType::SUB, InteractionType::Register_Register, RegisterType::A, RegisterType::H},
     // 0x95
-    Instruction{},
+    Instruction{InstructionType::SUB, InteractionType::Register_Register, RegisterType::A, RegisterType::L},
     // 0x96
-    Instruction{},
+    Instruction{InstructionType::SUB, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
     // 0x97
-    Instruction{},
+    Instruction{InstructionType::SUB, InteractionType::Register_Register, RegisterType::A, RegisterType::A},
     // 0x98
     Instruction{},
     // 0x99
@@ -562,7 +563,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xD5
     Instruction{InstructionType::PUSH, InteractionType::None, RegisterType::DE},
     // 0xD6
-    Instruction{},
+    Instruction{InstructionType::SUB, InteractionType::ImmediateByte, RegisterType::A},
     // 0xD7
     Instruction{},
     // 0xD8

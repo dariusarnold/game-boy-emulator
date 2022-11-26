@@ -68,7 +68,7 @@ void map_gb_color_to_rgba(It begin, It end) {
  * @return width, height of the image in pixels
  */
 std::pair<int, int> tile_data_to_image(std::span<uint8_t, 6143> vram, std::span<uint32_t, 384 * 64> image,
-                        int image_width_tiles, int image_height_tiles);
+                                       size_t image_width_tiles, size_t image_height_tiles);
 
 } // namespace gb
 } // namespace graphics

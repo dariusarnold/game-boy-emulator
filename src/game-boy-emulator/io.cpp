@@ -33,10 +33,10 @@ std::vector<uint8_t> load_rom_file(const std::filesystem::path& path) {
         return {};
     }
     auto pos = rom_file.tellg();
-    if (pos == 0) {
+    if (pos <= 0) {
         return {};
     }
-    std::vector<uint8_t> rom(pos);
+    std::vector<uint8_t> rom(static_cast<size_t>(pos));
     rom_file.seekg(0, std::ios::beg);
     rom_file.read(reinterpret_cast<char*>(rom.data()), pos);
     return rom;

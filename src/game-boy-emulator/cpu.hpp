@@ -36,7 +36,7 @@ class Cpu {
 
     opcodes::Instruction current_instruction;
     opcodes::Instruction previous_instruction;
-    
+
     // Controlls logging to stdout
     Verbosity verbosity;
 

@@ -54,15 +54,13 @@ target_include_directories(game_boy_emulator
         bindings
         )
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang as well as MSVC." OFF)
 
 if (WARNINGS_ENABLED)
     if (MSVC)
         target_compile_options(game_boy_emulatory_library PRIVATE /W4 /WX)
     else()
-    target_compile_options(game_boy_emulator_library PUBLIC
+    target_compile_options(game_boy_emulator_library PRIVATE
             # Catchalls to avoid listing many single warnings
             -Wall
             -Wextra
@@ -90,12 +88,12 @@ if (WARNINGS_ENABLED)
             # Initializing a class member from itself is a nasty and hard to spot bug, so we turn it
             # into a warning. Clang has the flag but wont do anything, but gcc spots the error.
             -Werror=init-self
+            -Wimplicit-fallthrough
             $<$<CXX_COMPILER_ID:Clang>:-Werror=delete-abstract-non-virtual-dtor>
             $<$<CXX_COMPILER_ID:GNU>:-Werror=delete-non-virtual-dtor>
             $<$<CXX_COMPILER_ID:Clang>:-Werror=constant-conversion>
             $<$<CXX_COMPILER_ID:GNU>:-Werror=overflow>
-            -Werror=return-type
-            -Werror=uninitialized
+            -Werror
             $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
             )
     endif()

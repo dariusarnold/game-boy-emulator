@@ -2,6 +2,8 @@
 #include "exceptions.hpp"
 #include "memorymap.hpp"
 
+#include "fmt/format.h"
+
 Gpu::Gpu() :
         vram{} {}
 

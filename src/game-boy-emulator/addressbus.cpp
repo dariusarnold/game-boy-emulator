@@ -8,6 +8,8 @@
 #include "memorymap.hpp"
 #include "ram.hpp"
 
+#include "fmt/format.h"
+
 
 AddressBus::AddressBus(Emulator* emulator) : m_emulator(emulator) {}
 

@@ -493,7 +493,7 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
         // Rotate left instruction
         auto register_ = get_register_cb(cb_opcode);
         bool cf = is_flag_set(flags::carry);
-        auto value = get_register_value(register_);
+        value = get_register_value(register_);
         set_register_value(register_, bitmanip::rotate_left_carry(value, cf));
         set_carry_flag(cf);
         set_zero_flag(get_register_value(register_) == 0);

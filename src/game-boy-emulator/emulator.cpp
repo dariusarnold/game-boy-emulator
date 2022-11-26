@@ -9,8 +9,8 @@
 
 
 Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<uint8_t>& game_rom) :
-        m_boot_rom(std::make_shared<BootRom>(this, boot_rom)),
         m_cartridge(std::make_shared<Cartridge>(this, game_rom)),
+        m_boot_rom(std::make_shared<BootRom>(this, boot_rom)),
         m_address_bus(std::make_shared<AddressBus>(this)),
         m_ram(std::make_shared<Ram>(this)),
         m_cpu(std::make_shared<Cpu>(this)),

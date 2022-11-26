@@ -26,6 +26,13 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
         return m_emulator->get_gpu()->read_byte(address);
     } else if (memmap::isIn(address, memmap::IORegisters)) {
         fmt::print("IGNORED: read from IO register {:04X}\n", address);
+        // TODO Those special cases are required for booting correctly
+        if (address == 0xFF44) {
+            return 0x90;
+        } else if (address == 0xFF42) {
+            static uint8_t value = 0x64;
+            return value--;
+        }
         return 0xFF;
     }
     throw NotImplementedError(fmt::format("Addressing unmapped memory byte at {:04X}", address));

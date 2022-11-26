@@ -266,6 +266,8 @@ private:
 
     void instructionPUSH(opcodes::Instruction instruction);
 
+    void instructionPOP(opcodes::Instruction instruction);
+
     void instructionRL(opcodes::Instruction instruction);
 };
 

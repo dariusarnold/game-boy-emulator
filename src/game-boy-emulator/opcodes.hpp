@@ -45,6 +45,7 @@ enum class InstructionType {
     CB,
     CALL,
     PUSH,
+    POP,
 };
 
 enum class RegisterType {
@@ -516,7 +517,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xC0
     Instruction{},
     // 0xC1
-    Instruction{},
+    Instruction{InstructionType::POP, InteractionType::None, RegisterType::BC},
     // 0xC2
     Instruction{},
     // 0xC3
@@ -548,7 +549,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xD0
     Instruction{},
     // 0xD1
-    Instruction{},
+    Instruction{InstructionType::POP, InteractionType::None, RegisterType::DE},
     // 0xD2
     Instruction{},
     // 0xD3
@@ -580,7 +581,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xE0
     Instruction{InstructionType::LDH, InteractionType::ImmediateByte, RegisterType::None, RegisterType::A},
     // 0xE1
-    Instruction{},
+    Instruction{InstructionType::POP, InteractionType::None, RegisterType::HL},
     // 0xE2
     Instruction{InstructionType::LDH, InteractionType::None, RegisterType::C, RegisterType::A},
     // 0xE3
@@ -612,7 +613,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xF0
     Instruction{InstructionType::LDH, InteractionType::ImmediateByte, RegisterType::A},
     // 0xF1
-    Instruction{},
+    Instruction{InstructionType::POP, InteractionType::None, RegisterType::AF},
     // 0xF2
     Instruction{},
     // 0xF3

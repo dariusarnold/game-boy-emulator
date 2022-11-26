@@ -56,6 +56,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::RL:
         instructionRL(current_instruction);
         break;
+    case opcodes::InstructionType::POP:
+        instructionPOP(current_instruction);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -1242,6 +1245,17 @@ void Cpu::instructionRL(opcodes::Instruction instruction) {
     } else {
         abort_execution<LogicError>(fmt::format("Unexpected instruction {} in RL", instruction));
     }
+}
+
+void Cpu::instructionPOP(opcodes::Instruction instruction) {
+    auto low_byte = m_emulator->get_bus()->read_byte(registers.sp);
+    registers.sp++;
+    m_emulator->elapse_cycles(1);
+    auto high_byte = m_emulator->get_bus()->read_byte(registers.sp);
+    registers.sp++;
+    m_emulator->elapse_cycles(1);
+    auto value = bitmanip::word_from_bytes(high_byte, low_byte);
+    set_register_value(instruction.register_type_destination, value);
 }
 
 

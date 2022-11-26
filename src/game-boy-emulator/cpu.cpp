@@ -1161,40 +1161,31 @@ void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
 }
 
 void Cpu::instructionINC(opcodes::Instruction instruction) {
+    uint16_t value;
     if (instruction.interaction_type == opcodes::InteractionType::AddressRegister) {
         // Indirect increment
         auto address = get_register_value(instruction.register_type_destination);
-        auto value = m_emulator->get_bus()->read_byte(address);
+        value = m_emulator->get_bus()->read_byte(address);
         m_emulator->get_bus()->write_byte(address, value + 1);
-        m_emulator->elapse_cycles(3);
+        m_emulator->elapse_cycles(2);
     } else {
         // Direct increment
-        auto value = get_register_value(instruction.register_type_destination);
-        auto bit_3_before = bitmanip::is_bit_set(value, 3);
+        value = get_register_value(instruction.register_type_destination);
         set_register_value(instruction.register_type_destination, value + 1);
-
-        //        bool bit_3_before = bitmanip::is_bit_set(m_register.get(), 3);
-        //        m_register.set(m_register.get() + 1);
-        //        bool bit_3_after = bitmanip::is_bit_set(m_register.get(), 3);
-        //        half_carry_flag.set(bit_3_before and not bit_3_after);
-        //        zero_flag.set(m_register.get() == 0);
-        //        subtract_flag.set_inactive();
-
-        switch (instruction.register_type_destination) {
-        case opcodes::RegisterType::BC:
-        case opcodes::RegisterType::DE:
-        case opcodes::RegisterType::HL:
-        case opcodes::RegisterType::SP:
-            m_emulator->elapse_cycles(2);
-            break;
-        default:
-            bool bit_3_before = bitmanip::is_bit_set(value, 3);
-            bool bit_3_after = bitmanip::is_bit_set(value + 1, 3);
-            set_half_carry_flag(bit_3_before && !bit_3_after);
-            set_zero_flag(value + 1 == 0);
-            set_subtract_flag(BitValues::Inactive);
-            m_emulator->elapse_cycles(1);
-        }
+    }
+    switch (instruction.register_type_destination) {
+    case opcodes::RegisterType::BC:
+    case opcodes::RegisterType::DE:
+    case opcodes::RegisterType::HL:
+    case opcodes::RegisterType::SP:
+        // No flags set in case of word register operations
+        break;
+    default:
+        bool bit_3_before = bitmanip::is_bit_set(value, 3);
+        bool bit_3_after = bitmanip::is_bit_set(value + 1, 3);
+        set_half_carry_flag(bit_3_before && !bit_3_after);
+        set_zero_flag(value + 1 == 0);
+        set_subtract_flag(BitValues::Inactive);
     }
 }
 

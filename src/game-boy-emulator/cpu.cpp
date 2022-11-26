@@ -1220,17 +1220,23 @@ void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
     }();
     if (condition_met) {
         m_emulator->elapse_cycles(1);
-        registers.sp -= 2;
-        m_emulator->get_bus()->write_word(registers.sp, registers.pc);
+        registers.sp -= 1;
+        auto bus = m_emulator->get_bus();
+        bus->write_byte(registers.sp, bitmanip::get_low_byte(registers.pc));
+        registers.sp -= 1;
+        bus->write_byte(registers.sp, bitmanip::get_high_byte(registers.pc));
         m_emulator->elapse_cycles(2);
         registers.pc = data;
     }
 }
 void Cpu::instructionPUSH(opcodes::Instruction instruction) {
     m_emulator->elapse_cycles(1);
-    m_emulator->get_bus()->write_word(registers.sp,
-                                      get_register_value(instruction.register_type_destination));
-    registers.sp -= 2;
+    auto bus = m_emulator->get_bus();
+    auto value = get_register_value(instruction.register_type_destination);
+    registers.sp -= 1;
+    bus->write_byte(registers.sp, bitmanip::get_high_byte(value));
+    registers.sp -= 1;
+    bus->write_byte(registers.sp, bitmanip::get_low_byte(value));
     m_emulator->elapse_cycles(2);
 }
 

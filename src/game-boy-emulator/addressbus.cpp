@@ -28,10 +28,10 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     throw NotImplementedError(fmt::format("Addressing unmapped memory byte at {:04X}", address));
 }
 
-uint16_t AddressBus::read_word(uint16_t address) const {
-    throw NotImplementedError(fmt::format("Addressing unmapped memory word at {:04X}", address));
+void AddressBus::write_byte(uint16_t address, uint8_t value) {
+    if (memmap::isIn(address, memmap::InternalRamBank0) || memmap::isIn(address, memmap::HighRam)) {
+        m_emulator->get_ram()->write_byte(address, value);
+    } else {
+        //throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
+    }
 }
-
-void AddressBus::write_byte(uint16_t address, uint8_t value) {}
-
-void AddressBus::write_word(uint16_t address, uint16_t value) {}

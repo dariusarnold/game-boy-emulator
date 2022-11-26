@@ -69,6 +69,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::SUB:
         instructionSUB(current_instruction, data);
         break;
+    case opcodes::InstructionType::ADD:
+        instructionADD(current_instruction, data);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -1328,6 +1331,24 @@ void Cpu::instructionSUB(opcodes::Instruction instruction, uint8_t data) {
     set_subtract_flag(BitValues::Active);
     set_half_carry_flag(hc);
 }
+
+void Cpu::instructionADD(opcodes::Instruction instruction, uint8_t data) {
+    // For ImmediateByte interaction type data was already fetched
+    if (instruction.interaction_type == opcodes::InteractionType::Register_Register) {
+        data = get_register_value(instruction.register_type_source);
+    } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
+        auto address = get_register_value(instruction.register_type_source);
+        data = m_emulator->get_bus()->read_byte(address);
+    }
+    const auto hc = internal::was_half_carry(registers.a, data, std::plus{});
+    set_half_carry_flag(hc);
+    const auto was_carry = internal::was_carry(registers.a, data, std::plus{});
+    set_carry_flag(was_carry);
+    set_subtract_flag(BitValues::Inactive);
+    registers.a += data;
+    set_zero_flag(registers.a == 0);
+}
+
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {
     // Divide by lowest opcode which is regular (part of a 4x16 block in op table)

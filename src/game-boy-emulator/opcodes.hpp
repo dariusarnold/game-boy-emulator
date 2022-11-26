@@ -46,6 +46,7 @@ enum class InstructionType {
     CALL,
     PUSH,
     POP,
+    RET,
 };
 
 enum class RegisterType {
@@ -515,7 +516,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xBF
     Instruction{},
     // 0xC0
-    Instruction{},
+    Instruction{InstructionType::RET, InteractionType::None, RegisterType::None, RegisterType::None, ConditionType::NonZero},
     // 0xC1
     Instruction{InstructionType::POP, InteractionType::None, RegisterType::BC},
     // 0xC2
@@ -531,9 +532,9 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xC7
     Instruction{},
     // 0xC8
-    Instruction{},
+    Instruction{InstructionType::RET, InteractionType::None, RegisterType::None, RegisterType::None, ConditionType::Zero},
     // 0xC9
-    Instruction{},
+    Instruction{InstructionType::RET},
     // 0xCA
     Instruction{},
     // 0xCB
@@ -547,7 +548,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xCF
     Instruction{},
     // 0xD0
-    Instruction{},
+    Instruction{InstructionType::RET, InteractionType::None, RegisterType::None, RegisterType::None, ConditionType::NonCarry},
     // 0xD1
     Instruction{InstructionType::POP, InteractionType::None, RegisterType::DE},
     // 0xD2
@@ -563,7 +564,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xD7
     Instruction{},
     // 0xD8
-    Instruction{},
+    Instruction{InstructionType::RET, InteractionType::None, RegisterType::None, RegisterType::None, ConditionType::Carry},
     // 0xD9
     Instruction{},
     // 0xDA

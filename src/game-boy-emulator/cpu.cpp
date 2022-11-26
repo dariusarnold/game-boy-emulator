@@ -60,6 +60,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::POP:
         instructionPOP(current_instruction);
         break;
+    case opcodes::InstructionType::RET:
+        instructionRET(current_instruction);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -1255,6 +1258,38 @@ void Cpu::instructionPOP(opcodes::Instruction instruction) {
     m_emulator->elapse_cycles(1);
     auto value = bitmanip::word_from_bytes(high_byte, low_byte);
     set_register_value(instruction.register_type_destination, value);
+}
+
+void Cpu::instructionRET(opcodes::Instruction instruction) {
+    bool condition_met = [&] {
+        switch (instruction.condition_type) {
+        case opcodes::ConditionType::None:
+            return true;
+        case opcodes::ConditionType::NonCarry:
+            m_emulator->elapse_cycles(1);
+            return !is_flag_set(flags::carry);
+        case opcodes::ConditionType::NonZero:
+            m_emulator->elapse_cycles(1);
+            return !is_flag_set(flags::zero);
+        case opcodes::ConditionType::Zero:
+            m_emulator->elapse_cycles(1);
+            return is_flag_set(flags::zero);
+        case opcodes::ConditionType::Carry:
+            m_emulator->elapse_cycles(1);
+            return is_flag_set(flags::carry);
+        default:
+            abort_execution<LogicError>(fmt::format(
+                "RET could not handle {}", magic_enum::enum_name(instruction.condition_type)));
+            return false;
+        }
+    }();
+    if (condition_met) {
+        auto bus = m_emulator->get_bus();
+        auto low_byte = bus->read_byte(registers.sp++);
+        auto high_byte = bus->read_byte(registers.sp++);
+        m_emulator->elapse_cycles(3);
+        registers.pc = bitmanip::word_from_bytes(high_byte, low_byte);
+    }
 }
 
 

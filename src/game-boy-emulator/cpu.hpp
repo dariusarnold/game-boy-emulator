@@ -269,6 +269,8 @@ private:
     void instructionPOP(opcodes::Instruction instruction);
 
     void instructionRL(opcodes::Instruction instruction);
+
+    void instructionRET(opcodes::Instruction instruction);
 };
 
 namespace internal {

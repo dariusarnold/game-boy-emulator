@@ -40,10 +40,10 @@ X_MEMORY_MAP
 #undef X
 
 namespace memmap {
-inline bool isIn(uint16_t address, uint16_t begin, uint16_t end) {
+inline bool is_in(uint16_t address, uint16_t begin, uint16_t end) {
     return address >= begin && address <= end;
 }
-inline bool isIn(uint16_t address, std::pair<uint16_t, uint16_t> range) {
-    return isIn(address, range.first, range.second);
+inline bool is_in(uint16_t address, std::pair<uint16_t, uint16_t> range) {
+    return is_in(address, range.first, range.second);
 }
 } // namespace memmap

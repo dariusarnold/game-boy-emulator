@@ -14,16 +14,16 @@ AddressBus::AddressBus(Emulator* emulator) : m_emulator(emulator) {}
 auto io_registerFF42 = 0x64;
 
 uint8_t AddressBus::read_byte(uint16_t address) const {
-    if (m_emulator->is_booting() && memmap::isIn(address, memmap::BootRom)) {
+    if (m_emulator->is_booting() && memmap::is_in(address, memmap::BootRom)) {
         return m_emulator->get_boot_rom()->read_byte(address);
-    } else if (memmap::isIn(address, memmap::CartridgeRom)) {
+    } else if (memmap::is_in(address, memmap::CartridgeRom)) {
         return m_emulator->get_cartridge()->read_byte(address);
-    } else if (memmap::isIn(address, memmap::InternalRamBank0)
-               || memmap::isIn(address, memmap::HighRam)) {
+    } else if (memmap::is_in(address, memmap::InternalRamBank0)
+               || memmap::is_in(address, memmap::HighRam)) {
         return m_emulator->get_ram()->read_byte(address);
-    } else if (memmap::isIn(address, memmap::VRam)) {
+    } else if (memmap::is_in(address, memmap::VRam)) {
         return m_emulator->get_gpu()->read_byte(address);
-    } else if (memmap::isIn(address, memmap::IORegisters)) {
+    } else if (memmap::is_in(address, memmap::IORegisters)) {
         // TODO Those special cases are required for booting correctly
         if (address == 0xFF44) {
             return 0x90;
@@ -37,11 +37,11 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
 }
 
 void AddressBus::write_byte(uint16_t address, uint8_t value) {
-    if (memmap::isIn(address, memmap::InternalRamBank0) || memmap::isIn(address, memmap::HighRam)) {
+    if (memmap::is_in(address, memmap::InternalRamBank0) || memmap::is_in(address, memmap::HighRam)) {
         m_emulator->get_ram()->write_byte(address, value);
-    } else if (memmap::isIn(address, memmap::VRam)) {
+    } else if (memmap::is_in(address, memmap::VRam)) {
         m_emulator->get_gpu()->write_byte(address, value);
-    } else if(memmap::isIn(address, memmap::IORegisters)) {
+    } else if(memmap::is_in(address, memmap::IORegisters)) {
         if (m_emulator->is_booting()) {
             if (address == 0xFF50) {
                 m_emulator->signal_boot_ended();

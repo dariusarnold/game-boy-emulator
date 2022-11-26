@@ -32,6 +32,6 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
     if (memmap::isIn(address, memmap::InternalRamBank0) || memmap::isIn(address, memmap::HighRam)) {
         m_emulator->get_ram()->write_byte(address, value);
     } else {
-        //throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
+        throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
     }
 }

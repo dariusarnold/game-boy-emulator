@@ -45,7 +45,8 @@ bool Cpu::step() {
         instructionJR(current_instruction, data);
         break;
     case opcodes::InstructionType::INC:
-        instructionINC(current_instruction);
+    case opcodes::InstructionType::DEC:
+        instructionINCDEC(current_instruction);
         break;
     case opcodes::InstructionType::CALL:
         instructionCALL(current_instruction, data);
@@ -1160,18 +1161,22 @@ void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
     m_emulator->elapse_cycles(1);
 }
 
-void Cpu::instructionINC(opcodes::Instruction instruction) {
-    uint16_t value;
+
+void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
+    uint16_t value_original;
+    // INC and DEC only differ by the operation (+/-). The timings and flags behaviour is the same.
+    // We can implement both using the same function.
+    auto operation = instruction.instruction_type == opcodes::InstructionType::INC ? [](int a, int b) {return a + b;} :[](int a, int b) {return a - b;};
     if (instruction.interaction_type == opcodes::InteractionType::AddressRegister) {
-        // Indirect increment
+        // Indirect access
         auto address = get_register_value(instruction.register_type_destination);
-        value = m_emulator->get_bus()->read_byte(address);
-        m_emulator->get_bus()->write_byte(address, value + 1);
+        value_original = m_emulator->get_bus()->read_byte(address);
+        m_emulator->get_bus()->write_byte(address, operation(value_original, 1));
         m_emulator->elapse_cycles(2);
     } else {
-        // Direct increment
-        value = get_register_value(instruction.register_type_destination);
-        set_register_value(instruction.register_type_destination, value + 1);
+        // Direct access
+        value_original = get_register_value(instruction.register_type_destination);
+        set_register_value(instruction.register_type_destination, operation(value_original, 1));
     }
     switch (instruction.register_type_destination) {
     case opcodes::RegisterType::BC:
@@ -1181,11 +1186,10 @@ void Cpu::instructionINC(opcodes::Instruction instruction) {
         // No flags set in case of word register operations
         break;
     default:
-        bool bit_3_before = bitmanip::is_bit_set(value, 3);
-        bool bit_3_after = bitmanip::is_bit_set(value + 1, 3);
-        set_half_carry_flag(bit_3_before && !bit_3_after);
-        set_zero_flag(value + 1 == 0);
-        set_subtract_flag(BitValues::Inactive);
+        auto was_hc = internal::was_half_carry(value_original, 1, operation);
+        set_half_carry_flag(was_hc);
+        set_zero_flag(operation(value_original, 1) == 0);
+        set_subtract_flag(instruction.instruction_type == opcodes::InstructionType::INC ? BitValues::Inactive : BitValues::Active);
     }
 }
 

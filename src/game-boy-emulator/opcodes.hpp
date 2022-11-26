@@ -153,7 +153,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x0A Load A from address pointed to by BC
     Instruction{InstructionType::LD, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::BC},
     // 0x0B
-    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::B},
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::BC},
     // 0x0C
     Instruction{InstructionType::INC, InteractionType::Register, RegisterType::C},
     // 0x0D
@@ -237,7 +237,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x34
     Instruction{InstructionType::INC, InteractionType::AddressRegister, RegisterType::HL},
     // 0x35
-    Instruction{},
+    Instruction{InstructionType::DEC, InteractionType::AddressRegister, RegisterType::HL},
     // 0x36
     Instruction{InstructionType::LD, InteractionType::AddressRegister_ImmediateByte, RegisterType::HL},
     // 0x37
@@ -249,11 +249,11 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x3A
     Instruction{InstructionType::LDD, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
     // 0x3B
-    Instruction{},
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::SP},
     // 0x3C
     Instruction{InstructionType::INC, InteractionType::Register, RegisterType::A},
     // 0x3D
-    Instruction{},
+    Instruction{InstructionType::DEC, InteractionType::Register, RegisterType::A},
     // 0x3E
     Instruction{InstructionType::LD, InteractionType::ImmediateByte, RegisterType::A},
     // 0x3F

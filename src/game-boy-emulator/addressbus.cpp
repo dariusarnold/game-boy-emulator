@@ -6,7 +6,6 @@
 #include "exceptions.hpp"
 #include "gpu.hpp"
 #include "memorymap.hpp"
-#include "mmu.hpp"
 #include "ram.hpp"
 
 
@@ -25,6 +24,9 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     } else if (memmap::isIn(address, memmap::BGMapData)
                || memmap::isIn(address, memmap::CharacterRam)) {
         return m_emulator->get_gpu()->read_byte(address);
+    } else if (memmap::isIn(address, memmap::IORegisters)) {
+        fmt::print("IGNORED: read from IO register {:04X}\n", address);
+        return 0xFF;
     }
     throw NotImplementedError(fmt::format("Addressing unmapped memory byte at {:04X}", address));
 }
@@ -34,6 +36,8 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         m_emulator->get_ram()->write_byte(address, value);
     } else if (memmap::isIn(address, memmap::VRam)) {
         m_emulator->get_gpu()->write_byte(address, value);
+    } else if(memmap::isIn(address, memmap::IORegisters)) {
+        fmt::print("IGNORED: write to IO registers {:04X}\n", address);
     } else {
         throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
     }

@@ -20,6 +20,7 @@
     X(0x8000, 0x9FFF, VRam)                                                                        \
     X(0x8000, 0x97FF, CharacterRam)                                                                \
     X(0x9800, 0x9FFF, BGMapData)                                                                   \
+    X(0xFF00, 0xFF7F, IORegisters)                                                                 \
     X(0xFF80, 0xFFFE, HighRam)
 
 

@@ -271,6 +271,8 @@ private:
     void instructionRL(opcodes::Instruction instruction);
 
     void instructionRET(opcodes::Instruction instruction);
+
+    void instructionCP(opcodes::Instruction instruction, uint8_t data);
 };
 
 namespace internal {

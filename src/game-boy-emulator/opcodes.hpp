@@ -44,9 +44,11 @@ enum class InstructionType {
     XOR,
     CB,
     CALL,
+    RET,
     PUSH,
     POP,
-    RET,
+    // Compare
+    CP,
 };
 
 enum class RegisterType {
@@ -500,21 +502,21 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xB7
     Instruction{},
     // 0xB8
-    Instruction{},
+    Instruction{InstructionType::CP, InteractionType::Register_Register, RegisterType::A, RegisterType::B},
     // 0xB9
-    Instruction{},
+    Instruction{InstructionType::CP, InteractionType::Register_Register, RegisterType::A, RegisterType::C},
     // 0xBA
-    Instruction{},
+    Instruction{InstructionType::CP, InteractionType::Register_Register, RegisterType::A, RegisterType::D},
     // 0xBB
-    Instruction{},
+    Instruction{InstructionType::CP, InteractionType::Register_Register, RegisterType::A, RegisterType::E},
     // 0xBC
-    Instruction{},
+    Instruction{InstructionType::CP, InteractionType::Register_Register, RegisterType::A, RegisterType::H},
     // 0xBD
-    Instruction{},
+    Instruction{InstructionType::CP, InteractionType::Register_Register, RegisterType::A, RegisterType::L},
     // 0xBE
-    Instruction{},
+    Instruction{InstructionType::CP, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
     // 0xBF
-    Instruction{},
+    Instruction{InstructionType::CP, InteractionType::Register_Register, RegisterType::A, RegisterType::A},
     // 0xC0
     Instruction{InstructionType::RET, InteractionType::None, RegisterType::None, RegisterType::None, ConditionType::NonZero},
     // 0xC1
@@ -640,7 +642,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xFD
     Instruction{},
     // 0xFE
-    Instruction{},
+    Instruction{InstructionType::CP, InteractionType::ImmediateByte, RegisterType::A},
     // 0xFF
     Instruction{}
 };

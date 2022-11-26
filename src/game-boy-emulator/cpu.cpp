@@ -63,6 +63,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::RET:
         instructionRET(current_instruction);
         break;
+    case opcodes::InstructionType::CP:
+        instructionCP(current_instruction, data);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -1290,6 +1293,21 @@ void Cpu::instructionRET(opcodes::Instruction instruction) {
         m_emulator->elapse_cycles(3);
         registers.pc = bitmanip::word_from_bytes(high_byte, low_byte);
     }
+}
+
+void Cpu::instructionCP(opcodes::Instruction instruction, uint8_t data) {
+    // For ImmediateByte interaction type data was already fetched
+    if (instruction.interaction_type == opcodes::InteractionType::Register_Register) {
+        data = get_register_value(instruction.register_type_source);
+    } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
+        auto address = get_register_value(instruction.register_type_source);
+        data = m_emulator->get_bus()->read_byte(address);
+    }
+    set_zero_flag(registers.a == data);
+    const auto hc = internal::was_half_carry(registers.a, data, std::minus{});
+    set_half_carry_flag(hc);
+    set_subtract_flag(BitValues::Active);
+    set_carry_flag(registers.a < data);
 }
 
 

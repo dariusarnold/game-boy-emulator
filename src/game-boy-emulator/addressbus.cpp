@@ -1,6 +1,7 @@
 #include "addressbus.hpp"
 
 #include "bootrom.hpp"
+#include "cartridge.hpp"
 #include "emulator.hpp"
 #include "exceptions.hpp"
 #include "gpu.hpp"
@@ -14,6 +15,8 @@ AddressBus::AddressBus(Emulator* emulator) : m_emulator(emulator) {}
 uint8_t AddressBus::read_byte(uint16_t address) const {
     if (m_emulator->is_booting() && memmap::isIn(address, memmap::BootRom)) {
         return m_emulator->get_boot_rom()->read_byte(address);
+    } else if (memmap::isIn(address, memmap::CartridgeRom)) {
+        return m_emulator->get_cartridge()->read_byte(address);
     } else if (memmap::isIn(address, memmap::InternalRamBank0)
                || memmap::isIn(address, memmap::HighRam)) {
         return m_emulator->get_ram()->read_byte(address);

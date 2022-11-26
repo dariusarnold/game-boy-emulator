@@ -2,6 +2,7 @@
 #include "addressbus.hpp"
 #include "apu.hpp"
 #include "bootrom.hpp"
+#include "cartridge.hpp"
 #include "cpu.hpp"
 #include "exceptions.hpp"
 #include "gpu.hpp"
@@ -11,7 +12,7 @@
 
 Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<uint8_t>& game_rom) :
         m_boot_rom(std::make_shared<BootRom>(this, boot_rom)),
-        m_game_rom(game_rom),
+        m_cartridge(std::make_shared<Cartridge>(this, game_rom)),
         m_address_bus(std::make_shared<AddressBus>(this)),
         m_ram(std::make_shared<Ram>(this)),
         m_cpu(std::make_shared<Cpu>(this)),
@@ -42,7 +43,7 @@ std::shared_ptr<AddressBus> Emulator::get_bus() const {
 }
 
 void Emulator::abort_execution(std::string error_msg) {
-    fmt::print("{} - CPU state {}",error_msg, m_cpu->get_minimal_debug_state());
+    fmt::print("{} - CPU state {}", error_msg, m_cpu->get_minimal_debug_state());
     std::exit(1);
 }
 
@@ -84,4 +85,8 @@ opcodes::Instruction Emulator::get_current_instruction() const {
 
 opcodes::Instruction Emulator::get_previous_instruction() const {
     return m_cpu->get_previous_instruction();
+}
+
+std::shared_ptr<Cartridge> Emulator::get_cartridge() const {
+    return m_cartridge;
 }

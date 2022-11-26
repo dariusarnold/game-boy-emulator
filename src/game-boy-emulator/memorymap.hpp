@@ -10,6 +10,12 @@
 // Begin and End are both inclusive
 #define X_MEMORY_MAP                                                                               \
     X(0x0000, 0x0100, BootRom)                                                                     \
+    X(0x0000, 0x7FFF, CartridgeRom)                                                                \
+    X(0x0000, 0x00FF, RestartInterruptVectors)                                                     \
+    X(0x0100, 0x104F, CardridgeHeader)                                                             \
+    X(0x0150, 0x3FFF, CartridgeRomFixedBank)                                                       \
+    X(0x4000, 0x7FFF, CartridgeRomBankSwitchable)                                                  \
+    X(0xA000, 0xBFFF, CartridgeRam)                                                                \
     X(0xC000, 0xCFFF, InternalRamBank0)                                                            \
     X(0x8000, 0x9FFF, VRam)                                                                        \
     X(0x8000, 0x97FF, CharacterRam)                                                                \

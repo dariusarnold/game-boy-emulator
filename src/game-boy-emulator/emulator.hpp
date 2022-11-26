@@ -13,6 +13,7 @@ class Apu;
 class Gpu;
 class AddressBus;
 class BootRom;
+class Cartridge;
 
 struct EmulatorState {
     // Number of m cycles since execution start
@@ -40,11 +41,11 @@ public:
     [[nodiscard]] std::shared_ptr<Ram> get_ram() const;
     [[nodiscard]] std::shared_ptr<BootRom> get_boot_rom() const;
     [[nodiscard]] std::shared_ptr<Gpu> get_gpu() const;
+    [[nodiscard]] std::shared_ptr<Cartridge> get_cartridge() const;
 
 private:
     bool m_is_booting = true;
-    // TODO This should be its on class (Cartridge)
-    std::vector<uint8_t> m_game_rom;
+    std::shared_ptr<Cartridge> m_cartridge;
     EmulatorState m_state;
     std::shared_ptr<BootRom> m_boot_rom;
     std::shared_ptr<AddressBus> m_address_bus;

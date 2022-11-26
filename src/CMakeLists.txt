@@ -58,6 +58,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/exceptions.hpp
         game-boy-emulator/bootrom.cpp
         game-boy-emulator/bootrom.hpp
+        game-boy-emulator/cartridge.cpp
+        game-boy-emulator/cartridge.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

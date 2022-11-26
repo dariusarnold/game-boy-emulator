@@ -1194,7 +1194,7 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
 }
 
 void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
-    bool condition_met =     [&] {
+    bool condition_met = [&] {
         switch (instruction.condition_type) {
         case opcodes::ConditionType::None:
             return true;
@@ -1215,12 +1215,10 @@ void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
     }();
     if (condition_met) {
         m_emulator->elapse_cycles(1);
-        registers.sp -= 1;
         auto bus = m_emulator->get_bus();
-        bus->write_byte(registers.sp, bitmanip::get_low_byte(registers.pc));
-        registers.sp -= 1;
-        bus->write_byte(registers.sp, bitmanip::get_high_byte(registers.pc));
-        m_emulator->elapse_cycles(2);
+        bus->write_byte(--registers.sp, bitmanip::get_high_byte(registers.pc));
+        bus->write_byte(--registers.sp, bitmanip::get_low_byte(registers.pc));
+        m_emulator->elapse_cycles(3);
         registers.pc = data;
     }
 }

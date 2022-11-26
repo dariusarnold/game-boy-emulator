@@ -42,6 +42,11 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
     } else if (memmap::isIn(address, memmap::VRam)) {
         m_emulator->get_gpu()->write_byte(address, value);
     } else if(memmap::isIn(address, memmap::IORegisters)) {
+        if (m_emulator->is_booting()) {
+            if (address == 0xFF50) {
+                m_emulator->signal_boot_ended();
+            }
+        }
         if (address == 0xFF42) {
             io_registerFF42 = value;
         }

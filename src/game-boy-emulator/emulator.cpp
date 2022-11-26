@@ -1,12 +1,10 @@
 #include "emulator.hpp"
 #include "addressbus.hpp"
-#include "apu.hpp"
 #include "bootrom.hpp"
 #include "cartridge.hpp"
 #include "cpu.hpp"
 #include "exceptions.hpp"
 #include "gpu.hpp"
-#include "mmu.hpp"
 #include "ram.hpp"
 
 
@@ -16,16 +14,10 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
         m_address_bus(std::make_shared<AddressBus>(this)),
         m_ram(std::make_shared<Ram>(this)),
         m_cpu(std::make_shared<Cpu>(this)),
-        m_apu(std::make_shared<Apu>()),
         m_gpu(std::make_shared<Gpu>()) {}
 
 void Emulator::run() {
     try {
-        //    m_mmu->map_cartridge(m_game_rom);
-        //        m_mmu->map_boot_rom(m_boot_rom);
-        //    m_mmu->map_memory_range(m_gpu->get_mappable_memory());
-        //    m_mmu->map_memory_range(m_apu->get_mappable_memory());
-        //    m_mmu->map_memory_range(m_cpu->get_mappable_memory());
         m_cpu->run();
     } catch (const LogicError& error) {
         abort_execution(error.what());
@@ -33,10 +25,6 @@ void Emulator::run() {
         abort_execution(error.what());
     }
 }
-
-// std::shared_ptr<Mmu> Emulator::get_mmu() const {
-//     return m_mmu;
-// }
 
 std::shared_ptr<AddressBus> Emulator::get_bus() const {
     return m_address_bus;

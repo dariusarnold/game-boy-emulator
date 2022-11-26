@@ -2,15 +2,12 @@
 
 #include "cpu.hpp"
 #include "io.hpp"
-
-#include "apu.hpp"
 #include "emulator.hpp"
-#include "fmt/format.h"
 #include "gpu.hpp"
-#include "mmu.hpp"
+
+#include "fmt/format.h"
 
 #include <filesystem>
-#include <fstream>
 #include <string>
 #include <vector>
 

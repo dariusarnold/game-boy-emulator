@@ -6,34 +6,6 @@ add_library(game_boy_emulator_library
         game-boy-emulator/opcodes.hpp
         game-boy-emulator/bitmanipulation.cpp
         game-boy-emulator/bitmanipulation.hpp
-        game-boy-emulator/mmu.cpp
-        game-boy-emulator/mmu.hpp
-        game-boy-emulator/instructions/increment.cpp
-        game-boy-emulator/instructions/increment.hpp
-        game-boy-emulator/facades/register.cpp
-        game-boy-emulator/facades/register.hpp
-        game-boy-emulator/facades/flag.cpp
-        game-boy-emulator/facades/flag.hpp
-        game-boy-emulator/facades/programcounter.cpp
-        game-boy-emulator/facades/programcounter.hpp
-        game-boy-emulator/facades/stack.cpp
-        game-boy-emulator/facades/stack.hpp
-        game-boy-emulator/instructions/callimmediate.cpp
-        game-boy-emulator/instructions/callimmediate.hpp
-        game-boy-emulator/facades/memory.cpp
-        game-boy-emulator/facades/memory.hpp
-        game-boy-emulator/instructions/copyregister.cpp
-        game-boy-emulator/instructions/copyregister.hpp
-        game-boy-emulator/instructions/pushregister.cpp
-        game-boy-emulator/instructions/pushregister.hpp
-        game-boy-emulator/instructions/rotateleft.cpp
-        game-boy-emulator/instructions/rotateleft.hpp
-        game-boy-emulator/instructions/return.cpp
-        game-boy-emulator/instructions/return.hpp
-        game-boy-emulator/instructions/popstack.cpp
-        game-boy-emulator/instructions/popstack.hpp
-        game-boy-emulator/instructions/loadimmediateword.cpp
-        game-boy-emulator/instructions/loadimmediateword.hpp
         game-boy-emulator/io.cpp
         game-boy-emulator/io.hpp
         game-boy-emulator/emulator.cpp
@@ -42,8 +14,6 @@ add_library(game_boy_emulator_library
         game-boy-emulator/gpu.hpp
         game-boy-emulator/memory_range.cpp
         game-boy-emulator/memory_range.hpp
-        game-boy-emulator/apu.cpp
-        game-boy-emulator/apu.hpp
         game-boy-emulator/graphics.cpp
         game-boy-emulator/graphics.hpp
         game-boy-emulator/interrupthandler.cpp

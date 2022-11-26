@@ -3,15 +3,7 @@ add_executable(game_boy_emulator_tests
         test_registers.cpp
         test_bitmanipulation.cpp
         test_cpu.cpp
-        test_mmu.cpp
-        test_increment_instruction.cpp
-        test_call_immediate.cpp
-        test_load_register_from_register.cpp
-        test_push_register.cpp
-        test_rotate_left.cpp
-        test_return.cpp
         test_boot_rom_comparison.cpp
-        test_pop_stack.cpp
         test_graphics.cpp)
 
 

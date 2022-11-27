@@ -34,7 +34,7 @@ namespace graphics::gb {
 
 std::array<uint8_t, 8> convert_tiles(uint8_t byte1, uint8_t byte2) {
     std::array<uint8_t, 8> pixels = {0};
-    for (size_t i = 0; i < 8; ++i) {
+    for (uint8_t i = 0; i < 8; ++i) {
         auto msb = bitmanip::bit_value(byte2, i);
         auto lsb = bitmanip::bit_value(byte1, i);
         pixels[7 - i] = (msb << 1) + lsb;
@@ -58,7 +58,7 @@ std::pair<int, int> tile_data_to_image(std::span<uint8_t, 6143> vram, std::span<
                                        size_t image_width_tiles, size_t image_height_tiles) {
     for (size_t y = 0; y < image_height_tiles; ++y) {
         for (size_t x = 0; x < image_width_tiles; ++x) {
-            int offset = y * image_width_tiles + x;
+            size_t offset = y * image_width_tiles + x;
             auto s = std::span<uint8_t, 16>(vram.data() + offset * 16, 16);
             auto tile = graphics::gb::tile_to_gb_color(s);
             for (size_t i = 0; i < tile.size(); ++i) {

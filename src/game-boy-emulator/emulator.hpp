@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-namespace opcodes {class Instruction;}
+namespace opcodes {struct Instruction;}
 class Ram;
 class Mmu;
 class Cpu;
@@ -29,7 +29,7 @@ public:
     void run();
     bool step();
 
-    void abort_execution(std::string error_msg);
+    [[noreturn]] void abort_execution(std::string error_msg);
     bool is_booting() const;
     void signal_boot_ended();
     void elapse_cycles(size_t cycles);

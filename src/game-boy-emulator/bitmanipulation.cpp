@@ -1,4 +1,3 @@
-#include <span>
 #include <fmt/core.h>
 #include "bitmanipulation.hpp"
 

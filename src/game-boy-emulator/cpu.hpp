@@ -66,7 +66,7 @@ public:
 
 private:
     template <typename T>
-    void abort_execution(std::string_view msg) {
+    [[noreturn]] void abort_execution(std::string_view msg) {
         auto complete_msg
             = fmt::format("CPU ERROR: {}\nRan for {} instructions.", msg, instructions_executed);
         throw T{complete_msg};
@@ -98,7 +98,7 @@ private:
 
     /**
      * Convert second byte of cb opcodes to the register, upon which this instruction operators
-     * @param opcode
+     * @param opcode_byte
      * @return
      */
     uint8_t op_code_to_register(uint8_t opcode_byte);

@@ -57,13 +57,13 @@ target_include_directories(game_boy_emulator
 option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang as well as MSVC." OFF)
 
 if (WARNINGS_ENABLED)
-    if (MSVC)
-        target_compile_options(game_boy_emulatory_library PRIVATE /W4 /WX)
-    else()
     target_compile_options(game_boy_emulator_library PRIVATE
+            $<$<CXX_COMPILER_ID:GNU>:-fstrict-enums>
+            -Werror
             # Catchalls to avoid listing many single warnings
             -Wall
             -Wextra
+            $<$<CXX_COMPILER_ID:Clang>:-Weverything>
             # Warn on conversion where the sign could be lost
             -Wsign-conversion
             # Warn on shadowing
@@ -85,16 +85,34 @@ if (WARNINGS_ENABLED)
             -Wundef
             # Warn if object is used without initialization
             -Wuninitialized
+            -Wimplicit-fallthrough
+            -Wdelete-non-virtual-dtor
+            -Woverflow
+            # Enabling GCC specific warning flags
+            $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
+            $<$<CXX_COMPILER_ID:GNU>:-Wcast-qual>
+            $<$<CXX_COMPILER_ID:GNU>:-Wcast-align=strict>
+            $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
+            $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-cond>
+            $<$<CXX_COMPILER_ID:GNU>:-Wfloat-equal>
             # Initializing a class member from itself is a nasty and hard to spot bug, so we turn it
             # into a warning. Clang has the flag but wont do anything, but gcc spots the error.
-            -Werror=init-self
-            -Wimplicit-fallthrough
-            $<$<CXX_COMPILER_ID:Clang>:-Werror=delete-abstract-non-virtual-dtor>
-            $<$<CXX_COMPILER_ID:GNU>:-Werror=delete-non-virtual-dtor>
-            $<$<CXX_COMPILER_ID:Clang>:-Werror=constant-conversion>
-            $<$<CXX_COMPILER_ID:GNU>:-Werror=overflow>
-            -Werror
+            $<$<CXX_COMPILER_ID:GNU>:-Winit-self>
             $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
+            $<$<CXX_COMPILER_ID:GNU>:-Wnull-dereference>
+            $<$<CXX_COMPILER_ID:GNU>:-Wundef>
+            # Disabling the errors enabled by Weverything for clang which are not useful
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-c++98-compat>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-c++98-compat-pedantic>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-padded>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-nested-anon-types>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-gnu-anonymous-struct>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-prototypes>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-implicit-int-conversion>
+            # This warns when an enum value is not explicitly handled in a switch, even when a default statement
+            # handles the enum.
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-switch-enum>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-ctad-maybe-unsupported>
             )
-    endif()
 endif()

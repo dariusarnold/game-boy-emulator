@@ -230,12 +230,9 @@ uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
         registers.pc++;
         m_emulator->elapse_cycles(1);
         return bitmanip::word_from_bytes(high_byte, low_byte);
-    default:
-        abort_execution<NotImplementedError>(
-            fmt::format("fetch_data: InteractionType {} not implemented",
-                        magic_enum::enum_name(current_instruction.interaction_type)));
     }
-    return 0;
+    // See comment in instructionJR.
+    __builtin_unreachable();
 }
 
 
@@ -347,11 +344,12 @@ uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) {
         return registers.de;
     case opcodes::RegisterType::HL:
         return registers.hl;
-    default:
+    case opcodes::RegisterType::None:
         abort_execution<LogicError>(
             fmt::format("Unknown register value {}", magic_enum::enum_name(register_type)));
-        return 0;
     }
+    // See comment in instructionJR.
+    __builtin_unreachable();
 }
 
 void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
@@ -518,12 +516,14 @@ void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
             return is_flag_set(flags::zero);
         case opcodes::ConditionType::Carry:
             return is_flag_set(flags::carry);
-        default:
-            abort_execution<LogicError>(
-                fmt::format("JR {:02X} could not handle {}", data,
-                            magic_enum::enum_name(instruction.condition_type)));
-            return false;
         }
+        // GCCs Wreturn-type warns here, because it assumes programmers use the whole range of the
+        // undlerlying type of the enum. Since I don't want to have a default statement, which would
+        // cover adding a new entry to the enum but not handling it in the switch (which warns), I
+        // tell GCC that falling out of the switch is impossible. This is the case when not casting
+        // integers to the enum, which I don't do.
+        // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87951
+        __builtin_unreachable();
     }();
     if (!jump_condition) {
         return;
@@ -581,12 +581,9 @@ void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
             return is_flag_set(flags::zero);
         case opcodes::ConditionType::Carry:
             return is_flag_set(flags::carry);
-        default:
-            abort_execution<LogicError>(
-                fmt::format("CALL {:04X} could not handle {}", data,
-                            magic_enum::enum_name(instruction.condition_type)));
-            return false;
         }
+        // See comment in instructionJR.
+        __builtin_unreachable();
     }();
     if (condition_met) {
         m_emulator->elapse_cycles(1);
@@ -649,11 +646,9 @@ void Cpu::instructionRET(opcodes::Instruction instruction) {
         case opcodes::ConditionType::Carry:
             m_emulator->elapse_cycles(1);
             return is_flag_set(flags::carry);
-        default:
-            abort_execution<LogicError>(fmt::format(
-                "RET could not handle {}", magic_enum::enum_name(instruction.condition_type)));
-            return false;
         }
+        // See comment in instructionJR.
+        __builtin_unreachable();
     }();
     if (condition_met) {
         auto bus = m_emulator->get_bus();

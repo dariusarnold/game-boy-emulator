@@ -13,7 +13,7 @@
 
 AddressBus::AddressBus(Emulator* emulator) : m_emulator(emulator) {}
 
-auto io_registerFF42 = 0x64;
+uint8_t static io_registerFF42 = 0x64;
 
 uint8_t AddressBus::read_byte(uint16_t address) const {
     if (m_emulator->is_booting() && memmap::is_in(address, memmap::BootRom)) {

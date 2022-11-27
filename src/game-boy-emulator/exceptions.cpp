@@ -1,7 +1,7 @@
 #include "exceptions.hpp"
 
 
-NotImplementedError::NotImplementedError(const std::string& msg): m_msg(msg) {}
+NotImplementedError::NotImplementedError(const std::string& msg) : m_msg(msg) {}
 
 const char* NotImplementedError::what() const noexcept {
     return m_msg.c_str();

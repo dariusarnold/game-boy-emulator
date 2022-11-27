@@ -4,8 +4,7 @@
 
 #include "fmt/format.h"
 
-Gpu::Gpu() :
-        vram{} {}
+Gpu::Gpu() : vram{} {}
 
 uint8_t Gpu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::VRam)) {

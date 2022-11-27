@@ -78,7 +78,7 @@ void Cpu::run() {
     }
 }
 
-Cpu::Cpu(Emulator* emulator): Cpu(emulator,Verbosity::LEVEL_INFO){}
+Cpu::Cpu(Emulator* emulator) : Cpu(emulator, Verbosity::LEVEL_INFO) {}
 
 Cpu::Cpu(Emulator* emulator, Verbosity verbosity_) : m_emulator(emulator), verbosity(verbosity_) {}
 
@@ -541,7 +541,9 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
     uint16_t value_original;
     // INC and DEC only differ by the operation (+/-). The timings and flags behaviour is the same.
     // We can implement both using the same function.
-    auto operation = instruction.instruction_type == opcodes::InstructionType::INC ? [](int a, int b) {return a + b;} :[](int a, int b) {return a - b;};
+    auto operation = instruction.instruction_type == opcodes::InstructionType::INC
+                         ? [](int a, int b) { return a + b; }
+                         : [](int a, int b) { return a - b; };
     if (instruction.interaction_type == opcodes::InteractionType::AddressRegister) {
         // Indirect access
         auto address = get_register_value(instruction.register_type_destination);
@@ -564,7 +566,9 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
         auto was_hc = internal::was_half_carry(value_original, 1, operation);
         set_half_carry_flag(was_hc);
         set_zero_flag(operation(value_original, 1) == 0);
-        set_subtract_flag(instruction.instruction_type == opcodes::InstructionType::INC ? BitValues::Inactive : BitValues::Active);
+        set_subtract_flag(instruction.instruction_type == opcodes::InstructionType::INC
+                              ? BitValues::Inactive
+                              : BitValues::Active);
     }
 }
 
@@ -608,7 +612,7 @@ void Cpu::instructionPUSH(opcodes::Instruction instruction) {
 void Cpu::instructionRL(opcodes::Instruction instruction) {
     if (instruction.instruction_type == opcodes::InstructionType::RL) {
         bool cf = is_flag_set(flags::carry);
-        registers.a =  bitmanip::rotate_left_carry(registers.a, cf);
+        registers.a = bitmanip::rotate_left_carry(registers.a, cf);
         set_carry_flag(cf);
         set_zero_flag(BitValues::Inactive);
         set_subtract_flag(BitValues::Inactive);

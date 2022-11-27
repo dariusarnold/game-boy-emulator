@@ -9,13 +9,13 @@
 
 namespace constants {
 
-    constexpr size_t BOOT_ROM_SIZE = 256;
+constexpr size_t BOOT_ROM_SIZE = 256;
 
-    constexpr size_t RAM_SIZE = 65536;
+constexpr size_t RAM_SIZE = 65536;
 
-    // Exemptions from above comment: size in bits
-    constexpr int NIBBLE_SIZE = 4;
-    constexpr int BYTE_SIZE = 8;
+// Exemptions from above comment: size in bits
+constexpr int NIBBLE_SIZE = 4;
+constexpr int BYTE_SIZE = 8;
 
 } // namespace constants
 

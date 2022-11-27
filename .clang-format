@@ -16,3 +16,4 @@ Language: Cpp
 MaxEmptyLinesToKeep: '2'
 NamespaceIndentation: None
 PointerAlignment: Left
+SortIncludes: false

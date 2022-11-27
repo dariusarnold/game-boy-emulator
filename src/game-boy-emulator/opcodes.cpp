@@ -639,8 +639,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xFE
     Instruction{InstructionType::CP, InteractionType::ImmediateByte, RegisterType::A},
     // 0xFF
-    Instruction{}
-};
+    Instruction{}};
 
 }
 

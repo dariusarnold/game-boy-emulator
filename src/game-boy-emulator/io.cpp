@@ -41,4 +41,3 @@ std::vector<uint8_t> load_rom_file(const std::filesystem::path& path) {
     rom_file.read(reinterpret_cast<char*>(rom.data()), pos);
     return rom;
 }
-

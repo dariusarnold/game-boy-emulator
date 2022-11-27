@@ -54,7 +54,8 @@ std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
     return out;
 }
 
-std::pair<int, int> tile_data_to_image(std::span<uint8_t, 6143> vram, std::span<uint32_t, 384 * 64> image,
+std::pair<int, int> tile_data_to_image(std::span<uint8_t, 6143> vram,
+                                       std::span<uint32_t, 384 * 64> image,
                                        size_t image_width_tiles, size_t image_height_tiles) {
     for (size_t y = 0; y < image_height_tiles; ++y) {
         for (size_t x = 0; x < image_width_tiles; ++x) {

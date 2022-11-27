@@ -39,11 +39,12 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
 }
 
 void AddressBus::write_byte(uint16_t address, uint8_t value) {
-    if (memmap::is_in(address, memmap::InternalRamBank0) || memmap::is_in(address, memmap::HighRam)) {
+    if (memmap::is_in(address, memmap::InternalRamBank0)
+        || memmap::is_in(address, memmap::HighRam)) {
         m_emulator->get_ram()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::VRam)) {
         m_emulator->get_gpu()->write_byte(address, value);
-    } else if(memmap::is_in(address, memmap::IORegisters)) {
+    } else if (memmap::is_in(address, memmap::IORegisters)) {
         if (m_emulator->is_booting()) {
             if (address == 0xFF50) {
                 m_emulator->signal_boot_ended();

@@ -8,6 +8,7 @@ class Emulator;
  */
 class AddressBus {
     Emulator* m_emulator;
+
 public:
     AddressBus(Emulator* emulator);
 

@@ -77,15 +77,13 @@ enum class RegisterType {
  * 01 | Register                       | Immediate Byte          |
  * 02 | Register                       | Immediate Word          |
  * 03 | Register                       | Register                |
- * 04 | AddressRegister                | Register                | Increment/decrement AddressRegister
- * 05 | Register                       | AddressRegister         | Increment/decrement AddressRegister
- * 06 | AddressRegister                | ImmediateByte           |
- * 07 | AddressWord                    | Register                |
- * 08 | AddressByte + fixed Offset     | RegisterA               |
- * 09 | AddressRegister + fixed Offset | RegisterA               |
- * 10 | RegisterA                      | AddressByte + fixedOffset |
- * 11 | RegisterHL                     | RegisterSP + OffsetByte |
- * 12 | RegisterA                      | AddressWord             |
+ * 04 | AddressRegister                | Register                | Increment/decrement
+ * AddressRegister 05 | Register                       | AddressRegister         |
+ * Increment/decrement AddressRegister 06 | AddressRegister                | ImmediateByte | 07 |
+ * AddressWord                    | Register                | 08 | AddressByte + fixed Offset     |
+ * RegisterA               | 09 | AddressRegister + fixed Offset | RegisterA               | 10 |
+ * RegisterA                      | AddressByte + fixedOffset | 11 | RegisterHL | RegisterSP +
+ * OffsetByte | 12 | RegisterA                      | AddressWord             |
  *
  * Increment/decrement are implemented as instruction types LDI/LDD.
  * Fixed offsets are implemented as instruction type LDH.

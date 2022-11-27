@@ -5,7 +5,9 @@
 #include <memory>
 #include <vector>
 
-namespace opcodes {struct Instruction;}
+namespace opcodes {
+struct Instruction;
+}
 class Ram;
 class Mmu;
 class Cpu;

@@ -5,6 +5,7 @@
 
 class NotImplementedError : public std::exception {
     std::string m_msg;
+
 public:
     NotImplementedError(const std::string& msg);
     const char* what() const noexcept override;
@@ -12,6 +13,7 @@ public:
 
 class LogicError : public std::exception {
     std::string m_msg;
+
 public:
     LogicError(const std::string& msg);
     const char* what() const noexcept override;

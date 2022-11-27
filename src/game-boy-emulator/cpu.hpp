@@ -16,7 +16,6 @@
 class Emulator;
 
 
-
 // Typedef for clock cycles.
 // Gives a more descriptive name but doesn't change semantics.
 using t_cycle = size_t;
@@ -44,6 +43,7 @@ class Cpu {
 
     // Print considering the selected verbosity level
     void print(std::string_view message, Verbosity level);
+
 public:
     explicit Cpu(Emulator* emulator);
     explicit Cpu(Emulator* emulator, Verbosity verbosity_);
@@ -151,20 +151,20 @@ private:
 };
 
 namespace internal {
-    /**
-     * Resolve second byte of CB opcodes to bit position on which this instructions operates.
-     */
-    uint8_t op_code_to_bit(uint8_t opcode_byte);
+/**
+ * Resolve second byte of CB opcodes to bit position on which this instructions operates.
+ */
+uint8_t op_code_to_bit(uint8_t opcode_byte);
 
-    template <typename F>
-    bool was_half_carry(uint8_t a, uint8_t b, const F& operation) {
-        bool hc = operation((a & 0xf), (b & 0xf)) & 0x10;
-        return hc;
-    }
+template <typename F>
+bool was_half_carry(uint8_t a, uint8_t b, const F& operation) {
+    bool hc = operation((a & 0xf), (b & 0xf)) & 0x10;
+    return hc;
+}
 
-    template <typename F>
-    bool was_carry(uint8_t a, uint8_t b, const F& operation) {
-        bool c = operation(static_cast<uint16_t>(a), static_cast<uint16_t>(b)) & 0x100;
-        return c;
-    }
+template <typename F>
+bool was_carry(uint8_t a, uint8_t b, const F& operation) {
+    bool c = operation(static_cast<uint16_t>(a), static_cast<uint16_t>(b)) & 0x100;
+    return c;
+}
 } // namespace internal

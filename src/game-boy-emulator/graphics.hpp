@@ -50,7 +50,7 @@ std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data);
 
 template <typename It>
 void map_gb_color_to_rgba(It begin, It end) {
-    constexpr uint32_t palette[4] = {
+    constexpr std::array<uint32_t, 4> palette = {
         0xff0fbc9b,
         0xff0fac8b,
         0xff306230,

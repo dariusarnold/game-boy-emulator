@@ -5,7 +5,7 @@
 #include <array>
 
 class Gpu {
-    std::array<uint8_t, memmap::VRamSize> vram;
+    std::array<uint8_t, memmap::VRamSize> vram{};
 
 public:
     Gpu();

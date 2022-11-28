@@ -35,7 +35,7 @@
 
 namespace memmap {
 X_MEMORY_MAP
-}
+} // namespace memmap
 
 #undef X
 

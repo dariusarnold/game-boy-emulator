@@ -10,6 +10,8 @@
  * This works on little endian only, for big endian the order of bytes has to be
  * swapped.
  */
+// Disabled due to false positive https://github.com/llvm/llvm-project/issues/54748
+// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init,hicpp-member-init,-warnings-as-errors)
 struct Registers {
     uint16_t sp = 0, pc = 0;
     union {
@@ -37,7 +39,7 @@ struct Registers {
         };
     };
 };
-
+// NOLINTEND(cppcoreguidelines-pro-type-member-init,hicpp-member-init,-warnings-as-errors)
 
 /**
  * Formatted output for Registers.
@@ -45,10 +47,11 @@ struct Registers {
  * Example: {:sp} would print the stack pointer
  */
 template <>
-struct fmt::formatter<Registers> {
+class fmt::formatter<Registers> {
 
     std::string format_string;
 
+public:
     /**
      * Parse until closing curly brace '}' is hit.
      * @param context Contains format string after :, meaning '{:f}' becomes 'f}'.
@@ -59,12 +62,12 @@ struct fmt::formatter<Registers> {
             // No format string was specified
             return context.begin();
         }
-        auto it = std::find(context.begin(), context.end(), '}');
+        const auto* it = std::find(context.begin(), context.end(), '}');
         if (it == context.end()) {
             throw fmt::format_error("Invalid format");
-        } else {
-            format_string.assign(context.begin(), it);
         }
+        format_string.assign(context.begin(), it);
+
         return it;
     }
 
@@ -72,10 +75,10 @@ struct fmt::formatter<Registers> {
     auto format(const Registers& registers, FormatContext& context) {
         if (format_string == "sp") {
             return format_to(context.out(), "sp: {:02X}", registers.sp);
-        } else if (format_string == "pc") {
-            return format_to(context.out(), "pc: {:02X}", registers.pc);
-        } else {
-            throw fmt::format_error(fmt::format("Format string {} not supported", format_string));
         }
+        if (format_string == "pc") {
+            return format_to(context.out(), "pc: {:02X}", registers.pc);
+        }
+        throw fmt::format_error(fmt::format("Format string {} not supported", format_string));
     }
 };

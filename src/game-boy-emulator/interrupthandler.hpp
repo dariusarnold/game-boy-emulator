@@ -1,11 +1,8 @@
 #pragma once
 
-
 class InterruptHandler {
-    bool interrupt_master_enable_flag;
+    bool interrupt_master_enable_flag = false;
 
 public:
-    InterruptHandler();
-
     void set_enable_flag(bool enable);
 };

@@ -1,0 +1,1 @@
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy;--extra-arg=-Wno-error=unknown-warning-option")

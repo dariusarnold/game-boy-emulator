@@ -9,7 +9,8 @@ uint8_t Ram::read_byte(uint16_t address) const {
     if (memmap::is_in(address, memmap::InternalRamBank0)) {
         address -= memmap::InternalRamBank0Begin;
         return internalRam[address];
-    } else if (memmap::is_in(address, memmap::HighRam)) {
+    }
+    if (memmap::is_in(address, memmap::HighRam)) {
         address -= memmap::HighRamBegin;
         return highRam[address];
     }

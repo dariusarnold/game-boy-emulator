@@ -30,7 +30,7 @@ std::shared_ptr<AddressBus> Emulator::get_bus() const {
     return m_address_bus;
 }
 
-void Emulator::abort_execution(std::string error_msg) {
+void Emulator::abort_execution(std::string_view error_msg) {
     fmt::print("{} - CPU state {}", error_msg, m_cpu->get_minimal_debug_state());
     std::exit(1);
 }

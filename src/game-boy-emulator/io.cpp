@@ -14,7 +14,7 @@ load_boot_rom_file(const std::filesystem::path& path) {
         return {};
     }
     std::array<uint8_t, constants::BOOT_ROM_SIZE> boot_rom{};
-    boot_rom_file.read(reinterpret_cast<char*>(boot_rom.data()), constants::BOOT_ROM_SIZE);
+    boot_rom_file.read(std::bit_cast<char*>(boot_rom.data()), constants::BOOT_ROM_SIZE);
     if (boot_rom_file.gcount() != constants::BOOT_ROM_SIZE) {
         fmt::print("Boot rom has incorrect size {}\n", boot_rom_file.gcount());
         return {};
@@ -38,6 +38,6 @@ std::vector<uint8_t> load_rom_file(const std::filesystem::path& path) {
     }
     std::vector<uint8_t> rom(static_cast<size_t>(pos));
     rom_file.seekg(0, std::ios::beg);
-    rom_file.read(reinterpret_cast<char*>(rom.data()), pos);
+    rom_file.read(std::bit_cast<char*>(rom.data()), pos);
     return rom;
 }

@@ -641,7 +641,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xFF
     Instruction{}};
 
-}
+} // namespace opcodes
 
 opcodes::Instruction opcodes::get_instruction_by_value(uint8_t value) {
     return opcodes::instructions[value];

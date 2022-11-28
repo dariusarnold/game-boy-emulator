@@ -3,7 +3,6 @@
 #include "constants.h"
 #include "emulator.hpp"
 #include "io.hpp"
-#include "bitmanipulation.hpp"
 #include "graphics.hpp"
 
 #include "fmt/format.h"
@@ -27,7 +26,7 @@ void print_container_hex(const Container& c) {
     fmt::print("[{:02X}]\n", fmt::join(c, ", "));
 }
 
-
+// NOLINTNEXTLINE
 std::array<uint8_t, 8192> vram{
     0X0,  0X0, 0X0,  0X0, 0X0,  0X0, 0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,  0X0,
     0XF0, 0X0, 0XF0, 0X0, 0XFC, 0X0, 0XFC, 0X0,  0XFC, 0X0,  0XFC, 0X0,  0XF3, 0X0,  0XF3, 0X0,
@@ -549,8 +548,8 @@ std::pair<SDL_GLContext, SDL_Window*> setup_graphics() {
     // minority of Windows systems, depending on whether SDL_INIT_GAMECONTROLLER is enabled or
     // disabled.. updating to latest version of SDL is recommended!)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
-        printf("Error: %s\n", SDL_GetError());
-        exit(EXIT_FAILURE);
+        fmt::print("Error: {}\n", SDL_GetError());
+        std::exit(EXIT_FAILURE);
     }
 
     // GL 3.0 + GLSL 130
@@ -564,8 +563,8 @@ std::pair<SDL_GLContext, SDL_Window*> setup_graphics() {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    SDL_WindowFlags window_flags
-        = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    auto window_flags = static_cast<SDL_WindowFlags>(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+                                                     | SDL_WINDOW_ALLOW_HIGHDPI);
     SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL3 example", SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
     SDL_GLContext gl_context = SDL_GL_CreateContext(window);
@@ -591,6 +590,7 @@ std::pair<SDL_GLContext, SDL_Window*> setup_graphics() {
 
 
 int main() {
+    /*
     auto [gl_context, window] = setup_graphics();
     ImGuiIO& io = ImGui::GetIO();
 
@@ -618,12 +618,15 @@ int main() {
         // application. Generally you may always pass all inputs to dear imgui, and hide them from
         // your application based on those two flags.
         SDL_Event event;
-        while (SDL_PollEvent(&event)) {
+        while (SDL_PollEvent(&event) == 1) {
             ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_QUIT) done = true;
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE
-                && event.window.windowID == SDL_GetWindowID(window))
+            if (event.type == SDL_QUIT) {
                 done = true;
+            }
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE
+                && event.window.windowID == SDL_GetWindowID(window)) {
+                done = true;
+            }
         }
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -632,7 +635,7 @@ int main() {
 
         {
             ImGui::Begin("VRAM viewer");
-            ImTextureID my_tex_id = (void*)(intptr_t)my_image_texture;
+            auto my_tex_id = (void*)(intptr_t)my_image_texture;
             float my_tex_w = img_width_pixels * image_scale;
             float my_tex_h = img_height_pixels * image_scale;
             {
@@ -677,7 +680,7 @@ int main() {
 
         // Rendering
         ImGui::Render();
-        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+        glViewport(0, 0, static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w,
                      clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -693,6 +696,7 @@ int main() {
     SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    */
 
     auto boot_rom_path = std::filesystem::absolute(("../../dmg01-boot.bin"));
     auto boot_rom = load_boot_rom_file(boot_rom_path);
@@ -705,8 +709,13 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    print_container_hex(boot_rom.value());
-    Emulator emulator(boot_rom.value(), game_rom);
-    emulator.run();
+
+    try {
+        print_container_hex(boot_rom.value());
+        Emulator emulator(boot_rom.value(), game_rom);
+        emulator.run();
+    } catch (const std::exception& e) {
+        return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }

@@ -8,7 +8,7 @@ namespace graphics::render {
 
 void load_texture_rgba(const uint32_t* data, int width, int height, GLuint* out_texture) {
     // Create a OpenGL texture identifier
-    GLuint image_texture;
+    GLuint image_texture{};
     glGenTextures(1, &image_texture);
     glBindTexture(GL_TEXTURE_2D, image_texture);
 
@@ -43,7 +43,7 @@ std::array<uint8_t, 8> convert_tiles(uint8_t byte1, uint8_t byte2) {
 }
 
 std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
-    std::array<uint32_t, 64> out;
+    std::array<uint32_t, 64> out{};
     for (size_t i = 0; i < 16; i += 2) {
         auto row = graphics::gb::convert_tiles(tile_data[i], tile_data[i + 1]);
         for (size_t j = 0; j < row.size(); j++) {

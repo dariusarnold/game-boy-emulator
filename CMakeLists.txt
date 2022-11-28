@@ -23,5 +23,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules
 set(CLANG_FORMAT_EXCLUDE_PATTERNS "src/bindings" ${CMAKE_BINARY_DIR})
 find_package(ClangFormat)
 
+include(clang-tidy)
+
 add_subdirectory(src)
-add_subdirectory(tests)
+add_subdirectory(src/tests)

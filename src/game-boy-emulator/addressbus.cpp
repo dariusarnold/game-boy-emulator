@@ -13,23 +13,28 @@
 
 AddressBus::AddressBus(Emulator* emulator) : m_emulator(emulator) {}
 
-uint8_t static io_registerFF42 = 0x64;
+uint8_t static io_registerFF42 = 0x64; // NOLINT
 
 uint8_t AddressBus::read_byte(uint16_t address) const {
     if (m_emulator->is_booting() && memmap::is_in(address, memmap::BootRom)) {
         return m_emulator->get_boot_rom()->read_byte(address);
-    } else if (memmap::is_in(address, memmap::CartridgeRom)) {
+    }
+    if (memmap::is_in(address, memmap::CartridgeRom)) {
         return m_emulator->get_cartridge()->read_byte(address);
-    } else if (memmap::is_in(address, memmap::InternalRamBank0)
-               || memmap::is_in(address, memmap::HighRam)) {
+    }
+    if (memmap::is_in(address, memmap::InternalRamBank0)
+        || memmap::is_in(address, memmap::HighRam)) {
         return m_emulator->get_ram()->read_byte(address);
-    } else if (memmap::is_in(address, memmap::VRam)) {
+    }
+    if (memmap::is_in(address, memmap::VRam)) {
         return m_emulator->get_gpu()->read_byte(address);
-    } else if (memmap::is_in(address, memmap::IORegisters)) {
+    }
+    if (memmap::is_in(address, memmap::IORegisters)) {
         // TODO Those special cases are required for booting correctly
         if (address == 0xFF44) {
             return 0x90;
-        } else if (address == 0xFF42) {
+        }
+        if (address == 0xFF42) {
             return io_registerFF42;
         }
         fmt::print("IGNORED: read from IO register {:04X}\n", address);

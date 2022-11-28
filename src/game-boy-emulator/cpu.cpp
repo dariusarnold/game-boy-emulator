@@ -440,10 +440,10 @@ void Cpu::instructionXOR(opcodes::Instruction instruction) {
 
 opcodes::RegisterType get_register_cb(uint8_t cb_opcode) {
     // For all CB-prefixed instructions the register follows a regular pattern.
-    constexpr static opcodes::RegisterType cb_registers[]
-        = {opcodes::RegisterType::B,  opcodes::RegisterType::C, opcodes::RegisterType::D,
-           opcodes::RegisterType::E,  opcodes::RegisterType::H, opcodes::RegisterType::L,
-           opcodes::RegisterType::HL, opcodes::RegisterType::A};
+    constexpr static std::array cb_registers{opcodes::RegisterType::B,  opcodes::RegisterType::C,
+                                             opcodes::RegisterType::D,  opcodes::RegisterType::E,
+                                             opcodes::RegisterType::H,  opcodes::RegisterType::L,
+                                             opcodes::RegisterType::HL, opcodes::RegisterType::A};
     return cb_registers[cb_opcode & 0b111];
 }
 
@@ -456,9 +456,8 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
             auto x = m_emulator->get_bus()->read_byte(registers.hl);
             m_emulator->elapse_cycles(1);
             return x;
-        } else {
-            return static_cast<uint8_t>(get_register_value(register_type));
         }
+        return static_cast<uint8_t>(get_register_value(register_type));
     }();
     if (cb_opcode >= 0xC0) {
         // Set bit instruction or Reset bit instruction. Since only the operation differs and the
@@ -538,7 +537,7 @@ void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
 
 
 void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
-    uint16_t value_original;
+    uint16_t value_original{};
     // INC and DEC only differ by the operation (+/-). The timings and flags behaviour is the same.
     // We can implement both using the same function.
     auto operation = instruction.instruction_type == opcodes::InstructionType::INC

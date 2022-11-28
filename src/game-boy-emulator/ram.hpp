@@ -9,12 +9,12 @@ class Emulator;
 
 
 class Ram {
-    std::array<uint8_t, memmap::InternalRamBank0Size> internalRam;
-    std::array<uint8_t, memmap::HighRamSize> highRam;
+    std::array<uint8_t, memmap::InternalRamBank0Size> internalRam{};
+    std::array<uint8_t, memmap::HighRamSize> highRam{};
     Emulator* m_emulator;
 
 public:
-    Ram(Emulator* emulator);
+    explicit Ram(Emulator* emulator);
 
     /**
      * Read memory value from address.

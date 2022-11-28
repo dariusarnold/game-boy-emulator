@@ -43,18 +43,36 @@ target_link_libraries(game_boy_emulator_library PUBLIC
 
 add_executable(game_boy_emulator
         main.cpp
-        bindings/imgui_impl_opengl3.cpp
-        bindings/imgui_impl_sdl.cpp
+        )
+# Add external vendor code as an object library so it can be excluded from clang-tidy
+add_library(imgui_bindings OBJECT
+        ../bindings/imgui_impl_opengl3.cpp
+        ../bindings/imgui_impl_sdl.cpp
+        )
+set_target_properties(
+        imgui_bindings
+        PROPERTIES CXX_CLANG_TIDY ""
+)
+target_include_directories(imgui_bindings
+        SYSTEM
+        PUBLIC
+        ../bindings)
+target_link_libraries(imgui_bindings
+        PUBLIC
+        imgui::imgui
+        SDL2::SDL2
+        OpenGL::GL
         )
 target_link_libraries(game_boy_emulator PRIVATE
         game_boy_emulator_library
+        imgui_bindings
         )
 target_include_directories(game_boy_emulator
         PRIVATE
         bindings
         )
 
-option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang as well as MSVC." OFF)
+option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang as well as MSVC." ON)
 
 if (WARNINGS_ENABLED)
     target_compile_options(game_boy_emulator_library PRIVATE

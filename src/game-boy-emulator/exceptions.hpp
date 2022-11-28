@@ -7,14 +7,14 @@ class NotImplementedError : public std::exception {
     std::string m_msg;
 
 public:
-    NotImplementedError(const std::string& msg);
-    const char* what() const noexcept override;
+    explicit NotImplementedError(std::string msg);
+    [[nodiscard]] const char* what() const noexcept override;
 };
 
 class LogicError : public std::exception {
     std::string m_msg;
 
 public:
-    LogicError(const std::string& msg);
-    const char* what() const noexcept override;
+    explicit LogicError(std::string msg);
+    [[nodiscard]] const char* what() const noexcept override;
 };

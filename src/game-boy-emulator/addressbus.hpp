@@ -10,7 +10,7 @@ class AddressBus {
     Emulator* m_emulator;
 
 public:
-    AddressBus(Emulator* emulator);
+    explicit AddressBus(Emulator* emulator);
 
     /**
      * Read memory value from address.

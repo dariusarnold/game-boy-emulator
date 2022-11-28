@@ -4,14 +4,13 @@
 
 #include "fmt/format.h"
 
-Gpu::Gpu() : vram{} {}
+Gpu::Gpu() = default;
 
 uint8_t Gpu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::VRam)) {
         return vram[address - memmap::VRamBegin];
-    } else {
-        throw LogicError(fmt::format("GPU can't read from {:04X}", address));
     }
+    throw LogicError(fmt::format("GPU can't read from {:04X}", address));
 }
 
 void Gpu::write_byte(uint16_t address, uint8_t value) {

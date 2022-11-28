@@ -1,5 +1,6 @@
 #pragma once
 
+#include "constants.h"
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -7,7 +8,7 @@
 
 namespace opcodes {
 struct Instruction;
-}
+} // namespace opcodes
 class Ram;
 class Mmu;
 class Cpu;
@@ -27,17 +28,18 @@ struct EmulatorState {
  */
 class Emulator {
 public:
-    Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<uint8_t>& game_rom);
+    Emulator(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom,
+             const std::vector<uint8_t>& game_rom);
     void run();
     bool step();
 
-    [[noreturn]] void abort_execution(std::string error_msg);
-    bool is_booting() const;
+    [[noreturn]] void abort_execution(std::string_view error_msg);
+    [[nodiscard]] bool is_booting() const;
     void signal_boot_ended();
     void elapse_cycles(size_t cycles);
-    std::string get_cpu_debug_state() const;
-    opcodes::Instruction get_current_instruction() const;
-    opcodes::Instruction get_previous_instruction() const;
+    [[nodiscard]] std::string get_cpu_debug_state() const;
+    [[nodiscard]] opcodes::Instruction get_current_instruction() const;
+    [[nodiscard]] opcodes::Instruction get_previous_instruction() const;
 
     [[nodiscard]] std::shared_ptr<AddressBus> get_bus() const;
     [[nodiscard]] std::shared_ptr<Ram> get_ram() const;

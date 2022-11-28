@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <limits>
 
-
 inline consteval uint8_t operator"" _u8(unsigned long long x) {
     return x > std::numeric_limits<uint8_t>::max()
                ? throw std::domain_error("Overflow in _u8 integer literal")

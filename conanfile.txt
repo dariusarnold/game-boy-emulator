@@ -13,8 +13,8 @@ cmake_paths
 
 [imports]
 # imgui doesn't provide any bindings by default, so we have to copy them here
-./res/bindings, imgui_impl_opengl3.h -> ../src/bindings
-./res/bindings, imgui_impl_opengl3.cpp -> ../src/bindings
-./res/bindings, imgui_impl_opengl3_loader.h -> ../src/bindings
-./res/bindings, imgui_impl_sdl.h -> ../src/bindings
-./res/bindings, imgui_impl_sdl.cpp -> ../src/bindings
+./res/bindings, imgui_impl_opengl3.h -> ../bindings
+./res/bindings, imgui_impl_opengl3.cpp -> ../bindings
+./res/bindings, imgui_impl_opengl3_loader.h -> ../bindings
+./res/bindings, imgui_impl_sdl.h -> ../bindings
+./res/bindings, imgui_impl_sdl.cpp -> ../bindings

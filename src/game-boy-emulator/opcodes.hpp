@@ -137,10 +137,11 @@ Instruction get_instruction_by_value(uint8_t value);
  * Formatted output for Instructions
  */
 template <>
-struct fmt::formatter<opcodes::Instruction> {
+class fmt::formatter<opcodes::Instruction> {
 
     std::string format_string;
 
+public:
     /**
      * Parse until closing curly brace '}' is hit.
      * @param context Contains format string after :, meaning '{:f}' becomes 'f}'.
@@ -151,12 +152,12 @@ struct fmt::formatter<opcodes::Instruction> {
             // No format string was specified
             return context.begin();
         }
-        auto it = std::find(context.begin(), context.end(), '}');
+        const auto* it = std::find(context.begin(), context.end(), '}');
         if (it == context.end()) {
             throw fmt::format_error("Invalid format");
-        } else {
-            format_string.assign(context.begin(), it);
         }
+        format_string.assign(context.begin(), it);
+
         return it;
     }
 

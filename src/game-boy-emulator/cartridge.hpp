@@ -7,7 +7,7 @@ class Emulator;
 
 class Cartridge {
 public:
-    Cartridge(Emulator* emulator, const std::vector<uint8_t>& rom);
+    Cartridge(Emulator* emulator, std::vector<uint8_t> rom);
 
     [[nodiscard]] uint8_t read_byte(uint16_t address) const;
 

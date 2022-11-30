@@ -3,7 +3,6 @@
 #include "constants.h"
 #include <cstdint>
 #include <span>
-#include "fmt/format.h"
 
 namespace bitmanip {
 /**

@@ -3,6 +3,8 @@
 #include "emulator.hpp"
 #include "exceptions.hpp"
 
+#include <fmt/format.h>
+
 Ram::Ram(Emulator* emulator) : m_emulator(emulator) {}
 
 uint8_t Ram::read_byte(uint16_t address) const {

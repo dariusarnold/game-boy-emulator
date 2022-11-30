@@ -1,5 +1,5 @@
-#include <fmt/core.h>
 #include "bitmanipulation.hpp"
+#include <cassert>
 
 namespace bitmanip {
 

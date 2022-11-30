@@ -41,6 +41,8 @@ struct Registers {
 };
 // NOLINTEND(cppcoreguidelines-pro-type-member-init,hicpp-member-init,-warnings-as-errors)
 
+#include <fmt/core.h>
+
 /**
  * Formatted output for Registers.
  * Allows to print single registers by specifying the name in lower case.
@@ -62,13 +64,13 @@ public:
             // No format string was specified
             return context.begin();
         }
-        const auto* it = std::find(context.begin(), context.end(), '}');
-        if (it == context.end()) {
-            throw fmt::format_error("Invalid format");
+        for (const auto* it = context.begin(); it != context.end(); ++it) {
+            if (*it == '}') {
+                format_string.assign(context.begin(), it);
+                return it;
+            }
         }
-        format_string.assign(context.begin(), it);
-
-        return it;
+        throw fmt::format_error("Invalid format");
     }
 
     template <typename FormatContext>

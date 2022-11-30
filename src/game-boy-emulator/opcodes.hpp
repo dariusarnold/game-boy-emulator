@@ -4,8 +4,8 @@
 
 #include <magic_enum.hpp>
 
-#include <cstdint>
 #include <fmt/format.h>
+#include <cstdint>
 #include <string>
 
 
@@ -142,23 +142,9 @@ class fmt::formatter<opcodes::Instruction> {
     std::string format_string;
 
 public:
-    /**
-     * Parse until closing curly brace '}' is hit.
-     * @param context Contains format string after :, meaning '{:f}' becomes 'f}'.
-     * @return iterator past the end of the parsed range
-     */
+    // Currently no custom formatting implemented
     auto parse(fmt::format_parse_context& context) {
-        if (context.begin() == context.end()) {
-            // No format string was specified
-            return context.begin();
-        }
-        const auto* it = std::find(context.begin(), context.end(), '}');
-        if (it == context.end()) {
-            throw fmt::format_error("Invalid format");
-        }
-        format_string.assign(context.begin(), it);
-
-        return it;
+        return context.begin();
     }
 
     template <typename FormatContext>

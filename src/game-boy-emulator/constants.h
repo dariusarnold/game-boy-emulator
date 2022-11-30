@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
+#include <cstddef>
+#include <type_traits>
 
 /**
  * All sizes are in bytes.

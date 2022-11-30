@@ -20,12 +20,6 @@ class Emulator;
 // Gives a more descriptive name but doesn't change semantics.
 using t_cycle = size_t;
 
-enum class Verbosity {
-    LEVEL_NONE = 0,
-    LEVEL_ERROR = 1,
-    LEVEL_DEBUG = 2,
-    LEVEL_INFO = 3,
-};
 
 class Cpu {
     Registers registers = {};
@@ -36,17 +30,10 @@ class Cpu {
     opcodes::Instruction current_instruction;
     opcodes::Instruction previous_instruction;
 
-    // Controlls logging to stdout
-    Verbosity verbosity;
-
     InterruptHandler interrupt_handler;
-
-    // Print considering the selected verbosity level
-    void print(std::string_view message, Verbosity level);
 
 public:
     explicit Cpu(Emulator* emulator);
-    explicit Cpu(Emulator* emulator, Verbosity verbosity_);
 
     /**
      * Start cpu.

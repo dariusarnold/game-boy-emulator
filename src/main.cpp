@@ -12,6 +12,7 @@
 #include "imgui_impl_sdl.h"
 #include "SDL.h"
 #include "SDL_opengl.h"
+#include "spdlog/spdlog.h"
 
 #include <filesystem>
 #include <fstream>
@@ -548,7 +549,7 @@ std::pair<SDL_GLContext, SDL_Window*> setup_graphics() {
     // minority of Windows systems, depending on whether SDL_INIT_GAMECONTROLLER is enabled or
     // disabled.. updating to latest version of SDL is recommended!)
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
-        fmt::print("Error: {}\n", SDL_GetError());
+        spdlog::error("Error: {}", SDL_GetError());
         std::exit(EXIT_FAILURE);
     }
 
@@ -698,23 +699,25 @@ int main() {
     SDL_Quit();
     */
 
-    auto boot_rom_path = std::filesystem::absolute(("../../dmg01-boot.bin"));
+    auto boot_rom_path = std::filesystem::absolute("../../dmg01-boot.bin");
     auto boot_rom = load_boot_rom_file(boot_rom_path);
     if (!boot_rom) {
+        spdlog::error("Failed to load boot rom from {}", boot_rom_path.string());
         return EXIT_FAILURE;
     }
     auto rom_path = std::filesystem::absolute("../../PokemonRed.gb");
     auto game_rom = load_rom_file(rom_path);
     if (game_rom.empty()) {
+        spdlog::error("Failed to load game rom from {}", rom_path.string());
         return EXIT_FAILURE;
     }
 
 
     try {
-        print_container_hex(boot_rom.value());
         Emulator emulator(boot_rom.value(), game_rom);
         emulator.run();
     } catch (const std::exception& e) {
+        spdlog::error("Error {}", e.what()); // NOLINT
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;

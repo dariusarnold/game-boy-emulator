@@ -4,16 +4,16 @@
 #include "emulator.hpp"
 #include "exceptions.hpp"
 
-#include <unordered_set>
+#include "spdlog/spdlog.h"
 
 
 bool Cpu::step() {
     previous_instruction = current_instruction;
     current_instruction = fetch_instruction();
-    print(fmt::format("Executing {}\n", current_instruction), Verbosity::LEVEL_INFO);
+    spdlog::info("Executing {}", current_instruction);
     // TODO: the additional fetch could be done conditionally
     auto data = fetch_data(current_instruction);
-    print(fmt::format("Data {:04X}\n", data), Verbosity::LEVEL_INFO);
+    spdlog::info("Data {:04X}", data);
     switch (current_instruction.instruction_type) {
     case opcodes::InstructionType::LD:
     case opcodes::InstructionType::LDD:
@@ -78,9 +78,7 @@ void Cpu::run() {
     }
 }
 
-Cpu::Cpu(Emulator* emulator) : Cpu(emulator, Verbosity::LEVEL_INFO) {}
-
-Cpu::Cpu(Emulator* emulator, Verbosity verbosity_) : m_emulator(emulator), verbosity(verbosity_) {}
+Cpu::Cpu(Emulator* emulator) : m_emulator(emulator) {}
 
 void Cpu::set_subtract_flag(BitValues value) {
     bitmanip::set(registers.f, as_integral(flags::subtract), value);
@@ -198,7 +196,7 @@ opcodes::Instruction Cpu::fetch_instruction() {
             fmt::format("Encountered unsupported opcode {:02X} at pc {:04X}", byte, registers.pc));
     }
     registers.pc++;
-    print(fmt::format("Fetched opcode {:02X}\n", byte), Verbosity::LEVEL_DEBUG);
+    spdlog::info("Fetched opcode {:02X}", byte);
     m_emulator->elapse_cycles(1);
     return instruction;
 }
@@ -248,12 +246,6 @@ std::string Cpu::get_minimal_debug_state() {
                        m_emulator->get_bus()->read_byte(registers.pc + 1),
                        m_emulator->get_bus()->read_byte(registers.pc + 2),
                        m_emulator->get_bus()->read_byte(registers.pc + 3));
-}
-
-void Cpu::print(std::string_view message, Verbosity level) {
-    if (static_cast<int>(level) <= static_cast<int>(verbosity)) {
-        fmt::print(message);
-    }
 }
 
 opcodes::Instruction Cpu::get_current_instruction() {
@@ -463,14 +455,10 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
         // Set bit instruction or Reset bit instruction. Since only the operation differs and the
         // write back stays the same, handle them accordingly.
         if (cb_opcode >= 0x80) {
-            print(fmt::format("Prefix CB Reset bit {} in {}\n", bit,
-                              magic_enum::enum_name(register_type)),
-                  Verbosity::LEVEL_INFO);
+            spdlog::info("Prefix CB Reset bit {} in {}", bit, magic_enum::enum_name(register_type));
             bitmanip::unset(value, bit);
         } else {
-            print(fmt::format("Prefix CB Set bit {} in {}\n", bit,
-                              magic_enum::enum_name(register_type)),
-                  Verbosity::LEVEL_INFO);
+            spdlog::info("Prefix CB Set bit {} in {}", bit, magic_enum::enum_name(register_type));
             bitmanip::set(value, bit);
         }
         if (register_type == opcodes::RegisterType::HL) {
@@ -482,9 +470,7 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
         }
     } else if (cb_opcode >= 0x40) {
         // Bit test instruction (This just sets flags and doesn't modify registers or memory)
-        print(
-            fmt::format("Prefix CB Test bit {} in {}\n", bit, magic_enum::enum_name(register_type)),
-            Verbosity::LEVEL_INFO);
+        spdlog::info("Prefix CB Test bit {} in {}", bit, magic_enum::enum_name(register_type));
         test_bit(value, bit);
     } else if (cb_opcode >= 0x10 && cb_opcode <= 0x17) {
         // Rotate left instruction

@@ -7,6 +7,8 @@
 #include "gpu.hpp"
 #include "ram.hpp"
 
+#include "spdlog/spdlog.h"
+
 
 Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<uint8_t>& game_rom) :
         m_cartridge(std::make_shared<Cartridge>(this, game_rom)),
@@ -19,20 +21,14 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
 void Emulator::run() {
     try {
         m_cpu->run();
-    } catch (const LogicError& error) {
-        abort_execution(error.what());
-    } catch (const NotImplementedError& error) {
-        abort_execution(error.what());
+    } catch (const std::exception& error) {
+        spdlog::error("{} - CPU state {}", error.what(), m_cpu->get_minimal_debug_state());
+        return;
     }
 }
 
 std::shared_ptr<AddressBus> Emulator::get_bus() const {
     return m_address_bus;
-}
-
-void Emulator::abort_execution(std::string_view error_msg) {
-    fmt::print("{} - CPU state {}", error_msg, m_cpu->get_minimal_debug_state());
-    std::exit(1);
 }
 
 std::shared_ptr<Ram> Emulator::get_ram() const {

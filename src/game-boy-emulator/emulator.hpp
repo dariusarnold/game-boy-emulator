@@ -33,7 +33,6 @@ public:
     void run();
     bool step();
 
-    [[noreturn]] void abort_execution(std::string_view error_msg);
     [[nodiscard]] bool is_booting() const;
     void signal_boot_ended();
     void elapse_cycles(size_t cycles);

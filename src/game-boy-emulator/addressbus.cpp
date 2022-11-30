@@ -8,7 +8,7 @@
 #include "memorymap.hpp"
 #include "ram.hpp"
 
-#include "fmt/format.h"
+#include "spdlog/spdlog.h"
 
 
 AddressBus::AddressBus(Emulator* emulator) : m_emulator(emulator) {}
@@ -37,7 +37,7 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
         if (address == 0xFF42) {
             return io_registerFF42;
         }
-        fmt::print("IGNORED: read from IO register {:04X}\n", address);
+        spdlog::warn("IGNORED: read from IO register {:04X}", address);
         return 0xFF;
     }
     throw NotImplementedError(fmt::format("Addressing unmapped memory byte at {:04X}", address));
@@ -58,7 +58,7 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         if (address == 0xFF42) {
             io_registerFF42 = value;
         }
-        fmt::print("IGNORED: write to IO registers {:04X}\n", address);
+        spdlog::warn("IGNORED: write to IO registers {:04X}", address);
     } else {
         throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
     }

@@ -39,6 +39,7 @@ target_link_libraries(game_boy_emulator_library PUBLIC
         SDL2::SDL2
         OpenGL::GL
         magic_enum::magic_enum
+        spdlog::spdlog
         )
 
 add_executable(game_boy_emulator

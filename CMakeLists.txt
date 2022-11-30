@@ -15,6 +15,7 @@ find_package(SDL2 REQUIRED)
 find_package(imgui REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(magic_enum REQUIRED)
+find_package(spdlog REQUIRED)
 
 # Enable clang-format integration by creating clang-format CMake targets
 # Add a custom CMake Modules directory

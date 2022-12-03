@@ -46,6 +46,7 @@ enum class InstructionType {
     CPL,
     XOR,
     OR,
+    AND,
     CB,
     CALL,
     RET,

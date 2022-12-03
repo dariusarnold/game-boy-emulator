@@ -422,21 +422,21 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x9F
     Instruction{},
     // 0xA0
-    Instruction{},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::B},
     // 0xA1
-    Instruction{},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::C},
     // 0xA2
-    Instruction{},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::D},
     // 0xA3
-    Instruction{},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::E},
     // 0xA4
-    Instruction{},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::H},
     // 0xA5
-    Instruction{},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::L},
     // 0xA6
-    Instruction{},
+    Instruction{InstructionType::AND, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
     // 0xA7
-    Instruction{},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::A},
     // 0xA8 A = A XOR B
     Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::B},
@@ -598,7 +598,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xE5
     Instruction{InstructionType::PUSH, InteractionType::None, RegisterType::HL},
     // 0xE6
-    Instruction{},
+    Instruction{InstructionType::AND, InteractionType::ImmediateByte, RegisterType::A},
     // 0xE7
     Instruction{},
     // 0xE8

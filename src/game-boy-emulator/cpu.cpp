@@ -64,6 +64,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::OR:
         instructionOR(current_instruction, data);
         break;
+    case opcodes::InstructionType::AND:
+        instructionAND(current_instruction, data);
+        break;
     case opcodes::InstructionType::SUB:
         instructionSUB(current_instruction, data);
         break;
@@ -686,6 +689,20 @@ void Cpu::instructionOR(opcodes::Instruction instruction, uint8_t data) {
         data = m_emulator->get_bus()->read_byte(address);
     }
     registers.a |= data;
+    set_zero_flag(registers.a == 0);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+    set_carry_flag(BitValues::Inactive);
+}
+
+void Cpu::instructionAND(opcodes::Instruction instruction, uint8_t data) {
+    if (instruction.interaction_type == opcodes::InteractionType::Register_Register) {
+        data = get_register_value(instruction.register_type_source);
+    } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
+        auto address = get_register_value(instruction.register_type_source);
+        data = m_emulator->get_bus()->read_byte(address);
+    }
+    registers.a &= data;
     set_zero_flag(registers.a == 0);
     set_subtract_flag(BitValues::Inactive);
     set_half_carry_flag(BitValues::Inactive);

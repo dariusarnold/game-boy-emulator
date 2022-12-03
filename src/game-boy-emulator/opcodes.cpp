@@ -456,7 +456,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::L},
     // 0xAE
-    Instruction{},
+    Instruction{InstructionType::XOR, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
     // 0xAF
     Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::A},
@@ -615,7 +615,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xED
     Instruction{},
     // 0xEE
-    Instruction{},
+    Instruction{InstructionType::XOR, InteractionType::ImmediateByte, RegisterType::A},
     // 0xEF
     Instruction{},
     // 0xF0

@@ -27,7 +27,7 @@ bool Cpu::step() {
         registers.hl = registers.sp + data;
         break;
     case opcodes::InstructionType::XOR:
-        instructionXOR(current_instruction);
+        instructionXOR(current_instruction, data);
         break;
     case opcodes::InstructionType::CB:
         // Here the data is the second byte of the CB instruction.
@@ -440,16 +440,6 @@ void Cpu::instructionLDH(opcodes::Instruction instruction, uint16_t data) {
     }
 }
 
-void Cpu::instructionXOR(opcodes::Instruction instruction) {
-    registers.a = registers.a ^ get_register_value(instruction.register_type_source);
-    if (registers.a == 0) {
-        set_zero_flag(BitValues::Active);
-    }
-    set_subtract_flag(BitValues::Inactive);
-    set_half_carry_flag(BitValues::Inactive);
-    set_carry_flag(BitValues::Inactive);
-}
-
 opcodes::RegisterType get_register_cb(uint8_t cb_opcode) {
     // For all CB-prefixed instructions the register follows a regular pattern.
     constexpr static std::array cb_registers{opcodes::RegisterType::B,  opcodes::RegisterType::C,
@@ -672,6 +662,20 @@ void Cpu::instructionCP(opcodes::Instruction instruction, uint8_t data) {
     set_half_carry_flag(hc);
     set_subtract_flag(BitValues::Active);
     set_carry_flag(registers.a < data);
+}
+
+void Cpu::instructionXOR(opcodes::Instruction instruction, uint8_t data) {
+    if (instruction.interaction_type == opcodes::InteractionType::Register_Register) {
+        data = get_register_value(instruction.register_type_source);
+    } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
+        auto address = get_register_value(instruction.register_type_source);
+        data = m_emulator->get_bus()->read_byte(address);
+    }
+    registers.a ^= data;
+    set_zero_flag(registers.a == 0);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+    set_carry_flag(BitValues::Inactive);
 }
 
 void Cpu::instructionOR(opcodes::Instruction instruction, uint8_t data) {

@@ -19,7 +19,8 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     if (m_emulator->is_booting() && memmap::is_in(address, memmap::BootRom)) {
         return m_emulator->get_boot_rom()->read_byte(address);
     }
-    if (memmap::is_in(address, memmap::CartridgeRom)) {
+    if (memmap::is_in(address, memmap::CartridgeRom)
+        || memmap::is_in(address, memmap::CartridgeRam)) {
         return m_emulator->get_cartridge()->read_byte(address);
     }
     if (memmap::is_in(address, memmap::InternalRamBank0)
@@ -49,6 +50,9 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         m_emulator->get_ram()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::VRam)) {
         m_emulator->get_gpu()->write_byte(address, value);
+    } else if (memmap::is_in(address, memmap::CartridgeRom)
+               || memmap::is_in(address, memmap::CartridgeRam)) {
+        m_emulator->get_cartridge()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::IORegisters)) {
         if (m_emulator->is_booting()) {
             if (address == 0xFF50) {

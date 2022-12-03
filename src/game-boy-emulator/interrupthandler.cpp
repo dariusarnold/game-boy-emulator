@@ -4,6 +4,7 @@
 #include "bitmanipulation.hpp"
 #include "cpu.hpp"
 
+#include "magic_enum.hpp"
 #include "spdlog/spdlog.h"
 
 InterruptHandler::InterruptHandler(Emulator* emulator) :
@@ -53,7 +54,7 @@ void InterruptHandler::write_interrupt_flag(uint8_t val) {
 namespace {
 // Sorted by priority (high to low): VBlank, LCD STAT, Timer, Serial, Joypad
 const std::array<uint16_t, 5> ISR_ADDRESS{0x0040, 0x0048, 0x0050, 0x0058, 0x0060};
-}
+} // namespace
 
 void InterruptHandler::handle_interrupts() {
     if (!m_global_interrupt_enabled_status) {
@@ -68,4 +69,10 @@ void InterruptHandler::handle_interrupts() {
             m_emulator->get_cpu()->call_isr(address);
         }
     }
+}
+
+void InterruptHandler::request_interrupt(InterruptHandler::InterruptType interrupt_type) {
+    m_logger->debug("Request interrupt {}", magic_enum::enum_name(interrupt_type));
+    auto new_flag = m_interrupt_request_flags | static_cast<uint8_t>(interrupt_type);
+    write_interrupt_flag(new_flag);
 }

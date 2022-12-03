@@ -26,7 +26,10 @@
     X(0xA000, 0xBFFF, CartridgeRam)                                                                \
     X(0xC000, 0xDFFF, InternalRam)                                                                 \
     X(0xFF00, 0xFF7F, IORegisters)                                                                 \
-    X(0xFF80, 0xFFFE, HighRam)
+    X(0xFF04, 0xFF07, Timer)                                                                       \
+    X(0xFF80, 0xFFFE, HighRam)                                                                     \
+    X(0xFF0F, 0xFF0F, InterruptFlag)                                                               \
+    X(0xFFFF, 0xFFFF, InterruptEnable)
 
 
 // Make Begin, End, Size and Name constants

@@ -68,7 +68,7 @@ bool Cpu::step() {
         instructionADD(current_instruction, data);
         break;
     case opcodes::InstructionType::NOP:
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
         break;
     case opcodes::InstructionType::DI:
         m_emulator->set_interrupts_enabled(false);
@@ -212,7 +212,7 @@ opcodes::Instruction Cpu::fetch_instruction() {
     }
     registers.pc++;
     m_logger->info("Fetched opcode {:02X}", byte);
-    m_emulator->elapse_cycles(1);
+    m_emulator->elapse_cycle();
     return instruction;
 }
 
@@ -231,17 +231,17 @@ uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
     case opcodes::InteractionType::AddressRegister_ImmediateByte:
         low_byte = m_emulator->get_bus()->read_byte(registers.pc);
         registers.pc++;
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
         return low_byte;
     case opcodes::InteractionType::ImmediateWord:
     case opcodes::InteractionType::Register_AddressWord:
     case opcodes::InteractionType::AddressWord_Register:
         low_byte = m_emulator->get_bus()->read_byte(registers.pc);
         registers.pc++;
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
         high_byte = m_emulator->get_bus()->read_byte(registers.pc);
         registers.pc++;
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
         return bitmanip::word_from_bytes(high_byte, low_byte);
     }
     // See comment in instructionJR.
@@ -375,7 +375,7 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
         value = get_register_value(instruction.register_type_destination);
         m_emulator->get_bus()->write_byte(value,
                                           get_register_value(instruction.register_type_source));
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
         if (instruction.instruction_type == opcodes::InstructionType::LDD) {
             set_register_value(instruction.register_type_destination, value - 1);
         } else if (instruction.instruction_type == opcodes::InstructionType::LDI) {
@@ -385,7 +385,7 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
     case opcodes::InteractionType::Register_AddressRegister:
         value = m_emulator->get_bus()->read_byte(
             get_register_value(instruction.register_type_source));
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
         set_register_value(instruction.register_type_destination, value);
         if (instruction.instruction_type == opcodes::InstructionType::LDD) {
             set_register_value(instruction.register_type_source, value - 1);
@@ -397,16 +397,16 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
         // read address register
         value = get_register_value(instruction.register_type_destination);
         m_emulator->get_bus()->write_byte(value, data);
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
         return;
     case opcodes::InteractionType::AddressWord_Register:
         m_emulator->get_bus()->write_byte(data,
                                           get_register_value(instruction.register_type_source));
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
         return;
     case opcodes::InteractionType::Register_AddressWord:
         value = m_emulator->get_bus()->read_byte(data);
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
         set_register_value(instruction.register_type_destination, value);
         return;
     default:
@@ -422,16 +422,16 @@ void Cpu::instructionLDH(opcodes::Instruction instruction, uint16_t data) {
         if (instruction.register_type_destination == opcodes::RegisterType::None) {
             // 0xE0 LDH (n),A data is the address where we have to store A
             m_emulator->get_bus()->write_byte(data + offset, registers.a);
-            m_emulator->elapse_cycles(1);
+            m_emulator->elapse_cycle();
         } else {
             // 0xF0 LDH A,(n)
             registers.a = m_emulator->get_bus()->read_byte(data + offset);
-            m_emulator->elapse_cycles(1);
+            m_emulator->elapse_cycle();
         }
     } else {
         // 0xF2 LDH (C),A
         m_emulator->get_bus()->write_byte(registers.c + offset, registers.a);
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
     }
 }
 
@@ -461,7 +461,7 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
         if (register_type == opcodes::RegisterType::HL) {
             // Indirect access
             auto x = m_emulator->get_bus()->read_byte(registers.hl);
-            m_emulator->elapse_cycles(1);
+            m_emulator->elapse_cycle();
             return x;
         }
         return static_cast<uint8_t>(get_register_value(register_type));
@@ -480,7 +480,7 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
         if (register_type == opcodes::RegisterType::HL) {
             // Indirect access
             m_emulator->get_bus()->write_byte(registers.hl, value);
-            m_emulator->elapse_cycles(1);
+            m_emulator->elapse_cycle();
         } else {
             set_register_value(register_type, value);
         }
@@ -514,7 +514,7 @@ void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
     // https://stackoverflow.com/questions/13150449/efficient-unsigned-to-signed-cast-avoiding-implementation-defined-behavior
     auto immediate = static_cast<int8_t>(data);
     registers.pc += immediate;
-    m_emulator->elapse_cycles(1);
+    m_emulator->elapse_cycle();
 }
 
 bool Cpu::check_condition(opcodes::ConditionType condition_type) const {
@@ -546,7 +546,7 @@ void Cpu::instructionJP(opcodes::Instruction instruction, uint16_t data) {
     if (instruction.interaction_type == opcodes::InteractionType::AddressRegister) {
         data = registers.sp;
     } else {
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
     }
     registers.pc = data;
 }
@@ -563,8 +563,9 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
         // Indirect access
         auto address = get_register_value(instruction.register_type_destination);
         value_original = m_emulator->get_bus()->read_byte(address);
+        m_emulator->elapse_cycle();
         m_emulator->get_bus()->write_byte(address, operation(value_original, 1));
-        m_emulator->elapse_cycles(2);
+        m_emulator->elapse_cycle();
     } else {
         // Direct access
         value_original = get_register_value(instruction.register_type_destination);
@@ -590,23 +591,26 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
 void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
     bool condition_met = check_condition(instruction.condition_type);
     if (condition_met) {
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
         auto bus = m_emulator->get_bus();
         bus->write_byte(--registers.sp, bitmanip::get_high_byte(registers.pc));
+        m_emulator->elapse_cycle();
         bus->write_byte(--registers.sp, bitmanip::get_low_byte(registers.pc));
-        m_emulator->elapse_cycles(3);
+        m_emulator->elapse_cycle();
         registers.pc = data;
+        m_emulator->elapse_cycle();
     }
 }
 void Cpu::instructionPUSH(opcodes::Instruction instruction) {
-    m_emulator->elapse_cycles(1);
+    m_emulator->elapse_cycle();
     auto bus = m_emulator->get_bus();
     auto value = get_register_value(instruction.register_type_destination);
     registers.sp -= 1;
     bus->write_byte(registers.sp, bitmanip::get_high_byte(value));
+    m_emulator->elapse_cycle();
     registers.sp -= 1;
     bus->write_byte(registers.sp, bitmanip::get_low_byte(value));
-    m_emulator->elapse_cycles(2);
+    m_emulator->elapse_cycle();
 }
 
 void Cpu::instructionRL(opcodes::Instruction instruction) {
@@ -625,10 +629,10 @@ void Cpu::instructionRL(opcodes::Instruction instruction) {
 void Cpu::instructionPOP(opcodes::Instruction instruction) {
     auto low_byte = m_emulator->get_bus()->read_byte(registers.sp);
     registers.sp++;
-    m_emulator->elapse_cycles(1);
+    m_emulator->elapse_cycle();
     auto high_byte = m_emulator->get_bus()->read_byte(registers.sp);
     registers.sp++;
-    m_emulator->elapse_cycles(1);
+    m_emulator->elapse_cycle();
     auto value = bitmanip::word_from_bytes(high_byte, low_byte);
     set_register_value(instruction.register_type_destination, value);
 }
@@ -636,14 +640,16 @@ void Cpu::instructionPOP(opcodes::Instruction instruction) {
 void Cpu::instructionRET(opcodes::Instruction instruction) {
     bool condition_met = check_condition(instruction.condition_type);
     if (instruction.condition_type != opcodes::ConditionType::None) {
-        m_emulator->elapse_cycles(1);
+        m_emulator->elapse_cycle();
     }
     if (condition_met) {
         auto bus = m_emulator->get_bus();
         auto low_byte = bus->read_byte(registers.sp++);
+        m_emulator->elapse_cycle();
         auto high_byte = bus->read_byte(registers.sp++);
-        m_emulator->elapse_cycles(3);
+        m_emulator->elapse_cycle();
         registers.pc = bitmanip::word_from_bytes(high_byte, low_byte);
+        m_emulator->elapse_cycle();
     }
 }
 
@@ -698,22 +704,26 @@ void Cpu::instructionADD(opcodes::Instruction instruction, uint8_t data) {
 void Cpu::instructionRETI() {
     auto bus = m_emulator->get_bus();
     auto low_byte = bus->read_byte(registers.sp++);
+    m_emulator->elapse_cycle();
     auto high_byte = bus->read_byte(registers.sp++);
-    m_emulator->elapse_cycles(3);
+    m_emulator->elapse_cycle();
     registers.pc = bitmanip::word_from_bytes(high_byte, low_byte);
+    m_emulator->elapse_cycle();
     m_emulator->set_interrupts_enabled(true);
 }
 
 void Cpu::call_isr(uint16_t isr_address) {
+    m_emulator->elapse_cycle();
+    m_emulator->elapse_cycle();
     auto bus = m_emulator->get_bus();
-    m_emulator->elapse_cycles(2);
     registers.sp -= 1;
     bus->write_byte(registers.sp, bitmanip::get_high_byte(registers.pc));
+    m_emulator->elapse_cycle();
     registers.sp -= 1;
     bus->write_byte(registers.sp, bitmanip::get_low_byte(registers.pc));
-    m_emulator->elapse_cycles(2);
+    m_emulator->elapse_cycle();
     registers.pc = isr_address;
-    m_emulator->elapse_cycles(1);
+    m_emulator->elapse_cycle();
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

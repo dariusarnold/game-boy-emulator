@@ -28,6 +28,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/bootrom.hpp
         game-boy-emulator/cartridge.cpp
         game-boy-emulator/cartridge.hpp
+        game-boy-emulator/timer.cpp
+        game-boy-emulator/timer.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

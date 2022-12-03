@@ -6,6 +6,7 @@
 #include "exceptions.hpp"
 #include "gpu.hpp"
 #include "ram.hpp"
+#include "timer.hpp"
 
 #include "spdlog/spdlog.h"
 
@@ -18,6 +19,7 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
         m_cpu(std::make_shared<Cpu>(this)),
         m_gpu(std::make_shared<Gpu>()),
         m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
+        m_timer(std::make_shared<Timer>(this)),
         m_logger(spdlog::get("")) {}
 
 void Emulator::run() {
@@ -50,8 +52,9 @@ void Emulator::signal_boot_ended() {
     m_is_booting = false;
 }
 
-void Emulator::elapse_cycles(size_t cycles) {
-    m_state.cycles += cycles;
+void Emulator::elapse_cycle() {
+    m_state.cycles_m += 1;
+    m_timer->cycle_elapsed_callback(m_state.cycles_m);
 }
 
 std::shared_ptr<Gpu> Emulator::get_gpu() const {
@@ -83,8 +86,8 @@ void Emulator::set_interrupts_enabled(bool enabled) {
 }
 
 void Emulator::elapse_instruction() {
-    instructions_executed++;
-    m_logger->debug("{} instructions elapsed", instructions_executed);
+    m_state.instructions_executed++;
+    m_logger->debug("{} instructions elapsed", m_state.instructions_executed);
     m_interrupt_handler->callback_instruction_elapsed();
 }
 
@@ -94,4 +97,8 @@ std::shared_ptr<InterruptHandler> Emulator::get_interrupt_handler() const {
 
 std::shared_ptr<Cpu> Emulator::get_cpu() const {
     return m_cpu;
+}
+
+std::shared_ptr<Timer> Emulator::get_timer() const {
+    return m_timer;
 }

@@ -18,13 +18,16 @@ class Gpu;
 class AddressBus;
 class BootRom;
 class Cartridge;
+class Timer;
 namespace spdlog {
 class logger;
 }
 
 struct EmulatorState {
     // Number of m cycles since execution start
-    size_t cycles = 0;
+    size_t cycles_m = 0;
+    // Number of instructions since execution start
+    size_t instructions_executed = 0;
 };
 
 /**
@@ -40,7 +43,7 @@ public:
     [[nodiscard]] bool is_booting() const;
     void signal_boot_ended();
     void elapse_instruction();
-    void elapse_cycles(size_t cycles);
+    void elapse_cycle();
     void set_interrupts_enabled(bool enabled);
 
     [[nodiscard]] std::string get_cpu_debug_state() const;
@@ -54,10 +57,10 @@ public:
     [[nodiscard]] std::shared_ptr<Cpu> get_cpu() const;
     [[nodiscard]] std::shared_ptr<Cartridge> get_cartridge() const;
     [[nodiscard]] std::shared_ptr<InterruptHandler> get_interrupt_handler() const;
+    [[nodiscard]] std::shared_ptr<Timer> get_timer() const;
 
 private:
     bool m_is_booting = true;
-    size_t instructions_executed = 0;
     std::shared_ptr<Cartridge> m_cartridge;
     EmulatorState m_state;
     std::shared_ptr<BootRom> m_boot_rom;
@@ -67,5 +70,6 @@ private:
     std::shared_ptr<Apu> m_apu;
     std::shared_ptr<Gpu> m_gpu;
     std::shared_ptr<InterruptHandler> m_interrupt_handler;
+    std::shared_ptr<Timer> m_timer;
     std::shared_ptr<spdlog::logger> m_logger;
 };

@@ -9,6 +9,14 @@ class logger;
 
 class InterruptHandler {
 public:
+    enum class InterruptType : uint8_t {
+        VBlank,
+        LCD,
+        Timer,
+        SerialLink,
+        Joypad,
+    };
+
     explicit InterruptHandler(Emulator* emulator);
 
     void callback_instruction_elapsed();
@@ -18,7 +26,11 @@ public:
     void set_global_interrupt_enabled(bool enabled);
 
     void write_interrupt_enable(uint8_t val);
+    // Overwrites all current values in the interrupt flag register with the new value.
     void write_interrupt_flag(uint8_t val);
+    // Only overwrites the specific interrupt types bit in the interrupt flag register, leaving all
+    // other values intact.
+    void request_interrupt(InterruptType interrupt_type);
 
 private:
     // Enabling interrupts is delayed by one instruction.

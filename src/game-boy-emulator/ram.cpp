@@ -8,8 +8,8 @@
 Ram::Ram(Emulator* emulator) : m_emulator(emulator) {}
 
 uint8_t Ram::read_byte(uint16_t address) const {
-    if (memmap::is_in(address, memmap::InternalRamBank0)) {
-        address -= memmap::InternalRamBank0Begin;
+    if (memmap::is_in(address, memmap::InternalRam)) {
+        address -= memmap::InternalRamBegin;
         return internalRam[address];
     }
     if (memmap::is_in(address, memmap::HighRam)) {
@@ -26,8 +26,8 @@ uint16_t Ram::read_word(uint16_t address) const {
 }
 
 void Ram::write_byte(uint16_t address, uint8_t value) {
-    if (memmap::is_in(address, memmap::InternalRamBank0)) {
-        address -= memmap::InternalRamBank0Begin;
+    if (memmap::is_in(address, memmap::InternalRam)) {
+        address -= memmap::InternalRamBegin;
         internalRam[address] = value;
     } else if (memmap::is_in(address, memmap::HighRam)) {
         address -= memmap::HighRamBegin;

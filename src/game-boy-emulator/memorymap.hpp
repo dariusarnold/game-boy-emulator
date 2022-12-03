@@ -24,7 +24,7 @@
     X(0x8000, 0x97FF, CharacterRam)                                                                \
     X(0x9800, 0x9FFF, BGMapData)                                                                   \
     X(0xA000, 0xBFFF, CartridgeRam)                                                                \
-    X(0xC000, 0xCFFF, InternalRamBank0)                                                            \
+    X(0xC000, 0xDFFF, InternalRam)                                                                 \
     X(0xFF00, 0xFF7F, IORegisters)                                                                 \
     X(0xFF80, 0xFFFE, HighRam)
 

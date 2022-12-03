@@ -64,6 +64,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::ADD:
         instructionADD(current_instruction, data);
         break;
+    case opcodes::InstructionType::NOP:
+        m_emulator->elapse_cycles(1);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",

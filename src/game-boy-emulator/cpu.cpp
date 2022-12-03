@@ -388,9 +388,11 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
         m_emulator->elapse_cycle();
         set_register_value(instruction.register_type_destination, value);
         if (instruction.instruction_type == opcodes::InstructionType::LDD) {
-            set_register_value(instruction.register_type_source, value - 1);
+            set_register_value(instruction.register_type_source,
+                               get_register_value(instruction.register_type_source) - 1);
         } else if (instruction.instruction_type == opcodes::InstructionType::LDI) {
-            set_register_value(instruction.register_type_source, value + 1);
+            set_register_value(instruction.register_type_source,
+                               get_register_value(instruction.register_type_source) + 1);
         }
         return;
     case opcodes::InteractionType::AddressRegister_ImmediateByte:

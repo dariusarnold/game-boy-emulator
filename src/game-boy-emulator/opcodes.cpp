@@ -461,21 +461,29 @@ constexpr std::array<Instruction, 0x100> instructions{
     Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::A},
     // 0xB0
-    Instruction{},
+    Instruction{InstructionType::OR, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::B},
     // 0xB1
-    Instruction{},
+    Instruction{InstructionType::OR, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::C},
     // 0xB2
-    Instruction{},
+    Instruction{InstructionType::OR, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::D},
     // 0xB3
-    Instruction{},
+    Instruction{InstructionType::OR, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::E},
     // 0xB4
-    Instruction{},
+    Instruction{InstructionType::OR, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::H},
     // 0xB5
-    Instruction{},
+    Instruction{InstructionType::OR, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::L},
     // 0xB6
-    Instruction{},
+    Instruction{InstructionType::OR, InteractionType::Register_AddressRegister, RegisterType::A,
+                RegisterType::HL},
     // 0xB7
-    Instruction{},
+    Instruction{InstructionType::OR, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::A},
     // 0xB8
     Instruction{InstructionType::CP, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::B},
@@ -625,7 +633,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xF6
     Instruction{},
     // 0xF7
-    Instruction{},
+    Instruction{InstructionType::OR, InteractionType::ImmediateByte, RegisterType::A},
     // 0xF8
     Instruction{InstructionType::LDHL, InteractionType::ImmediateByte, RegisterType::HL,
                 RegisterType::SP},

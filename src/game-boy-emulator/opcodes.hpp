@@ -45,6 +45,7 @@ enum class InstructionType {
     // Complement (Logical NOT)
     CPL,
     XOR,
+    OR,
     CB,
     CALL,
     RET,

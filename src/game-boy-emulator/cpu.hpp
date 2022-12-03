@@ -7,11 +7,14 @@
 
 #include "fmt/format.h"
 
+#include <memory>
 #include <algorithm>
 #include <array>
 #include <cstdint>
 
-
+namespace spdlog {
+class logger;
+}
 class Emulator;
 
 
@@ -23,6 +26,7 @@ using t_cycle = size_t;
 class Cpu {
     Registers registers = {};
     Emulator* m_emulator;
+    std::shared_ptr<spdlog::logger> m_logger;
 
     opcodes::Instruction current_instruction;
     opcodes::Instruction previous_instruction;

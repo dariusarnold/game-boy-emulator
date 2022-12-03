@@ -596,6 +596,8 @@ int main(int argc, char** argv) { // NOLINT
     program.add_argument("boot").help("Path to boot ROM file.");
     program.add_argument("rom").help("Path to game ROM file to run.");
 
+    spdlog::set_level(spdlog::level::trace);
+
     try {
         program.parse_args(argc, argv);
     } catch (const std::runtime_error& e) {

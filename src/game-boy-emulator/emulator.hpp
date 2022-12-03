@@ -18,6 +18,9 @@ class Gpu;
 class AddressBus;
 class BootRom;
 class Cartridge;
+namespace spdlog {
+class logger;
+}
 
 struct EmulatorState {
     // Number of m cycles since execution start
@@ -63,4 +66,5 @@ private:
     std::shared_ptr<Apu> m_apu;
     std::shared_ptr<Gpu> m_gpu;
     std::shared_ptr<InterruptHandler> m_interrupt_handler;
+    std::shared_ptr<spdlog::logger> m_logger;
 };

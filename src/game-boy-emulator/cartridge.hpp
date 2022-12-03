@@ -1,6 +1,10 @@
 #pragma once
 
 class Emulator;
+namespace spdlog {
+class logger;
+}
+#include <memory>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
@@ -66,6 +70,7 @@ private:
 
     std::vector<uint8_t> m_rom;
     Emulator* m_emulator;
+    std::shared_ptr<spdlog::logger> m_logger;
     CartridgeType m_cartridge_type;
     RomInfo m_rom_size_info;
     RamInfo m_ram_size_info;

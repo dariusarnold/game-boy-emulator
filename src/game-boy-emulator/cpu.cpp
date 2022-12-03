@@ -10,10 +10,10 @@
 bool Cpu::step() {
     previous_instruction = current_instruction;
     current_instruction = fetch_instruction();
-    spdlog::info("Executing {}", current_instruction);
+    m_logger->debug("Executing {}", current_instruction);
     // TODO: the additional fetch could be done conditionally
     auto data = fetch_data(current_instruction);
-    spdlog::info("Data {:04X}", data);
+    m_logger->info("Data {:04X}", data);
     switch (current_instruction.instruction_type) {
     case opcodes::InstructionType::LD:
     case opcodes::InstructionType::LDD:
@@ -87,7 +87,7 @@ void Cpu::run() {
     }
 }
 
-Cpu::Cpu(Emulator* emulator) : m_emulator(emulator) {}
+Cpu::Cpu(Emulator* emulator) : m_emulator(emulator), m_logger(spdlog::get("")) {}
 
 void Cpu::set_subtract_flag(BitValues value) {
     bitmanip::set(registers.f, as_integral(flags::subtract), value);
@@ -205,7 +205,7 @@ opcodes::Instruction Cpu::fetch_instruction() {
             fmt::format("Encountered unsupported opcode {:02X} at pc {:04X}", byte, registers.pc));
     }
     registers.pc++;
-    spdlog::info("Fetched opcode {:02X}", byte);
+    m_logger->info("Fetched opcode {:02X}", byte);
     m_emulator->elapse_cycles(1);
     return instruction;
 }
@@ -464,10 +464,11 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
         // Set bit instruction or Reset bit instruction. Since only the operation differs and the
         // write back stays the same, handle them accordingly.
         if (cb_opcode >= 0x80) {
-            spdlog::info("Prefix CB Reset bit {} in {}", bit, magic_enum::enum_name(register_type));
+            m_logger->info("Prefix CB Reset bit {} in {}", bit,
+                           magic_enum::enum_name(register_type));
             bitmanip::unset(value, bit);
         } else {
-            spdlog::info("Prefix CB Set bit {} in {}", bit, magic_enum::enum_name(register_type));
+            m_logger->info("Prefix CB Set bit {} in {}", bit, magic_enum::enum_name(register_type));
             bitmanip::set(value, bit);
         }
         if (register_type == opcodes::RegisterType::HL) {
@@ -479,7 +480,7 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
         }
     } else if (cb_opcode >= 0x40) {
         // Bit test instruction (This just sets flags and doesn't modify registers or memory)
-        spdlog::info("Prefix CB Test bit {} in {}", bit, magic_enum::enum_name(register_type));
+        m_logger->info("Prefix CB Test bit {} in {}", bit, magic_enum::enum_name(register_type));
         test_bit(value, bit);
     } else if (cb_opcode >= 0x10 && cb_opcode <= 0x17) {
         // Rotate left instruction

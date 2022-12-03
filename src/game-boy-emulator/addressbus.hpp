@@ -1,13 +1,19 @@
 #pragma once
 
-#include <cstdint>
 class Emulator;
+namespace spdlog {
+class logger;
+}
+#include <cstdint>
+#include <memory>
+
 
 /**
  * Dispatch memory access to the correct component.
  */
 class AddressBus {
     Emulator* m_emulator;
+    std::shared_ptr<spdlog::logger> m_logger;
 
 public:
     explicit AddressBus(Emulator* emulator);

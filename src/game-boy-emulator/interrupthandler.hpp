@@ -31,5 +31,5 @@ private:
     // 0xFF0F
     uint8_t m_interrupt_request_flags = 0;
     Emulator* m_emulator;
-    std::shared_ptr<spdlog::logger> logger;
+    std::shared_ptr<spdlog::logger> m_logger;
 };

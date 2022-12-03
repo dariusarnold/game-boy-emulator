@@ -11,7 +11,7 @@
 #include "spdlog/spdlog.h"
 
 
-AddressBus::AddressBus(Emulator* emulator) : m_emulator(emulator) {}
+AddressBus::AddressBus(Emulator* emulator) : m_emulator(emulator), m_logger(spdlog::get("")) {}
 
 uint8_t static io_registerFF42 = 0x64; // NOLINT
 
@@ -37,7 +37,7 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
         if (address == 0xFF42) {
             return io_registerFF42;
         }
-        spdlog::warn("IGNORED: read from IO register {:04X}", address);
+        m_logger->warn("IGNORED: read from IO register {:04X}", address);
         return 0xFF;
     }
     throw NotImplementedError(fmt::format("Addressing unmapped memory byte at {:04X}", address));
@@ -60,7 +60,7 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         if (address == 0xFF42) {
             io_registerFF42 = value;
         }
-        spdlog::warn("IGNORED: write to IO registers {:04X}", address);
+        m_logger->warn("IGNORED: write to IO registers {:04X}", address);
     } else if (address == 0xFFFF) {
         m_emulator->get_interrupt_handler()->write_interrupt_enable(value);
     } else {

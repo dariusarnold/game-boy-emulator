@@ -16,7 +16,7 @@ const int ROM_SIZE = 0x148;
 const int RAM_SIZE = 0x149;
 
 Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
-        m_rom(std::move(rom)), m_emulator(emulator) {
+        m_rom(std::move(rom)), m_emulator(emulator), m_logger(spdlog::get("")) {
     if (m_rom.size() < memmap::CartridgeHeaderEnd) {
         throw LogicError(
             fmt::format("ROM only {} bytes, does not contain cartridge header", m_rom.size()));
@@ -118,25 +118,19 @@ Cartridge::RamInfo Cartridge::get_ram_size() const {
 void Cartridge::write_registers(uint16_t address, uint8_t value) {
     if (memmap::is_in(address, memmap::RamEnable)) {
         m_ram_enable = decide_ram_enable(value);
-        spdlog::info("Set ram {}", m_ram_enable ? "enabled" : "disabled");
-        return;
-    }
-    if (memmap::is_in(address, memmap::RomBankNumber)) {
+    } else if (memmap::is_in(address, memmap::RomBankNumber)) {
         // BANK1
         if ((value & 0b11111) == 0) {
             value += 1;
         }
         m_bank1 = (value & 0b11111);
-        return;
-    }
-    if (memmap::is_in(address, memmap::RamBankNumber)) {
+    } else if (memmap::is_in(address, memmap::RamBankNumber)) {
         m_bank2 = value & 0b11;
-        return;
-    }
-    if (memmap::is_in(address, memmap::BankingModeSelect)) {
+    } else if (memmap::is_in(address, memmap::BankingModeSelect)) {
         m_banking_mode_select = value & 1;
-        return;
     }
+    spdlog::debug("Cartridge registers: RAMG {}, BANK1 {:05B}, BANK2 {:02b}, MODE {:1B}",
+                  m_ram_enable, m_bank1, m_bank2, m_banking_mode_select);
 }
 
 void Cartridge::write_values(uint16_t address, uint8_t value) {
@@ -160,7 +154,7 @@ void Cartridge::write_values(uint16_t address, uint8_t value) {
     }
     if (memmap::is_in(address, memmap::CartridgeRam)) {
         if (!m_ram_enable) {
-            spdlog::warn("Write to {:04X} with disabled ram");
+            m_logger->warn("Write to {:04X} with disabled ram");
         }
         uint32_t bank_number = 0;
         if (m_banking_mode_select == 1) {

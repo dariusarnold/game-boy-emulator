@@ -17,13 +17,14 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
         m_ram(std::make_shared<Ram>(this)),
         m_cpu(std::make_shared<Cpu>(this)),
         m_gpu(std::make_shared<Gpu>()),
-        m_interrupt_handler(std::make_shared<InterruptHandler>(this)) {}
+        m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
+        m_logger(spdlog::get("")) {}
 
 void Emulator::run() {
     try {
         m_cpu->run();
     } catch (const std::exception& error) {
-        spdlog::error("{} - CPU state {}", error.what(), m_cpu->get_minimal_debug_state());
+        m_logger->error("{} - CPU state {}", error.what(), m_cpu->get_minimal_debug_state());
         return;
     }
 }
@@ -82,7 +83,7 @@ void Emulator::set_interrupts_enabled(bool enabled) {
 
 void Emulator::elapse_instruction() {
     instructions_executed++;
-    spdlog::debug("{} instructions elapsed", instructions_executed);
+    m_logger->debug("{} instructions elapsed", instructions_executed);
     m_interrupt_handler->callback_instruction_elapsed();
 }
 

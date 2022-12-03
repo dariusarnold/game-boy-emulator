@@ -50,6 +50,8 @@ public:
     opcodes::Instruction get_current_instruction();
     opcodes::Instruction get_previous_instruction();
 
+    void call_isr(uint16_t isr_address);
+
 private:
     template <typename T>
     [[noreturn]] void abort_execution(std::string_view msg) {
@@ -137,6 +139,8 @@ private:
     void instructionADD(opcodes::Instruction instruction, uint8_t data);
 
     void instructionJP(opcodes::Instruction instruction, uint16_t data);
+
+    void instructionRETI();
 };
 
 namespace internal {

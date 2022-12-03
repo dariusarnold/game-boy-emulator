@@ -561,7 +561,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     Instruction{InstructionType::RET, InteractionType::None, RegisterType::None, RegisterType::None,
                 ConditionType::Carry},
     // 0xD9
-    Instruction{},
+    Instruction{InstructionType::RETI},
     // 0xDA
     Instruction{InstructionType::JP, InteractionType::ImmediateWord, RegisterType::None,
                 RegisterType::None, ConditionType::Carry},
@@ -635,7 +635,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xFA
     Instruction{InstructionType::LD, InteractionType::Register_AddressWord, RegisterType::A},
     // 0xFB
-    Instruction{},
+    Instruction{InstructionType::EI},
     // 0xFC
     Instruction{},
     // 0xFD

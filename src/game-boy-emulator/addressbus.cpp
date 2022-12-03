@@ -63,6 +63,8 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         m_logger->warn("IGNORED: write to IO registers {:04X}", address);
     } else if (address == 0xFFFF) {
         m_emulator->get_interrupt_handler()->write_interrupt_enable(value);
+    } else if (address == 0xFF0F) {
+        m_emulator->get_interrupt_handler()->write_interrupt_flag(value);
     } else {
         throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
     }

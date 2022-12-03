@@ -23,6 +23,7 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
 void Emulator::run() {
     try {
         m_cpu->run();
+        m_interrupt_handler->handle_interrupts();
     } catch (const std::exception& error) {
         m_logger->error("{} - CPU state {}", error.what(), m_cpu->get_minimal_debug_state());
         return;
@@ -89,4 +90,8 @@ void Emulator::elapse_instruction() {
 
 std::shared_ptr<InterruptHandler> Emulator::get_interrupt_handler() const {
     return m_interrupt_handler;
+}
+
+std::shared_ptr<Cpu> Emulator::get_cpu() const {
+    return m_cpu;
 }

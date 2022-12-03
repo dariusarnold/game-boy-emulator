@@ -51,6 +51,7 @@ public:
     [[nodiscard]] std::shared_ptr<Ram> get_ram() const;
     [[nodiscard]] std::shared_ptr<BootRom> get_boot_rom() const;
     [[nodiscard]] std::shared_ptr<Gpu> get_gpu() const;
+    [[nodiscard]] std::shared_ptr<Cpu> get_cpu() const;
     [[nodiscard]] std::shared_ptr<Cartridge> get_cartridge() const;
     [[nodiscard]] std::shared_ptr<InterruptHandler> get_interrupt_handler() const;
 

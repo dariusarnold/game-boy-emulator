@@ -56,6 +56,7 @@ enum class InstructionType {
     EI,
     // Disable interrupts
     DI,
+    RETI,
 };
 
 enum class RegisterType {

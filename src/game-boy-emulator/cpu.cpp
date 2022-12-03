@@ -73,6 +73,12 @@ bool Cpu::step() {
     case opcodes::InstructionType::DI:
         m_emulator->set_interrupts_enabled(false);
         break;
+    case opcodes::InstructionType::EI:
+        m_emulator->set_interrupts_enabled(true);
+        break;
+    case opcodes::InstructionType::RETI:
+        instructionRETI();
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -689,6 +695,26 @@ void Cpu::instructionADD(opcodes::Instruction instruction, uint8_t data) {
     set_zero_flag(registers.a == 0);
 }
 
+void Cpu::instructionRETI() {
+    auto bus = m_emulator->get_bus();
+    auto low_byte = bus->read_byte(registers.sp++);
+    auto high_byte = bus->read_byte(registers.sp++);
+    m_emulator->elapse_cycles(3);
+    registers.pc = bitmanip::word_from_bytes(high_byte, low_byte);
+    m_emulator->set_interrupts_enabled(true);
+}
+
+void Cpu::call_isr(uint16_t isr_address) {
+    auto bus = m_emulator->get_bus();
+    m_emulator->elapse_cycles(2);
+    registers.sp -= 1;
+    bus->write_byte(registers.sp, bitmanip::get_high_byte(registers.pc));
+    registers.sp -= 1;
+    bus->write_byte(registers.sp, bitmanip::get_low_byte(registers.pc));
+    m_emulator->elapse_cycles(2);
+    registers.pc = isr_address;
+    m_emulator->elapse_cycles(1);
+}
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {
     // Divide by lowest opcode which is regular (part of a 4x16 block in op table)

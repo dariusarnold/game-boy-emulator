@@ -10,17 +10,15 @@ class logger;
 class InterruptHandler {
 public:
     explicit InterruptHandler(Emulator* emulator);
-    enum class InterruptEnabledStatus {
-        Disabled,
-        Enabled,
-    };
 
     void callback_instruction_elapsed();
+    void handle_interrupts();
 
-    [[nodiscard]] bool get_interrupt_enable_status() const;
+    [[nodiscard]] bool get_global_interrupt_enable_status() const;
     void set_global_interrupt_enabled(bool enabled);
 
     void write_interrupt_enable(uint8_t val);
+    void write_interrupt_flag(uint8_t val);
 
 private:
     // Enabling interrupts is delayed by one instruction.

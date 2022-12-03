@@ -22,6 +22,20 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
         m_timer(std::make_shared<Timer>(this)),
         m_logger(spdlog::get("")) {}
 
+Emulator::Emulator(const std::vector<uint8_t>& game_rom) :
+        m_cartridge(std::make_shared<Cartridge>(this, game_rom)),
+        m_address_bus(std::make_shared<AddressBus>(this)),
+        m_ram(std::make_shared<Ram>(this)),
+        m_cpu(std::make_shared<Cpu>(this)),
+        m_gpu(std::make_shared<Gpu>()),
+        m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
+        m_timer(std::make_shared<Timer>(this)),
+        m_logger(spdlog::get("")) {
+    m_state.is_booting = false;
+    m_cpu->set_initial_state();
+}
+
+
 void Emulator::run() {
     try {
         m_cpu->run();
@@ -45,11 +59,11 @@ std::shared_ptr<BootRom> Emulator::get_boot_rom() const {
 }
 
 bool Emulator::is_booting() const {
-    return m_is_booting;
+    return m_state.is_booting;
 }
 
 void Emulator::signal_boot_ended() {
-    m_is_booting = false;
+    m_state.is_booting = false;
 }
 
 void Emulator::elapse_cycle() {

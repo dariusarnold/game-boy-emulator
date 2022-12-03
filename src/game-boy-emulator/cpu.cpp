@@ -726,6 +726,19 @@ void Cpu::call_isr(uint16_t isr_address) {
     m_emulator->elapse_cycle();
 }
 
+void Cpu::set_initial_state() {
+    registers.a = 1;
+    registers.f = 0xB0;
+    registers.b = 0;
+    registers.c = 0x13;
+    registers.d = 0;
+    registers.e = 0xD8;
+    registers.h = 0x01;
+    registers.l = 0x4D;
+    registers.pc = 0x100;
+    registers.sp = 0xFFFE;
+}
+
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {
     // Divide by lowest opcode which is regular (part of a 4x16 block in op table)
     // to handle opcodes for BIT, RES and SET instructions in the same way by projecting

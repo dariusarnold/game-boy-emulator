@@ -28,6 +28,8 @@ struct EmulatorState {
     size_t cycles_m = 0;
     // Number of instructions since execution start
     size_t instructions_executed = 0;
+    // Currently running boot rom
+    bool is_booting = true;
 };
 
 /**
@@ -35,8 +37,11 @@ struct EmulatorState {
  */
 class Emulator {
 public:
+    // Actually run boot rom to initialize emulator and hand off control to game after booting.
     Emulator(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom,
              const std::vector<uint8_t>& game_rom);
+    // Don't run boot rom and use initial values for registers/flags/memory.
+    explicit Emulator(const std::vector<uint8_t>& game_rom);
     void run();
     bool step();
 
@@ -60,7 +65,6 @@ public:
     [[nodiscard]] std::shared_ptr<Timer> get_timer() const;
 
 private:
-    bool m_is_booting = true;
     std::shared_ptr<Cartridge> m_cartridge;
     EmulatorState m_state;
     std::shared_ptr<BootRom> m_boot_rom;

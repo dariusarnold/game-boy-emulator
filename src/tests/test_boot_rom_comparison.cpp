@@ -5,51 +5,15 @@
 #include "emulator.hpp"
 #include "gpu.hpp"
 
+#include "test_helpers.hpp"
+
 #include "fmt/format.h"
 
 #include <filesystem>
-#include <string>
-#include <vector>
 
-
-std::vector<std::string> read_bootrom_log_file() {
-    std::ifstream file{"BootromLog.txt"};
-    std::string line;
-    std::vector<std::string> lines;
-    while (std::getline(file, line)) {
-        lines.push_back(line);
-    }
-    return lines;
-}
-
-double calculate_percentage(double part, double total) {
-    return part / total * 100.0;
-}
-
-// This matcher prints both the actual and the expected results directly below each other so that
-// each actual value is aligned with the expected value. This makes it easier to spot differences.
-class DebugStringEqual : public Catch::MatcherBase<std::string> {
-    std::string m_expected_result;
-
-public:
-    explicit DebugStringEqual(std::string expected_result) :
-            m_expected_result(std::move(expected_result)) {}
-
-    bool match(const std::string& actual_result) const override {
-        return actual_result == m_expected_result;
-    }
-
-    std::string describe() const override {
-        return fmt::format("\n  \"{}\" (expected)", m_expected_result);
-    }
-};
-
-inline DebugStringEqual StringEqualAlignedOutput(std::string expected_result) {
-    return DebugStringEqual(std::move(expected_result));
-}
 
 TEST_CASE("Compare boot sequence") {
-    auto expected_output = read_bootrom_log_file();
+    auto expected_output = read_rom_log_file("BootromLog.txt");
     REQUIRE_FALSE(expected_output.empty());
     auto boot_rom_path = std::filesystem::absolute(("dmg01-boot.bin"));
     auto boot_rom = load_boot_rom_file(boot_rom_path);

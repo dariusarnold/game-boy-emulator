@@ -45,6 +45,9 @@ public:
      */
     bool step();
 
+    // Set values of registers as if boot rom was run
+    void set_initial_state();
+
     std::string get_minimal_debug_state();
 
     opcodes::Instruction get_current_instruction();

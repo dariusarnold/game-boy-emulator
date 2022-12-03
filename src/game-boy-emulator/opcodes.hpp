@@ -149,7 +149,7 @@ class fmt::formatter<opcodes::Instruction> {
 
 public:
     // Currently no custom formatting implemented
-    auto parse(fmt::format_parse_context& context) {
+    auto parse(fmt::format_parse_context& context) { // NOLINT
         return context.begin();
     }
 

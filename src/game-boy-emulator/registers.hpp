@@ -3,6 +3,7 @@
 #include "fmt/format.h"
 
 #include <cstdint>
+#include <algorithm>
 
 /**
  * Main data structure for register data.
@@ -64,11 +65,10 @@ public:
             // No format string was specified
             return context.begin();
         }
-        for (const auto* it = context.begin(); it != context.end(); ++it) {
-            if (*it == '}') {
-                format_string.assign(context.begin(), it);
-                return it;
-            }
+        const auto* it = std::find(context.begin(), context.end(), '}');
+        if (it != context.end()) {
+            format_string.assign(context.begin(), it);
+            return it;
         }
         throw fmt::format_error("Invalid format");
     }

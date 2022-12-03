@@ -14,7 +14,14 @@ void unset(uint8_t& input, uint8_t position) {
 }
 
 void set(uint8_t& input, uint8_t position, BitValues value) {
-    input ^= (-as_integral(value) ^ input) & (1U << position);
+    assert(position < 8 && "A byte only has 8 bits");
+    switch (value) {
+    case BitValues::Active:
+        input |= 1U << position;
+        break;
+    case BitValues::Inactive:
+        input &= ~(1U << position);
+    }
 }
 uint8_t get_high_byte(uint16_t x) {
     constexpr int WHOLE_BYTE = 0xFF;
@@ -35,7 +42,7 @@ uint8_t get_high_nibble(uint8_t x) {
 }
 
 uint8_t rotate_left(uint8_t x) {
-    return (x << 1);
+    return static_cast<uint8_t>(x << 1);
 }
 
 uint8_t rotate_left_carry(uint8_t x, bool& carry_flag) {

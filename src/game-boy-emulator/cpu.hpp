@@ -116,8 +116,6 @@ private:
     void instructionLD(opcodes::Instruction instruction, uint16_t data);
     void instructionLDH(opcodes::Instruction instruction, uint16_t data);
 
-    void instructionXOR(opcodes::Instruction instruction, uint8_t data);
-
     // data is the second byte of the whole CB instruction
     void instructionCB(uint8_t cb_opcode);
 
@@ -137,9 +135,7 @@ private:
 
     void instructionCP(opcodes::Instruction instruction, uint8_t data);
 
-    void instructionOR(opcodes::Instruction instruction, uint8_t data);
-
-    void instructionAND(opcodes::Instruction instruction, uint8_t data);
+    void instructionANDORXOR(opcodes::Instruction instruction, uint8_t data);
 
     void instructionSUB(opcodes::Instruction instruction, uint8_t data);
 

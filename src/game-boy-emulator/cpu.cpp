@@ -583,7 +583,8 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
     default:
         auto was_hc = internal::was_half_carry(value_original, 1, operation);
         set_half_carry_flag(was_hc);
-        set_zero_flag(operation(value_original, 1) == 0);
+        // Truncate to 8 bits to catch overflows/underflows
+        set_zero_flag(static_cast<uint8_t>(operation(value_original, 1)) == 0);
         set_subtract_flag(instruction.instruction_type == opcodes::InstructionType::INC
                               ? BitValues::Inactive
                               : BitValues::Active);

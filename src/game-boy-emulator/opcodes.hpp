@@ -38,6 +38,8 @@ enum class InstructionType {
     STOP,
     // Relative jump by signed immediate
     JR,
+    // Jump to absolute location
+    JP,
     // Adjust for BCD addition
     DAA,
     // Complement (Logical NOT)

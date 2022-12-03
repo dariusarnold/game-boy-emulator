@@ -506,9 +506,10 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xC1
     Instruction{InstructionType::POP, InteractionType::None, RegisterType::BC},
     // 0xC2
-    Instruction{},
+    Instruction{InstructionType::JP, InteractionType::ImmediateWord, RegisterType::None,
+                RegisterType::None, ConditionType::NonZero},
     // 0xC3
-    Instruction{},
+    Instruction{InstructionType::JP, InteractionType::ImmediateWord},
     // 0xC4
     Instruction{InstructionType::CALL, InteractionType::ImmediateWord, RegisterType::None,
                 RegisterType::None, ConditionType::NonZero},
@@ -524,7 +525,8 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xC9
     Instruction{InstructionType::RET},
     // 0xCA
-    Instruction{},
+    Instruction{InstructionType::JP, InteractionType::ImmediateWord, RegisterType::None,
+                RegisterType::None, ConditionType::Zero},
     // 0xCB
     Instruction{InstructionType::CB, InteractionType::ImmediateByte},
     // 0xCC
@@ -542,7 +544,8 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xD1
     Instruction{InstructionType::POP, InteractionType::None, RegisterType::DE},
     // 0xD2
-    Instruction{},
+    Instruction{InstructionType::JP, InteractionType::ImmediateWord, RegisterType::None,
+                RegisterType::None, ConditionType::NonCarry},
     // 0xD3
     Instruction{},
     // 0xD4
@@ -560,7 +563,8 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xD9
     Instruction{},
     // 0xDA
-    Instruction{},
+    Instruction{InstructionType::JP, InteractionType::ImmediateWord, RegisterType::None,
+                RegisterType::None, ConditionType::Carry},
     // 0xDB
     Instruction{},
     // 0xDC
@@ -592,7 +596,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xE8
     Instruction{},
     // 0xE9
-    Instruction{},
+    Instruction{InstructionType::JP, InteractionType::AddressRegister, RegisterType::HL},
     // 0xEA
     Instruction{InstructionType::LD, InteractionType::AddressWord_Register, RegisterType::None,
                 RegisterType::A},

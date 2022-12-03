@@ -36,6 +36,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::JR:
         instructionJR(current_instruction, data);
         break;
+    case opcodes::InstructionType::JP:
+        instructionJP(current_instruction, data);
+        break;
     case opcodes::InstructionType::INC:
     case opcodes::InstructionType::DEC:
         instructionINCDEC(current_instruction);
@@ -492,27 +495,7 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
 }
 
 void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
-    bool jump_condition = [&] {
-        switch (instruction.condition_type) {
-        case opcodes::ConditionType::None:
-            return true;
-        case opcodes::ConditionType::NonCarry:
-            return !is_flag_set(flags::carry);
-        case opcodes::ConditionType::NonZero:
-            return !is_flag_set(flags::zero);
-        case opcodes::ConditionType::Zero:
-            return is_flag_set(flags::zero);
-        case opcodes::ConditionType::Carry:
-            return is_flag_set(flags::carry);
-        }
-        // GCCs Wreturn-type warns here, because it assumes programmers use the whole range of the
-        // undlerlying type of the enum. Since I don't want to have a default statement, which would
-        // cover adding a new entry to the enum but not handling it in the switch (which warns), I
-        // tell GCC that falling out of the switch is impossible. This is the case when not casting
-        // integers to the enum, which I don't do.
-        // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87951
-        __builtin_unreachable();
-    }();
+    bool jump_condition = check_condition(instruction.condition_type);
     if (!jump_condition) {
         return;
     }
@@ -522,6 +505,40 @@ void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
     auto immediate = static_cast<int8_t>(data);
     registers.pc += immediate;
     m_emulator->elapse_cycles(1);
+}
+
+bool Cpu::check_condition(opcodes::ConditionType condition_type) const {
+    switch (condition_type) {
+    case opcodes::ConditionType::None:
+        return true;
+    case opcodes::ConditionType::NonCarry:
+        return !is_flag_set(flags::carry);
+    case opcodes::ConditionType::NonZero:
+        return !is_flag_set(flags::zero);
+    case opcodes::ConditionType::Zero:
+        return is_flag_set(flags::zero);
+    case opcodes::ConditionType::Carry:
+        return is_flag_set(flags::carry);
+    }
+    // GCCs Wreturn-type warns here, because it assumes programmers use the whole range of the
+    // undlerlying type of the enum. Since I don't want to have a default statement, which would
+    // cover adding a new entry to the enum but not handling it in the switch (which warns), I
+    // tell GCC that falling out of the switch is impossible. This is the case when not casting
+    // integers to the enum, which I don't do.
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87951
+    __builtin_unreachable();
+}
+
+void Cpu::instructionJP(opcodes::Instruction instruction, uint16_t data) {
+    if (!check_condition(instruction.condition_type)) {
+        return;
+    }
+    if (instruction.interaction_type == opcodes::InteractionType::AddressRegister) {
+        data = registers.sp;
+    } else {
+        m_emulator->elapse_cycles(1);
+    }
+    registers.pc = data;
 }
 
 
@@ -561,22 +578,7 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
 }
 
 void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
-    bool condition_met = [&] {
-        switch (instruction.condition_type) {
-        case opcodes::ConditionType::None:
-            return true;
-        case opcodes::ConditionType::NonCarry:
-            return !is_flag_set(flags::carry);
-        case opcodes::ConditionType::NonZero:
-            return !is_flag_set(flags::zero);
-        case opcodes::ConditionType::Zero:
-            return is_flag_set(flags::zero);
-        case opcodes::ConditionType::Carry:
-            return is_flag_set(flags::carry);
-        }
-        // See comment in instructionJR.
-        __builtin_unreachable();
-    }();
+    bool condition_met = check_condition(instruction.condition_type);
     if (condition_met) {
         m_emulator->elapse_cycles(1);
         auto bus = m_emulator->get_bus();
@@ -622,26 +624,10 @@ void Cpu::instructionPOP(opcodes::Instruction instruction) {
 }
 
 void Cpu::instructionRET(opcodes::Instruction instruction) {
-    bool condition_met = [&] {
-        switch (instruction.condition_type) {
-        case opcodes::ConditionType::None:
-            return true;
-        case opcodes::ConditionType::NonCarry:
-            m_emulator->elapse_cycles(1);
-            return !is_flag_set(flags::carry);
-        case opcodes::ConditionType::NonZero:
-            m_emulator->elapse_cycles(1);
-            return !is_flag_set(flags::zero);
-        case opcodes::ConditionType::Zero:
-            m_emulator->elapse_cycles(1);
-            return is_flag_set(flags::zero);
-        case opcodes::ConditionType::Carry:
-            m_emulator->elapse_cycles(1);
-            return is_flag_set(flags::carry);
-        }
-        // See comment in instructionJR.
-        __builtin_unreachable();
-    }();
+    bool condition_met = check_condition(instruction.condition_type);
+    if (instruction.condition_type != opcodes::ConditionType::None) {
+        m_emulator->elapse_cycles(1);
+    }
     if (condition_met) {
         auto bus = m_emulator->get_bus();
         auto low_byte = bus->read_byte(registers.sp++);

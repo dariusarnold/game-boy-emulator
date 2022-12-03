@@ -108,6 +108,8 @@ private:
     void set_register_value(opcodes::RegisterType register_type, uint16_t value);
     uint16_t get_register_value(opcodes::RegisterType register_type);
 
+    bool check_condition(opcodes::ConditionType condition_type) const;
+
     void instructionLD(opcodes::Instruction instruction, uint16_t data);
     void instructionLDH(opcodes::Instruction instruction, uint16_t data);
 
@@ -135,6 +137,8 @@ private:
     void instructionSUB(opcodes::Instruction instruction, uint8_t data);
 
     void instructionADD(opcodes::Instruction instruction, uint8_t data);
+
+    void instructionJP(opcodes::Instruction instruction, uint16_t data);
 };
 
 namespace internal {

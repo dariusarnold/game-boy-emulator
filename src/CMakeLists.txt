@@ -67,6 +67,7 @@ target_link_libraries(imgui_bindings
 target_link_libraries(game_boy_emulator PRIVATE
         game_boy_emulator_library
         imgui_bindings
+        argparse::argparse
         )
 target_include_directories(game_boy_emulator
         PRIVATE

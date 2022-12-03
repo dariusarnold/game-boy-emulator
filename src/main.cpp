@@ -13,6 +13,7 @@
 #include "SDL.h"
 #include "SDL_opengl.h"
 #include "spdlog/spdlog.h"
+#include "argparse/argparse.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -590,7 +591,19 @@ std::pair<SDL_GLContext, SDL_Window*> setup_graphics() {
 }
 
 
-int main() {
+int main(int argc, char** argv) { // NOLINT
+    argparse::ArgumentParser program("game boy emulator");
+    program.add_argument("boot").help("Path to boot ROM file.");
+    program.add_argument("rom").help("Path to game ROM file to run.");
+
+    try {
+        program.parse_args(argc, argv);
+    } catch (const std::runtime_error& e) {
+        spdlog::error(e.what());
+        spdlog::error(program.help().str());
+        std::exit(1);
+    }
+
     /*
     auto [gl_context, window] = setup_graphics();
     ImGuiIO& io = ImGui::GetIO();
@@ -699,13 +712,13 @@ int main() {
     SDL_Quit();
     */
 
-    auto boot_rom_path = std::filesystem::absolute("../../dmg01-boot.bin");
+    auto boot_rom_path = std::filesystem::absolute(program.get("boot"));
     auto boot_rom = load_boot_rom_file(boot_rom_path);
     if (!boot_rom) {
         spdlog::error("Failed to load boot rom from {}", boot_rom_path.string());
         return EXIT_FAILURE;
     }
-    auto rom_path = std::filesystem::absolute("../../PokemonRed.gb");
+    auto rom_path = std::filesystem::absolute(program.get("rom"));
     auto game_rom = load_rom_file(rom_path);
     if (game_rom.empty()) {
         spdlog::error("Failed to load game rom from {}", rom_path.string());

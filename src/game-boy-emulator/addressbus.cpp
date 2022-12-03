@@ -61,6 +61,8 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
             io_registerFF42 = value;
         }
         spdlog::warn("IGNORED: write to IO registers {:04X}", address);
+    } else if (address == 0xFFFF) {
+        m_emulator->get_interrupt_handler()->write_interrupt_enable(value);
     } else {
         throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
     }

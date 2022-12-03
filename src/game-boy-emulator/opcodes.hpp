@@ -52,6 +52,10 @@ enum class InstructionType {
     POP,
     // Compare
     CP,
+    // Enable interrupts
+    EI,
+    // Disable interrupts
+    DI,
 };
 
 enum class RegisterType {

@@ -4,7 +4,6 @@
 #include "constants.h"
 #include "opcodes.hpp"
 #include "registers.hpp"
-#include "interrupthandler.hpp"
 
 #include "fmt/format.h"
 
@@ -24,13 +23,9 @@ using t_cycle = size_t;
 class Cpu {
     Registers registers = {};
     Emulator* m_emulator;
-    // Number of instructions executed since start
-    size_t instructions_executed = 0;
 
     opcodes::Instruction current_instruction;
     opcodes::Instruction previous_instruction;
-
-    InterruptHandler interrupt_handler;
 
 public:
     explicit Cpu(Emulator* emulator);
@@ -54,8 +49,7 @@ public:
 private:
     template <typename T>
     [[noreturn]] void abort_execution(std::string_view msg) {
-        auto complete_msg
-            = fmt::format("CPU ERROR: {}\nRan for {} instructions.", msg, instructions_executed);
+        auto complete_msg = fmt::format("CPU ERROR: {}", msg);
         throw T{complete_msg};
     }
     /**

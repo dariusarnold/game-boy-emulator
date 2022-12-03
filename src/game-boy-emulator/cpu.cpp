@@ -70,12 +70,15 @@ bool Cpu::step() {
     case opcodes::InstructionType::NOP:
         m_emulator->elapse_cycles(1);
         break;
+    case opcodes::InstructionType::DI:
+        m_emulator->set_interrupts_enabled(false);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
                         magic_enum::enum_name(current_instruction.instruction_type)));
     }
-    instructions_executed++;
+    m_emulator->elapse_instruction();
     return true;
 }
 

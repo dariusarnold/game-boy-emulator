@@ -16,7 +16,8 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
         m_address_bus(std::make_shared<AddressBus>(this)),
         m_ram(std::make_shared<Ram>(this)),
         m_cpu(std::make_shared<Cpu>(this)),
-        m_gpu(std::make_shared<Gpu>()) {}
+        m_gpu(std::make_shared<Gpu>()),
+        m_interrupt_handler(std::make_shared<InterruptHandler>(this)) {}
 
 void Emulator::run() {
     try {
@@ -73,4 +74,18 @@ opcodes::Instruction Emulator::get_previous_instruction() const {
 
 std::shared_ptr<Cartridge> Emulator::get_cartridge() const {
     return m_cartridge;
+}
+
+void Emulator::set_interrupts_enabled(bool enabled) {
+    m_interrupt_handler->set_global_interrupt_enabled(enabled);
+}
+
+void Emulator::elapse_instruction() {
+    instructions_executed++;
+    spdlog::debug("{} instructions elapsed", instructions_executed);
+    m_interrupt_handler->callback_instruction_elapsed();
+}
+
+std::shared_ptr<InterruptHandler> Emulator::get_interrupt_handler() const {
+    return m_interrupt_handler;
 }

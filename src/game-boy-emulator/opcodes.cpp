@@ -617,7 +617,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xF2
     Instruction{},
     // 0xF3
-    Instruction{},
+    Instruction{InstructionType::DI},
     // 0xF4
     Instruction{},
     // 0xF5

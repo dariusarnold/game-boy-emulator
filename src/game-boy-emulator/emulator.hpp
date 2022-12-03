@@ -1,6 +1,7 @@
 #pragma once
 
 #include "constants.h"
+#include "interrupthandler.hpp"
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -35,7 +36,10 @@ public:
 
     [[nodiscard]] bool is_booting() const;
     void signal_boot_ended();
+    void elapse_instruction();
     void elapse_cycles(size_t cycles);
+    void set_interrupts_enabled(bool enabled);
+
     [[nodiscard]] std::string get_cpu_debug_state() const;
     [[nodiscard]] opcodes::Instruction get_current_instruction() const;
     [[nodiscard]] opcodes::Instruction get_previous_instruction() const;
@@ -45,9 +49,11 @@ public:
     [[nodiscard]] std::shared_ptr<BootRom> get_boot_rom() const;
     [[nodiscard]] std::shared_ptr<Gpu> get_gpu() const;
     [[nodiscard]] std::shared_ptr<Cartridge> get_cartridge() const;
+    [[nodiscard]] std::shared_ptr<InterruptHandler> get_interrupt_handler() const;
 
 private:
     bool m_is_booting = true;
+    size_t instructions_executed = 0;
     std::shared_ptr<Cartridge> m_cartridge;
     EmulatorState m_state;
     std::shared_ptr<BootRom> m_boot_rom;
@@ -56,4 +62,5 @@ private:
     std::shared_ptr<Cpu> m_cpu;
     std::shared_ptr<Apu> m_apu;
     std::shared_ptr<Gpu> m_gpu;
+    std::shared_ptr<InterruptHandler> m_interrupt_handler;
 };

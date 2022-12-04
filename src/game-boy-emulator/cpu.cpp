@@ -792,7 +792,7 @@ void Cpu::instructionSUB(opcodes::Instruction instruction, uint8_t data) {
     set_half_carry_flag(hc);
 }
 
-void Cpu::instructionADD(opcodes::Instruction instruction, uint8_t data) {
+void Cpu::instructionADD(opcodes::Instruction instruction, uint16_t data) {
     // For ImmediateByte interaction type data was already fetched
     if (instruction.interaction_type == opcodes::InteractionType::Register_Register) {
         data = get_register_value(instruction.register_type_source);
@@ -800,13 +800,30 @@ void Cpu::instructionADD(opcodes::Instruction instruction, uint8_t data) {
         auto address = get_register_value(instruction.register_type_source);
         data = m_emulator->get_bus()->read_byte(address);
     }
-    const auto hc = internal::was_half_carry(registers.a, data, std::plus{});
+    auto destination_register_value = get_register_value(instruction.register_type_destination);
+    const auto hc = [&] {
+        if (instruction.register_type_destination == opcodes::RegisterType::HL) {
+            return internal::was_half_carry_word(destination_register_value, data, std::plus{});
+        }
+        return internal::was_half_carry(destination_register_value, data, std::plus{});
+    }();
     set_half_carry_flag(hc);
-    const auto was_carry = internal::was_carry(registers.a, data, std::plus{});
+    const auto was_carry = [&] {
+        if (instruction.register_type_destination == opcodes::RegisterType::HL) {
+            return internal::was_carry_word(destination_register_value, data, std::plus{});
+        }
+        return internal::was_carry(destination_register_value, data, std::plus{});
+    }();
     set_carry_flag(was_carry);
     set_subtract_flag(BitValues::Inactive);
-    registers.a += data;
-    set_zero_flag(registers.a == 0);
+    set_register_value(instruction.register_type_destination, destination_register_value + data);
+    // The word register ADD instructions don't modify the zero flag, but they take one cycle
+    // longer.
+    if (instruction.register_type_destination != opcodes::RegisterType::HL) {
+        set_zero_flag(get_register_value(instruction.register_type_destination) == 0);
+    } else {
+        m_emulator->elapse_cycle();
+    }
 }
 
 void Cpu::instructionRETI() {

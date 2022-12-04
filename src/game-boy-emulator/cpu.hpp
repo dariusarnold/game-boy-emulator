@@ -38,12 +38,12 @@ public:
      * Start cpu.
      * Only call after boot rom was set.
      */
-    void run();
+    [[noreturn]] void run();
 
     /**
      * Execute single step. Returns false if opcode at current program counter is invalid, else true
      */
-    bool step();
+    void step();
 
     // Set values of registers as if boot rom was run
     void set_initial_state();

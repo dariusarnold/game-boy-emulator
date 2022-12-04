@@ -7,7 +7,7 @@
 #include "spdlog/spdlog.h"
 
 
-bool Cpu::step() {
+void Cpu::step() {
     previous_instruction = current_instruction;
     current_instruction = fetch_instruction();
     m_logger->debug("Executing {}", current_instruction);
@@ -97,11 +97,11 @@ bool Cpu::step() {
                         magic_enum::enum_name(current_instruction.instruction_type)));
     }
     m_emulator->elapse_instruction();
-    return true;
 }
 
 void Cpu::run() {
-    while (step()) {
+    while (true) {
+        step();
     }
 }
 

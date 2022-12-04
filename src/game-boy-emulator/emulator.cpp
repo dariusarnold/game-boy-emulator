@@ -40,12 +40,7 @@ Emulator::Emulator(const std::vector<uint8_t>& game_rom) :
 
 
 void Emulator::run() {
-    try {
-        m_cpu->run();
-        m_interrupt_handler->handle_interrupts();
-    } catch (const std::exception& error) {
-        m_logger->error("{} - CPU state {}", error.what(), m_cpu->get_minimal_debug_state());
-        return;
+    while (step()) {
     }
 }
 
@@ -83,9 +78,14 @@ std::string Emulator::get_cpu_debug_state() const {
 }
 
 bool Emulator::step() {
-    auto res = m_cpu->step();
-    m_interrupt_handler->handle_interrupts();
-    return res;
+    try {
+        m_cpu->step();
+        m_interrupt_handler->handle_interrupts();
+        return true;
+    } catch (const std::exception& e) {
+        m_logger->error("{} - CPU state {}", e.what(), m_cpu->get_minimal_debug_state());
+        return false;
+    }
 }
 
 opcodes::Instruction Emulator::get_current_instruction() const {

@@ -128,6 +128,8 @@ private:
 
     void instruction_cb_srl(opcodes::RegisterType register_type);
 
+    void instruction_cb_rr(opcodes::RegisterType register_type);
+
     void instructionLD(opcodes::Instruction instruction, uint16_t data);
     void instructionLDH(opcodes::Instruction instruction, uint16_t data);
 

@@ -512,6 +512,17 @@ void Cpu::instruction_cb_srl(opcodes::RegisterType register_type) {
     cb_set_data(register_type, value);
 }
 
+void Cpu::instruction_cb_rr(opcodes::RegisterType register_type) {
+    auto value = cb_fetch_data(register_type);
+    auto cf = is_flag_set(flags::carry);
+    value = bitmanip::rotate_right_carry(value, cf);
+    set_carry_flag(cf);
+    set_zero_flag(value == 0);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+    cb_set_data(register_type, value);
+}
+
 void Cpu::cb_set_data(opcodes::RegisterType register_type, uint8_t value) {
     if (register_type == opcodes::RegisterType::HL) {
         // Indirect access
@@ -536,7 +547,7 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
     auto instruction_type = get_instruction_cb(cb_opcode);
     auto register_type = get_register_cb(cb_opcode);
     auto bit_position = internal::op_code_to_bit(cb_opcode);
-    m_logger->debug("Executing {} {}", magic_enum::enum_name(instruction_type),
+    m_logger->debug("Executing CB {:02X} {} {}", cb_opcode, magic_enum::enum_name(instruction_type),
                     magic_enum::enum_name(register_type));
 
     switch (instruction_type) {
@@ -552,6 +563,9 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
         break;
     case opcodes::InstructionType::CB_SRL:
         instruction_cb_srl(register_type);
+        break;
+    case opcodes::InstructionType::CB_RR:
+        instruction_cb_rr(register_type);
         break;
     default:
         abort_execution<NotImplementedError>(fmt::format("CB instruction {} not implemented",

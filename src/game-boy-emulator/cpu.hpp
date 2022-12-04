@@ -161,6 +161,8 @@ private:
     void instructionJP(opcodes::Instruction instruction, uint16_t data);
 
     void instructionRETI();
+
+    void instructionADC(opcodes::Instruction instruction, uint8_t data);
 };
 
 namespace internal {
@@ -176,8 +178,19 @@ bool was_half_carry(uint8_t a, uint8_t b, const F& operation) {
 }
 
 template <typename F>
+bool was_half_carry_word(uint16_t a, uint16_t b, const F& operation) {
+    return was_half_carry(bitmanip::get_high_byte(a), bitmanip::get_high_byte(b), operation);
+}
+
+template <typename F>
 bool was_carry(uint8_t a, uint8_t b, const F& operation) {
     bool c = operation(static_cast<uint16_t>(a), static_cast<uint16_t>(b)) & 0x100;
     return c;
 }
+
+template <typename F>
+bool was_carry_word(uint16_t a, uint16_t b, const F& operation) {
+    return was_carry(bitmanip::get_high_byte(a), bitmanip::get_high_byte(b), operation);
+}
+
 } // namespace internal

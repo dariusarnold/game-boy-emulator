@@ -366,21 +366,21 @@ constexpr std::array<Instruction, 0x100> instructions{
     Instruction{InstructionType::ADD, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::A},
     // 0x88
-    Instruction{},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::B},
     // 0x89
-    Instruction{},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::C},
     // 0x8A
-    Instruction{},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::D},
     // 0x8B
-    Instruction{},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::E},
     // 0x8C
-    Instruction{},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::H},
     // 0x8D
-    Instruction{},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::L},
     // 0x8E
-    Instruction{},
+    Instruction{InstructionType::ADC, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
     // 0x8F
-    Instruction{},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::A},
     // 0x90
     Instruction{InstructionType::SUB, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::B},
@@ -543,7 +543,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xCD
     Instruction{InstructionType::CALL, InteractionType::ImmediateWord},
     // 0xCE
-    Instruction{},
+    Instruction{InstructionType::ADC, InteractionType::ImmediateByte, RegisterType::A},
     // 0xCF
     Instruction{},
     // 0xD0

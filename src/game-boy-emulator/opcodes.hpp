@@ -23,6 +23,8 @@ enum class InstructionType {
     LDH,
     // Add signed immediate byte to SP and save in HL
     LDHL,
+    // Add with carry flag
+    ADC,
     ADD,
     SUB,
     INC,

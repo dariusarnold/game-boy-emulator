@@ -85,6 +85,9 @@ bool Cpu::step() {
         instruction_cb_rr(opcodes::RegisterType::A);
         set_zero_flag(BitValues::Inactive);
         break;
+    case opcodes::InstructionType::ADC:
+        instructionADC(current_instruction, data);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -815,6 +818,24 @@ void Cpu::instructionRETI() {
     registers.pc = bitmanip::word_from_bytes(high_byte, low_byte);
     m_emulator->elapse_cycle();
     m_emulator->set_interrupts_enabled(true);
+}
+
+void Cpu::instructionADC(opcodes::Instruction instruction, uint8_t data) {
+    // For ImmediateByte interaction type data was already fetched
+    if (instruction.interaction_type == opcodes::InteractionType::Register_Register) {
+        data = get_register_value(instruction.register_type_source);
+    } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
+        auto address = get_register_value(instruction.register_type_source);
+        data = m_emulator->get_bus()->read_byte(address);
+    }
+    data += bitmanip::bit_value(registers.f, static_cast<uint8_t>(flags::carry));
+    auto was_carry = internal::was_carry(registers.a, data, std::plus{});
+    auto was_half_carry = internal::was_half_carry(registers.a, data, std::plus{});
+    registers.a += data;
+    set_zero_flag(registers.a == 0);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(was_half_carry);
+    set_carry_flag(was_carry);
 }
 
 void Cpu::call_isr(uint16_t isr_address) {

@@ -276,6 +276,23 @@ std::string Cpu::get_minimal_debug_state() {
                        m_emulator->get_bus()->read_byte(registers.pc + 3));
 }
 
+CpuDebugState Cpu::get_debug_state() {
+    return {registers.a,
+            registers.f,
+            registers.b,
+            registers.c,
+            registers.d,
+            registers.e,
+            registers.h,
+            registers.l,
+            registers.sp,
+            registers.pc,
+            {m_emulator->get_bus()->read_byte(registers.pc),
+             m_emulator->get_bus()->read_byte(registers.pc + 1),
+             m_emulator->get_bus()->read_byte(registers.pc + 2),
+             m_emulator->get_bus()->read_byte(registers.pc + 3)}};
+}
+
 opcodes::Instruction Cpu::get_current_instruction() {
     return current_instruction;
 }
@@ -932,4 +949,13 @@ uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {
     // Then add 1 if we are in the right half of the table
     return ((opcode_byte & 0xF0) >> constants::NIBBLE_SIZE) * 2
            + ((opcode_byte & 0x0F) / constants::BYTE_SIZE);
+}
+
+std::ostream& operator<<(std::ostream& os, const CpuDebugState& cds) {
+    return os << fmt::format(
+               "A: {:02X} F: {:02X} B: {:02X} C: {:02X} D: {:02X} E: {:02X} H: {:02X} L: "
+               "{:02X} SP: {:04X} "
+               "PC: {:04X} ({:02X} {:02X} {:02X} {:02X})",
+               cds.a, cds.f, cds.b, cds.c, cds.d, cds.e, cds.h, cds.l, cds.sp, cds.pc,
+               cds.mem_pc[0], cds.mem_pc[1], cds.mem_pc[2], cds.mem_pc[3]);
 }

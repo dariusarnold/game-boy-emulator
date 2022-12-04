@@ -77,6 +77,10 @@ std::string Emulator::get_cpu_debug_state() const {
     return m_cpu->get_minimal_debug_state();
 }
 
+CpuDebugState Emulator::get_debug_state() const {
+    return m_cpu->get_debug_state();
+}
+
 bool Emulator::step() {
     try {
         m_cpu->step();

@@ -23,6 +23,7 @@ class SerialPort;
 namespace spdlog {
 class logger;
 }
+struct CpuDebugState;
 
 struct EmulatorState {
     // Number of m cycles since execution start
@@ -53,6 +54,7 @@ public:
     void set_interrupts_enabled(bool enabled);
 
     [[nodiscard]] std::string get_cpu_debug_state() const;
+    [[nodiscard]] CpuDebugState get_debug_state() const;
     [[nodiscard]] opcodes::Instruction get_current_instruction() const;
     [[nodiscard]] opcodes::Instruction get_previous_instruction() const;
 

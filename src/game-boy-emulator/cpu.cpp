@@ -666,13 +666,19 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
         value_original = get_register_value(instruction.register_type_destination);
         set_register_value(instruction.register_type_destination, operation(value_original, 1));
     }
+    // Setting flags
     switch (instruction.register_type_destination) {
     case opcodes::RegisterType::BC:
     case opcodes::RegisterType::DE:
-    case opcodes::RegisterType::HL:
     case opcodes::RegisterType::SP:
-        // No flags set in case of word register operations
+        // No flags set in case of word register operations except when HL is functioning as an
+        // address register
         break;
+    case opcodes::RegisterType::HL:
+        if (instruction.interaction_type == opcodes::InteractionType::Register) {
+            break;
+        }
+        [[fallthrough]];
     default:
         auto was_hc = internal::was_half_carry(value_original, 1, operation);
         set_half_carry_flag(was_hc);

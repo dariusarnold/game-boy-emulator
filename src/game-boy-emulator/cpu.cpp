@@ -88,6 +88,9 @@ bool Cpu::step() {
     case opcodes::InstructionType::ADC:
         instructionADC(current_instruction, data);
         break;
+    case opcodes::InstructionType::DAA:
+        instructionDAA();
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -857,6 +860,31 @@ void Cpu::instructionADC(opcodes::Instruction instruction, uint8_t data) {
     set_subtract_flag(BitValues::Inactive);
     set_half_carry_flag(was_half_carry);
     set_carry_flag(was_carry);
+}
+
+void Cpu::instructionDAA() {
+    // Thanks to https://ehaskins.com/2018-01-30%20Z80%20DAA/
+    // and https://forums.nesdev.org/viewtopic.php?t=15944
+    if (!is_flag_set(flags::subtract)) {
+        // After an addition, adjust if (half-)carry occured or if result is out of bounds
+        if (is_flag_set(flags::carry) or registers.a > 0x99) {
+            registers.a += 0x60;
+            set_carry_flag(BitValues::Active);
+        }
+        if (is_flag_set(flags::half_carry) || (registers.a & 0x0F) > 0x09) {
+            registers.a += 0x06;
+        }
+    } else {
+        // After a subtraction, only adjust if (half-)carry occured
+        if (is_flag_set(flags::carry)) {
+            registers.a -= 0x60;
+        }
+        if (is_flag_set(flags::half_carry)) {
+            registers.a -= 0x6;
+        }
+    }
+    set_zero_flag(registers.a == 0);
+    set_half_carry_flag(BitValues::Inactive);
 }
 
 void Cpu::call_isr(uint16_t isr_address) {

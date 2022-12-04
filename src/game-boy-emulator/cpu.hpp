@@ -163,6 +163,8 @@ private:
     void instructionRETI();
 
     void instructionADC(opcodes::Instruction instruction, uint8_t data);
+
+    void instructionDAA();
 };
 
 namespace internal {

@@ -34,6 +34,12 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     if (memmap::is_in(address, memmap::SerialPort)) {
         return m_emulator->get_serial_port()->read_byte(address);
     }
+    if (address == memmap::InterruptFlagBegin) {
+        return m_emulator->get_interrupt_handler()->read_interrupt_flag();
+    }
+    if (address == memmap::InterruptEnableBegin) {
+        return m_emulator->get_interrupt_handler()->read_interrupt_enable();
+    }
     if (memmap::is_in(address, memmap::IORegisters)) {
         // TODO Those special cases are required for booting correctly
         if (address == 0xFF44) {
@@ -58,6 +64,12 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         m_emulator->get_cartridge()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::SerialPort)) {
         m_emulator->get_serial_port()->write_byte(address, value);
+    } else if (address == memmap::InterruptEnableBegin) {
+        m_emulator->get_interrupt_handler()->write_interrupt_enable(value);
+    } else if (address == memmap::InterruptFlagBegin) {
+        m_emulator->get_interrupt_handler()->write_interrupt_flag(value);
+    } else if (memmap::is_in(address, memmap::Timer)) {
+        m_emulator->get_timer()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::IORegisters)) {
         if (m_emulator->is_booting()) {
             if (address == 0xFF50) {
@@ -68,12 +80,6 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
             io_registerFF42 = value;
         }
         m_logger->warn("IGNORED: write to IO registers {:04X}", address);
-    } else if (address == memmap::InterruptEnableBegin) {
-        m_emulator->get_interrupt_handler()->write_interrupt_enable(value);
-    } else if (address == memmap::InterruptFlagBegin) {
-        m_emulator->get_interrupt_handler()->write_interrupt_flag(value);
-    } else if (memmap::is_in(address, memmap::Timer)) {
-        m_emulator->get_timer()->write_byte(address, value);
     } else {
         throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
     }

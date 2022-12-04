@@ -28,6 +28,10 @@ public:
     void write_interrupt_enable(uint8_t val);
     // Overwrites all current values in the interrupt flag register with the new value.
     void write_interrupt_flag(uint8_t val);
+
+    [[nodiscard]] uint8_t read_interrupt_enable() const;
+    [[nodiscard]] uint8_t read_interrupt_flag() const;
+
     // Only overwrites the specific interrupt types bit in the interrupt flag register, leaving all
     // other values intact.
     void request_interrupt(InterruptType interrupt_type);

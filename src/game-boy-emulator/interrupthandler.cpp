@@ -76,3 +76,11 @@ void InterruptHandler::request_interrupt(InterruptHandler::InterruptType interru
     auto new_flag = m_interrupt_request_flags | static_cast<uint8_t>(interrupt_type);
     write_interrupt_flag(new_flag);
 }
+
+uint8_t InterruptHandler::read_interrupt_enable() const {
+    return m_interrupt_enable_register;
+}
+
+uint8_t InterruptHandler::read_interrupt_flag() const {
+    return m_interrupt_request_flags;
+}

@@ -48,9 +48,24 @@ uint8_t rotate_left(uint8_t x) {
 uint8_t rotate_left_carry(uint8_t x, bool& carry_flag) {
     bool prev_carry_flag = carry_flag;
     constexpr int HIGHEST_BIT_IN_BYTE = 7;
+    constexpr int LOWEST_BIT_IN_BYTE = 0;
     carry_flag = is_bit_set(x, HIGHEST_BIT_IN_BYTE);
     x = x << 1;
-    set(x, 0, prev_carry_flag ? BitValues::Active : BitValues::Inactive);
+    set(x, LOWEST_BIT_IN_BYTE, prev_carry_flag ? BitValues::Active : BitValues::Inactive);
+    return x;
+}
+
+uint8_t rotate_right(uint8_t x) {
+    return x >> 1;
+}
+
+uint8_t rotate_right_carry(uint8_t x, bool& carry_flag) {
+    bool prev_carry_flag = carry_flag;
+    constexpr int HIGHEST_BIT_IN_BYTE = 7;
+    constexpr int LOWEST_BIT_IN_BYTE = 0;
+    carry_flag = is_bit_set(x, LOWEST_BIT_IN_BYTE);
+    x = x >> 1;
+    set(x, HIGHEST_BIT_IN_BYTE, prev_carry_flag ? BitValues::Active : BitValues::Inactive);
     return x;
 }
 

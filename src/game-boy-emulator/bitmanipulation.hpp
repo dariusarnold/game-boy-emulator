@@ -43,6 +43,11 @@ uint8_t rotate_left(uint8_t x);
 
 uint8_t rotate_left_carry(uint8_t x, bool& carry_flag);
 
+uint8_t rotate_right(uint8_t x);
+
+uint8_t rotate_right_carry(uint8_t x, bool& carry_flag);
+
+
 uint16_t word_from_bytes(uint8_t high_byte, uint8_t low_byte);
 
 } // namespace bitmanip

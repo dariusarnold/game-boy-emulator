@@ -126,6 +126,8 @@ private:
     void instruction_cb_set_reset_bit(opcodes::InstructionType instruction_type,
                                       opcodes::RegisterType register_type, uint8_t bit);
 
+    void instruction_cb_srl(opcodes::RegisterType register_type);
+
     void instructionLD(opcodes::Instruction instruction, uint16_t data);
     void instructionLDH(opcodes::Instruction instruction, uint16_t data);
 

@@ -502,6 +502,16 @@ void Cpu::instruction_cb_set_reset_bit(opcodes::InstructionType instruction_type
     cb_set_data(register_type, value);
 }
 
+void Cpu::instruction_cb_srl(opcodes::RegisterType register_type) {
+    auto value = cb_fetch_data(register_type);
+    set_carry_flag((value & 1) == 1);
+    value = bitmanip::rotate_right(value);
+    set_zero_flag(value == 0);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+    cb_set_data(register_type, value);
+}
+
 void Cpu::cb_set_data(opcodes::RegisterType register_type, uint8_t value) {
     if (register_type == opcodes::RegisterType::HL) {
         // Indirect access
@@ -539,6 +549,9 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
         break;
     case opcodes::InstructionType::CB_RL:
         instruction_cb_rotate_left(register_type);
+        break;
+    case opcodes::InstructionType::CB_SRL:
+        instruction_cb_srl(register_type);
         break;
     default:
         abort_execution<NotImplementedError>(fmt::format("CB instruction {} not implemented",

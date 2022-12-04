@@ -113,3 +113,34 @@ TEST_CASE("Accessing bits") {
     CHECK(bitmanip::bit_value(x, 0) == 0);
     CHECK(bitmanip::bit_value(x, 7) == 1);
 }
+
+TEST_CASE("Rotate right") {
+    CHECK(bitmanip::rotate_right(0x00) == 0x00);
+    CHECK(bitmanip::rotate_right(0b0000'0001) == 0b0000'0000);
+    CHECK(bitmanip::rotate_right(0b1000'0010) == 0b0100'0001);
+    CHECK(bitmanip::rotate_right(0xCE) == 0x67);
+}
+
+TEST_CASE("Rotate right through carry bit without flag") {
+    bool flag = false;
+    CHECK(bitmanip::rotate_right_carry(0x00, flag) == 0x00);
+    CHECK_FALSE(flag);
+}
+
+TEST_CASE("Rotate right through carry bit with flag") {
+    bool flag = true;
+    CHECK(bitmanip::rotate_right_carry(0x00, flag) == 0b1000'0000);
+    CHECK_FALSE(flag);
+}
+
+TEST_CASE("Rotate right through carry bit with flag and with carrying") {
+    bool flag = true;
+    CHECK(bitmanip::rotate_right_carry(0b1100'1110, flag) == 0b1110'0111);
+    CHECK_FALSE(flag);
+}
+
+TEST_CASE("Rotate right through carry bit without flag and with carrying") {
+    bool flag = false;
+    CHECK(bitmanip::rotate_right_carry(0b1100'1110, flag) == 0b0110'0111);
+    CHECK_FALSE(flag);
+}

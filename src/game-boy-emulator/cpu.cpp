@@ -620,7 +620,7 @@ void Cpu::instructionJP(opcodes::Instruction instruction, uint16_t data) {
         return;
     }
     if (instruction.interaction_type == opcodes::InteractionType::AddressRegister) {
-        data = registers.sp;
+        data = registers.hl;
     } else {
         m_emulator->elapse_cycle();
     }

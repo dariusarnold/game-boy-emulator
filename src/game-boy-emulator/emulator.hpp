@@ -19,6 +19,7 @@ class AddressBus;
 class BootRom;
 class Cartridge;
 class Timer;
+class SerialPort;
 namespace spdlog {
 class logger;
 }
@@ -63,6 +64,7 @@ public:
     [[nodiscard]] std::shared_ptr<Cartridge> get_cartridge() const;
     [[nodiscard]] std::shared_ptr<InterruptHandler> get_interrupt_handler() const;
     [[nodiscard]] std::shared_ptr<Timer> get_timer() const;
+    [[nodiscard]] std::shared_ptr<SerialPort> get_serial_port() const;
 
 private:
     std::shared_ptr<Cartridge> m_cartridge;
@@ -75,5 +77,6 @@ private:
     std::shared_ptr<Gpu> m_gpu;
     std::shared_ptr<InterruptHandler> m_interrupt_handler;
     std::shared_ptr<Timer> m_timer;
+    std::shared_ptr<SerialPort> m_serial_port;
     std::shared_ptr<spdlog::logger> m_logger;
 };

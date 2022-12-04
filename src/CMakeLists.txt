@@ -30,6 +30,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/cartridge.hpp
         game-boy-emulator/timer.cpp
         game-boy-emulator/timer.hpp
+        game-boy-emulator/serial_port.cpp
+        game-boy-emulator/serial_port.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

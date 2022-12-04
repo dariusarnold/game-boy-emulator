@@ -7,6 +7,7 @@
 #include "gpu.hpp"
 #include "ram.hpp"
 #include "timer.hpp"
+#include "serial_port.hpp"
 
 #include "spdlog/spdlog.h"
 
@@ -20,6 +21,7 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
         m_gpu(std::make_shared<Gpu>()),
         m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
         m_timer(std::make_shared<Timer>(this)),
+        m_serial_port(std::make_shared<SerialPort>(this)),
         m_logger(spdlog::get("")) {}
 
 Emulator::Emulator(const std::vector<uint8_t>& game_rom) :
@@ -30,6 +32,7 @@ Emulator::Emulator(const std::vector<uint8_t>& game_rom) :
         m_gpu(std::make_shared<Gpu>()),
         m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
         m_timer(std::make_shared<Timer>(this)),
+        m_serial_port(std::make_shared<SerialPort>(this)),
         m_logger(spdlog::get("")) {
     m_state.is_booting = false;
     m_cpu->set_initial_state();
@@ -115,4 +118,8 @@ std::shared_ptr<Cpu> Emulator::get_cpu() const {
 
 std::shared_ptr<Timer> Emulator::get_timer() const {
     return m_timer;
+}
+
+std::shared_ptr<SerialPort> Emulator::get_serial_port() const {
+    return m_serial_port;
 }

@@ -8,6 +8,7 @@
 #include "memorymap.hpp"
 #include "ram.hpp"
 #include "timer.hpp"
+#include "serial_port.hpp"
 
 #include "spdlog/spdlog.h"
 
@@ -29,6 +30,9 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     }
     if (memmap::is_in(address, memmap::VRam)) {
         return m_emulator->get_gpu()->read_byte(address);
+    }
+    if (memmap::is_in(address, memmap::SerialPort)) {
+        return m_emulator->get_serial_port()->read_byte(address);
     }
     if (memmap::is_in(address, memmap::IORegisters)) {
         // TODO Those special cases are required for booting correctly
@@ -52,6 +56,8 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
     } else if (memmap::is_in(address, memmap::CartridgeRom)
                || memmap::is_in(address, memmap::CartridgeRam)) {
         m_emulator->get_cartridge()->write_byte(address, value);
+    } else if (memmap::is_in(address, memmap::SerialPort)) {
+        m_emulator->get_serial_port()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::IORegisters)) {
         if (m_emulator->is_booting()) {
             if (address == 0xFF50) {

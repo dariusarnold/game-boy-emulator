@@ -29,6 +29,7 @@
     X(0xFF04, 0xFF07, Timer)                                                                       \
     X(0xFF80, 0xFFFE, HighRam)                                                                     \
     X(0xFF0F, 0xFF0F, InterruptFlag)                                                               \
+    X(0xFF01, 0xFF02, SerialPort)                                                                  \
     X(0xFFFF, 0xFFFF, InterruptEnable)
 
 

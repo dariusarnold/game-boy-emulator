@@ -7,6 +7,7 @@ add_executable(game_boy_emulator_tests
         test_boot_rom_comparison.cpp
         test_graphics.cpp
         test_blargg1_comparison.cpp
+        test_blargg2_comparison.cpp
         )
 
 
@@ -30,6 +31,12 @@ add_custom_command(
 add_custom_command(
         TARGET game_boy_emulator_tests POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/blargg2.txt
+        ${CMAKE_CURRENT_BINARY_DIR}/blargg2.txt
+)
+add_custom_command(
+        TARGET game_boy_emulator_tests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
             ${PROJECT_SOURCE_DIR}/dmg01-boot.bin
             ${CMAKE_CURRENT_BINARY_DIR}/dmg01-boot.bin
 )
@@ -38,4 +45,10 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy
         ${PROJECT_SOURCE_DIR}/01-special.gb
         ${CMAKE_CURRENT_BINARY_DIR}/blargg1.gb
+)
+add_custom_command(
+        TARGET game_boy_emulator_tests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${PROJECT_SOURCE_DIR}/02-interrupts.gb
+        ${CMAKE_CURRENT_BINARY_DIR}/blargg2.gb
 )

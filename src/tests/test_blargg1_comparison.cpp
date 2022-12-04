@@ -28,6 +28,7 @@ TEST_CASE("Compare blargg1 state") {
                          emulator.get_current_instruction(), emulator.get_previous_instruction(),
                          emulator.get_cpu_debug_state()));
         ++i;
+        INFO(fmt::format("Line {}", i));
         REQUIRE_THAT(actual_output, StringEqualAlignedOutput(expected_line));
         REQUIRE(emulator.step());
     }

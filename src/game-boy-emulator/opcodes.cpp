@@ -366,21 +366,29 @@ constexpr std::array<Instruction, 0x100> instructions{
     Instruction{InstructionType::ADD, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::A},
     // 0x88
-    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::B},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::B},
     // 0x89
-    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::C},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::C},
     // 0x8A
-    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::D},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::D},
     // 0x8B
-    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::E},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::E},
     // 0x8C
-    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::H},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::H},
     // 0x8D
-    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::L},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::L},
     // 0x8E
-    Instruction{InstructionType::ADC, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
+    Instruction{InstructionType::ADC, InteractionType::Register_AddressRegister, RegisterType::A,
+                RegisterType::HL},
     // 0x8F
-    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A, RegisterType::A},
+    Instruction{InstructionType::ADC, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::A},
     // 0x90
     Instruction{InstructionType::SUB, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::B},
@@ -422,21 +430,29 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x9F
     Instruction{},
     // 0xA0
-    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::B},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::B},
     // 0xA1
-    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::C},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::C},
     // 0xA2
-    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::D},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::D},
     // 0xA3
-    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::E},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::E},
     // 0xA4
-    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::H},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::H},
     // 0xA5
-    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::L},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::L},
     // 0xA6
-    Instruction{InstructionType::AND, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
+    Instruction{InstructionType::AND, InteractionType::Register_AddressRegister, RegisterType::A,
+                RegisterType::HL},
     // 0xA7
-    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A, RegisterType::A},
+    Instruction{InstructionType::AND, InteractionType::Register_Register, RegisterType::A,
+                RegisterType::A},
     // 0xA8 A = A XOR B
     Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::B},
@@ -456,7 +472,8 @@ constexpr std::array<Instruction, 0x100> instructions{
     Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::L},
     // 0xAE
-    Instruction{InstructionType::XOR, InteractionType::Register_AddressRegister, RegisterType::A, RegisterType::HL},
+    Instruction{InstructionType::XOR, InteractionType::Register_AddressRegister, RegisterType::A,
+                RegisterType::HL},
     // 0xAF
     Instruction{InstructionType::XOR, InteractionType::Register_Register, RegisterType::A,
                 RegisterType::A},

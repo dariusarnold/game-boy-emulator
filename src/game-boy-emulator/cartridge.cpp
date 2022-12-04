@@ -58,7 +58,7 @@ uint8_t Cartridge::read_byte(uint16_t address) const {
         return m_rom[address_in_rom];
     }
     if (memmap::is_in(address, memmap::CartridgeRomBankSwitchable)) {
-        uint32_t bank_number = static_cast<uint32_t>((m_bank2 << 5) | m_bank1);
+        auto bank_number = static_cast<uint32_t>((m_bank2 << 5) | m_bank1);
         uint32_t address_in_rom = get_address_in_rom(address, bank_number);
         assert(address_in_rom < m_rom.size() && "Read ROM switchable bank out of bounds");
         return m_rom[address_in_rom];
@@ -146,7 +146,7 @@ void Cartridge::write_values(uint16_t address, uint8_t value) {
         return;
     }
     if (memmap::is_in(address, memmap::CartridgeRomBankSwitchable)) {
-        uint32_t bank_number = static_cast<uint32_t>((m_bank2 << 5) | m_bank1);
+        auto bank_number = static_cast<uint32_t>((m_bank2 << 5) | m_bank1);
         uint32_t address_in_rom = get_address_in_rom(address, bank_number);
         assert(address_in_rom < m_rom.size() && "Write ROM switchable bank out of bounds");
         m_rom[address_in_rom] = value;

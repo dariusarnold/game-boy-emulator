@@ -83,7 +83,9 @@ std::string Emulator::get_cpu_debug_state() const {
 }
 
 bool Emulator::step() {
-    return m_cpu->step();
+    auto res = m_cpu->step();
+    m_interrupt_handler->handle_interrupts();
+    return res;
 }
 
 opcodes::Instruction Emulator::get_current_instruction() const {

@@ -10,11 +10,11 @@ class logger;
 class InterruptHandler {
 public:
     enum class InterruptType : uint8_t {
-        VBlank,
-        LCD,
-        Timer,
-        SerialLink,
-        Joypad,
+        VBlank = 1,
+        LCD = 2,
+        Timer = 4,
+        SerialLink = 8,
+        Joypad = 16,
     };
 
     explicit InterruptHandler(Emulator* emulator);

@@ -24,7 +24,7 @@ void Cpu::step() {
         instructionLDH(current_instruction, data);
         break;
     case opcodes::InstructionType::LDHL:
-        registers.hl = registers.sp + data;
+        instructionLDHL(data);
         break;
     case opcodes::InstructionType::CB:
         // Here the data is the second byte of the CB instruction.
@@ -465,6 +465,17 @@ void Cpu::instructionLDH(opcodes::Instruction instruction, uint16_t data) {
         m_emulator->get_bus()->write_byte(registers.c + offset, registers.a);
         m_emulator->elapse_cycle();
     }
+}
+
+void Cpu::instructionLDHL(uint8_t data) {
+    registers.hl = registers.sp + static_cast<int8_t>(data);
+    set_zero_flag(BitValues::Inactive);
+    set_subtract_flag(BitValues::Inactive);
+    auto hc = (registers.sp ^ static_cast<int8_t>(data) ^ registers.hl) & 0x10;
+    set_half_carry_flag(hc > 0);
+    auto cf = (registers.sp ^ static_cast<int8_t>(data) ^ registers.hl) & 0x100;
+    set_carry_flag(cf > 0);
+    m_emulator->elapse_cycle();
 }
 
 namespace {

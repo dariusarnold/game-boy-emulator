@@ -151,6 +151,7 @@ private:
 
     void instructionLD(opcodes::Instruction instruction, uint16_t data);
     void instructionLDH(opcodes::Instruction instruction, uint16_t data);
+    void instructionLDHL(uint8_t data);
 
     // data is the second byte of the whole CB instruction
     void instructionCB(uint8_t cb_opcode);

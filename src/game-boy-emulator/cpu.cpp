@@ -81,6 +81,10 @@ bool Cpu::step() {
     case opcodes::InstructionType::RETI:
         instructionRETI();
         break;
+    case opcodes::InstructionType::RR:
+        instruction_cb_rr(opcodes::RegisterType::A);
+        set_zero_flag(BitValues::Inactive);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",

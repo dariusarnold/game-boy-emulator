@@ -710,6 +710,10 @@ void Cpu::instructionPOP(opcodes::Instruction instruction) {
     registers.sp++;
     m_emulator->elapse_cycle();
     auto value = bitmanip::word_from_bytes(high_byte, low_byte);
+    if (instruction.register_type_destination == opcodes::RegisterType::AF) {
+        // The lower nibble of F can't be changed and is always 0, so we avoid writing it here.
+        value &= 0xFFF0;
+    }
     set_register_value(instruction.register_type_destination, value);
 }
 

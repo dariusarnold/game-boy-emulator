@@ -47,7 +47,30 @@ enum class InstructionType {
     XOR,
     OR,
     AND,
+    // Prefix for all CB instructions
     CB,
+    // Rotate left with carry
+    CB_RLC,
+    // Rotate right with carry
+    CB_RRC,
+    // Rotate left
+    CB_RL,
+    // Rotate right
+    CB_RR,
+    // Shift left preserving sign
+    CB_SLA,
+    // Shift right preserving sign
+    CB_SRA,
+    // Swap nibbles
+    CB_SWAP,
+    // Rotate left
+    CB_SRL,
+    // Test bit
+    CB_BIT,
+    // Reset bit
+    CB_RES,
+    // Set bit
+    CB_SET,
     CALL,
     RET,
     PUSH,

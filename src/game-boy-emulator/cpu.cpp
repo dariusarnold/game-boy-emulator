@@ -133,7 +133,8 @@ bool Cpu::is_flag_set(flags flag) const {
     return bitmanip::is_bit_set(registers.f, as_integral(flag));
 }
 
-void Cpu::test_bit(uint8_t value, u_int8_t position) {
+void Cpu::instruction_cb_test_bit(opcodes::RegisterType register_type, uint8_t position) {
+    auto value = cb_fetch_data(register_type);
     if (bitmanip::is_bit_set(value, position)) {
         set_zero_flag(BitValues::Inactive);
     } else {
@@ -439,6 +440,7 @@ void Cpu::instructionLDH(opcodes::Instruction instruction, uint16_t data) {
     }
 }
 
+namespace {
 opcodes::RegisterType get_register_cb(uint8_t cb_opcode) {
     // For all CB-prefixed instructions the register follows a regular pattern.
     constexpr static std::array cb_registers{opcodes::RegisterType::B,  opcodes::RegisterType::C,
@@ -448,53 +450,99 @@ opcodes::RegisterType get_register_cb(uint8_t cb_opcode) {
     return cb_registers[cb_opcode & 0b111];
 }
 
-void Cpu::instructionCB(uint8_t cb_opcode) {
-    auto register_type = get_register_cb(cb_opcode);
-    auto bit = internal::op_code_to_bit(cb_opcode);
-    uint8_t value = [&] {
-        if (register_type == opcodes::RegisterType::HL) {
-            // Indirect access
-            auto x = m_emulator->get_bus()->read_byte(registers.hl);
-            m_emulator->elapse_cycle();
-            return x;
-        }
-        return static_cast<uint8_t>(get_register_value(register_type));
-    }();
+constexpr std::array<opcodes::InstructionType, 8> CB_INSTRUCTION_BLOCKS{
+    opcodes::InstructionType::CB_RLC,  opcodes::InstructionType::CB_RRC,
+    opcodes::InstructionType::CB_RL,   opcodes::InstructionType::CB_RR,
+    opcodes::InstructionType::CB_SLA,  opcodes::InstructionType::CB_SRA,
+    opcodes::InstructionType::CB_SWAP, opcodes::InstructionType::CB_SRL};
+
+opcodes::InstructionType get_instruction_cb(uint8_t cb_opcode) {
+    // The last three blocks are large with 64 instructions each.
     if (cb_opcode >= 0xC0) {
-        // Set bit instruction or Reset bit instruction. Since only the operation differs and the
-        // write back stays the same, handle them accordingly.
-        if (cb_opcode >= 0x80) {
-            m_logger->info("Prefix CB Reset bit {} in {}", bit,
-                           magic_enum::enum_name(register_type));
-            bitmanip::unset(value, bit);
-        } else {
-            m_logger->info("Prefix CB Set bit {} in {}", bit, magic_enum::enum_name(register_type));
-            bitmanip::set(value, bit);
-        }
-        if (register_type == opcodes::RegisterType::HL) {
-            // Indirect access
-            m_emulator->get_bus()->write_byte(registers.hl, value);
-            m_emulator->elapse_cycle();
-        } else {
-            set_register_value(register_type, value);
-        }
-    } else if (cb_opcode >= 0x40) {
-        // Bit test instruction (This just sets flags and doesn't modify registers or memory)
-        m_logger->info("Prefix CB Test bit {} in {}", bit, magic_enum::enum_name(register_type));
-        test_bit(value, bit);
-    } else if (cb_opcode >= 0x10 && cb_opcode <= 0x17) {
-        // Rotate left instruction
-        auto register_ = get_register_cb(cb_opcode);
-        bool cf = is_flag_set(flags::carry);
-        value = get_register_value(register_);
-        set_register_value(register_, bitmanip::rotate_left_carry(value, cf));
-        set_carry_flag(cf);
-        set_zero_flag(get_register_value(register_) == 0);
-        set_subtract_flag(BitValues::Inactive);
-        set_half_carry_flag(BitValues::Inactive);
+        return opcodes::InstructionType::CB_SET;
+    }
+    if (cb_opcode >= 0x80) {
+        return opcodes::InstructionType::CB_RES;
+    }
+    if (cb_opcode >= 0x40) {
+        return opcodes::InstructionType::CB_BIT;
+    }
+    // The following blocks are smaller (8 blocks with 8 instructions each).
+    uint8_t index = cb_opcode / 8;
+    return CB_INSTRUCTION_BLOCKS[index];
+}
+} // namespace
+
+void Cpu::instruction_cb_rotate_left(opcodes::RegisterType register_type) {
+    bool cf = is_flag_set(flags::carry);
+    auto value = cb_fetch_data(register_type);
+    value = bitmanip::rotate_left_carry(value, cf);
+    set_carry_flag(cf);
+    set_zero_flag(value == 0);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+    cb_set_data(register_type, value);
+}
+
+void Cpu::instruction_cb_set_reset_bit(opcodes::InstructionType instruction_type,
+                                       opcodes::RegisterType register_type, uint8_t bit) {
+    auto value = cb_fetch_data(register_type);
+    // Set bit instruction or Reset bit instruction. Since only the operation differs and the
+    // write back stays the same, handle them accordingly.
+    switch (instruction_type) {
+    case opcodes::InstructionType::CB_SET:
+        bitmanip::set(value, bit);
+        break;
+    case opcodes::InstructionType::CB_RES:
+        bitmanip::unset(value, bit);
+        break;
+    default:
+        break;
+    }
+    cb_set_data(register_type, value);
+}
+
+void Cpu::cb_set_data(opcodes::RegisterType register_type, uint8_t value) {
+    if (register_type == opcodes::RegisterType::HL) {
+        // Indirect access
+        m_emulator->get_bus()->write_byte(registers.hl, value);
+        m_emulator->elapse_cycle();
     } else {
-        abort_execution<NotImplementedError>(
-            fmt::format("CB suffix {:02X} not implemented", cb_opcode));
+        set_register_value(register_type, value);
+    }
+}
+
+uint8_t Cpu::cb_fetch_data(opcodes::RegisterType register_type) {
+    if (register_type == opcodes::RegisterType::HL) {
+        // Indirect access
+        auto x = m_emulator->get_bus()->read_byte(registers.hl);
+        m_emulator->elapse_cycle();
+        return x;
+    }
+    return static_cast<uint8_t>(get_register_value(register_type));
+}
+
+void Cpu::instructionCB(uint8_t cb_opcode) {
+    auto instruction_type = get_instruction_cb(cb_opcode);
+    auto register_type = get_register_cb(cb_opcode);
+    auto bit_position = internal::op_code_to_bit(cb_opcode);
+    m_logger->debug("Executing {} {}", magic_enum::enum_name(instruction_type),
+                    magic_enum::enum_name(register_type));
+
+    switch (instruction_type) {
+    case opcodes::InstructionType::CB_SET:
+    case opcodes::InstructionType::CB_RES:
+        instruction_cb_set_reset_bit(instruction_type, register_type, bit_position);
+        break;
+    case opcodes::InstructionType::CB_BIT:
+        instruction_cb_test_bit(register_type, bit_position);
+        break;
+    case opcodes::InstructionType::CB_RL:
+        instruction_cb_rotate_left(register_type);
+        break;
+    default:
+        abort_execution<NotImplementedError>(fmt::format("CB instruction {} not implemented",
+                                                         magic_enum::enum_name(instruction_type)));
     }
 }
 
@@ -544,7 +592,6 @@ void Cpu::instructionJP(opcodes::Instruction instruction, uint16_t data) {
     }
     registers.pc = data;
 }
-
 
 void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
     uint16_t value_original{};

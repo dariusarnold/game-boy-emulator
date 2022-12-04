@@ -84,7 +84,7 @@ private:
      * @param value
      * @param position
      */
-    void test_bit(uint8_t value, u_int8_t position);
+    void instruction_cb_test_bit(opcodes::RegisterType register_type, uint8_t position);
 
     /**
      * Convert second byte of cb opcodes to the register, upon which this instruction operators
@@ -112,6 +112,19 @@ private:
     uint16_t get_register_value(opcodes::RegisterType register_type);
 
     [[nodiscard]] bool check_condition(opcodes::ConditionType condition_type) const;
+
+    // Helper which reads data for CB instructions either from register or main memory in case of
+    // indirect access.
+    uint8_t cb_fetch_data(opcodes::RegisterType register_type);
+
+    // Helper which writes data for CB instructions. Write either to destination register or main
+    // memory in case of indirect access.
+    void cb_set_data(opcodes::RegisterType register_type, uint8_t value);
+
+    void instruction_cb_rotate_left(opcodes::RegisterType register_type);
+
+    void instruction_cb_set_reset_bit(opcodes::InstructionType instruction_type,
+                                      opcodes::RegisterType register_type, uint8_t bit);
 
     void instructionLD(opcodes::Instruction instruction, uint16_t data);
     void instructionLDH(opcodes::Instruction instruction, uint16_t data);

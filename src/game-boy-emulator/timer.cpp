@@ -58,6 +58,9 @@ void Timer::write_byte(uint16_t address, uint8_t value) {
     } else if (address == ADDRESS_TIMER_MODULO) {
         m_logger->debug("Set timer modulo {:02X}", m_timer_modulo);
         m_timer_modulo = value;
+    } else if (address == 0xFF05) {
+        m_logger->debug("Set TIMA to {:02X}", value);
+        m_timer_counter = value;
     } else {
         throw LogicError(fmt::format("Invalid write of {:02X} in timer to {:04X}", value, address));
     }

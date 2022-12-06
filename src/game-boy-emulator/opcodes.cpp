@@ -313,7 +313,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::HL,
                 RegisterType::L},
     // 0x76
-    Instruction{},
+    Instruction{InstructionType::HALT},
     // 0x77
     Instruction{InstructionType::LD, InteractionType::AddressRegister_Register, RegisterType::HL,
                 RegisterType::A},

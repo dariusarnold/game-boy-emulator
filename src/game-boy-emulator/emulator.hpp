@@ -32,6 +32,7 @@ struct EmulatorState {
     size_t instructions_executed = 0;
     // Currently running boot rom
     bool is_booting = true;
+    bool halted = false;
 };
 
 /**
@@ -52,6 +53,8 @@ public:
     void elapse_instruction();
     void elapse_cycle();
     void set_interrupts_enabled(bool enabled);
+    void halt();
+    void unhalt();
 
     [[nodiscard]] std::string get_cpu_debug_state() const;
     [[nodiscard]] CpuDebugState get_debug_state() const;

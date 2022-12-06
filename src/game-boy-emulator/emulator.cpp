@@ -83,7 +83,9 @@ CpuDebugState Emulator::get_debug_state() const {
 
 bool Emulator::step() {
     try {
-        m_cpu->step();
+        if (!m_state.halted) {
+            m_cpu->step();
+        }
         m_interrupt_handler->handle_interrupts();
         return true;
     } catch (const std::exception& e) {
@@ -128,4 +130,12 @@ std::shared_ptr<Timer> Emulator::get_timer() const {
 
 std::shared_ptr<SerialPort> Emulator::get_serial_port() const {
     return m_serial_port;
+}
+
+void Emulator::halt() {
+    m_state.halted = true;
+}
+
+void Emulator::unhalt() {
+    m_state.halted = false;
 }

@@ -91,6 +91,9 @@ void Cpu::step() {
     case opcodes::InstructionType::DAA:
         instructionDAA();
         break;
+    case opcodes::InstructionType::HALT:
+        m_emulator->halt();
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",

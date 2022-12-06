@@ -57,16 +57,20 @@ const std::array<uint16_t, 5> ISR_ADDRESS{0x0040, 0x0048, 0x0050, 0x0058, 0x0060
 } // namespace
 
 void InterruptHandler::handle_interrupts() {
-    if (!m_global_interrupt_enabled_status) {
-        return;
-    }
     for (unsigned i = 0; i < 5; ++i) {
         if (bitmanip::is_bit_set(m_interrupt_enable_register, i)
             && bitmanip::is_bit_set(m_interrupt_request_flags, i)) {
-            auto address = ISR_ADDRESS[i];
-            m_global_interrupt_enabled_status = false;
-            bitmanip::unset(m_interrupt_request_flags, i);
-            m_emulator->get_cpu()->call_isr(address);
+            // Always unhalt even if interrupts are disabled globally
+            m_emulator->unhalt();
+            if (m_global_interrupt_enabled_status) {
+                m_global_interrupt_enabled_status = false;
+                bitmanip::unset(m_interrupt_request_flags, i);
+                auto address = ISR_ADDRESS[i];
+                m_logger->debug("Serving interrupt {}",
+                                magic_enum::enum_name(static_cast<InterruptType>(i)));
+                m_emulator->get_cpu()->call_isr(address);
+            }
+            break;
         }
     }
 }

@@ -14,7 +14,7 @@ void SerialPort::write_byte(uint16_t address, uint8_t value) {
     if (address == ADDRESS_SERIAL_BUFFER) {
         m_logger->debug("Writing {:02X} to serial buffer", value);
         m_serial_buffer = value;
-        out.push_back(static_cast<char>(value));
+        m_serial_written.push_back(static_cast<char>(value));
     }
     if (address == ADDRESS_SERIAL_CONTROL) {
         if (value == 0x81) {
@@ -39,5 +39,9 @@ uint8_t SerialPort::read_byte(uint16_t address) {
 }
 
 SerialPort::~SerialPort() {
-    m_logger->error("Serial out: {}", out);
+    m_logger->error("Serial out: {}", m_serial_written);
+}
+
+std::string SerialPort::get_buffer() const {
+    return m_serial_written;
 }

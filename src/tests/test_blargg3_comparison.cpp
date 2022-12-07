@@ -19,7 +19,7 @@ TEST_CASE("Compare blargg3 state") {
     for (auto i = 0; const auto& expected_line : expected_output) {
         auto actual_output = emulator.get_debug_state();
         ++i;
-        INFO("Line " << i << " " << static_cast<double>(i) / expected_output.size() << " %");
+        INFO("Line " << i << " " << static_cast<double>(i) / expected_output.size() * 100 << " %");
         REQUIRE(actual_output == expected_line);
 
         REQUIRE(emulator.step());

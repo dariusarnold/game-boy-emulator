@@ -593,14 +593,14 @@ std::pair<SDL_GLContext, SDL_Window*> setup_graphics() {
 
 int main(int argc, char** argv) { // NOLINT
     argparse::ArgumentParser program("game boy emulator");
-    program.add_argument("boot").help("Path to boot ROM file.");
     program.add_argument("rom").help("Path to game ROM file to run.");
+    program.add_argument("--boot").default_value("").help("Path to boot ROM file.");
 
-    spdlog::set_level(spdlog::level::trace);
+    spdlog::set_level(spdlog::level::err);
 
     try {
         program.parse_args(argc, argv);
-    } catch (const std::runtime_error& e) {
+    } catch (const std::exception& e) {
         spdlog::error(e.what());
         spdlog::error(program.help().str());
         std::exit(1);
@@ -714,11 +714,13 @@ int main(int argc, char** argv) { // NOLINT
     SDL_Quit();
     */
 
-    auto boot_rom_path = std::filesystem::absolute(program.get("boot"));
-    auto boot_rom = load_boot_rom_file(boot_rom_path);
-    if (!boot_rom) {
-        spdlog::error("Failed to load boot rom from {}", boot_rom_path.string());
-        return EXIT_FAILURE;
+    std::optional<std::array<uint8_t, 256>> boot_rom;
+    if (program.is_used("boot")) {
+        auto boot_rom_path = std::filesystem::absolute(program.get("boot"));
+        boot_rom = load_boot_rom_file(boot_rom_path);
+        if (!boot_rom) {
+            spdlog::error("Failed to load boot rom from {}", boot_rom_path.string());
+        }
     }
     auto rom_path = std::filesystem::absolute(program.get("rom"));
     auto game_rom = load_rom_file(rom_path);
@@ -729,7 +731,12 @@ int main(int argc, char** argv) { // NOLINT
 
 
     try {
-        Emulator emulator(boot_rom.value(), game_rom);
+        Emulator emulator = [&]() {
+            if (boot_rom.has_value()) {
+                return Emulator(boot_rom.value(), game_rom);
+            }
+            return Emulator(game_rom);
+        }();
         emulator.run();
     } catch (const std::exception& e) {
         spdlog::error("Error {}", e.what()); // NOLINT

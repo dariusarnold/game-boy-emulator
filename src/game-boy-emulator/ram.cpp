@@ -28,9 +28,6 @@ uint16_t Ram::read_word(uint16_t address) const {
 
 void Ram::write_byte(uint16_t address, uint8_t value) {
     if (memmap::is_in(address, memmap::InternalRam)) {
-        if (address == 0xDD01) {
-            m_logger->error("Write {:02X} to DD01", value);
-        }
         address -= memmap::InternalRamBegin;
         internalRam[address] = value;
     } else if (memmap::is_in(address, memmap::HighRam)) {

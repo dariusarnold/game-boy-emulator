@@ -31,5 +31,4 @@ TEST_CASE("Compare blargg2 state") {
     auto serial_content = emulator.get_serial_port()->get_buffer();
     INFO("Serial buffer " << serial_content);
     REQUIRE(serial_content.find("Passed") != std::string::npos);
-
 }

@@ -878,14 +878,14 @@ void Cpu::instructionADD(opcodes::Instruction instruction, uint16_t data) {
     auto destination_register_value = get_register_value(instruction.register_type_destination);
     const auto hc = [&] {
         if (instruction.register_type_destination == opcodes::RegisterType::HL) {
-            return internal::was_half_carry_word(destination_register_value, data, std::plus{});
+            return internal::was_half_carry_word(destination_register_value, data);
         }
         return internal::was_half_carry(destination_register_value, data, std::plus{});
     }();
     set_half_carry_flag(hc);
     const auto was_carry = [&] {
         if (instruction.register_type_destination == opcodes::RegisterType::HL) {
-            return internal::was_carry_word(destination_register_value, data, std::plus{});
+            return internal::was_carry_word(destination_register_value, data);
         }
         return internal::was_carry(destination_register_value, data, std::plus{});
     }();
@@ -905,9 +905,9 @@ void Cpu::instructionADD_Signed(int8_t data) {
     set_zero_flag(BitValues::Inactive);
     set_subtract_flag(BitValues::Inactive);
     int result = static_cast<int>(registers.sp + data);
-    registers.sp = result;
     set_half_carry_flag(((registers.sp ^ data ^ (result & 0xFFFF)) & 0x10) == 0x10);
-    set_carry_flag(((registers.sp ^ data ^ (result & 0xFFFF)) & 0x100) == 0);
+    set_carry_flag(((registers.sp ^ data ^ (result & 0xFFFF)) & 0x100) == 0x100);
+    registers.sp = result;
     m_emulator->elapse_cycle();
     m_emulator->elapse_cycle();
 }

@@ -203,9 +203,8 @@ bool was_half_carry(uint8_t a, uint8_t b, const F& operation) {
     return hc;
 }
 
-template <typename F>
-bool was_half_carry_word(uint16_t a, uint16_t b, const F& operation) {
-    return was_half_carry(bitmanip::get_high_byte(a), bitmanip::get_high_byte(b), operation);
+inline bool was_half_carry_word(uint16_t a, uint16_t b) {
+    return (a & 0xfff) + (b & 0xfff) > 0xfff;
 }
 
 template <typename F>
@@ -214,9 +213,9 @@ bool was_carry(uint8_t a, uint8_t b, const F& operation) {
     return c;
 }
 
-template <typename F>
-bool was_carry_word(uint16_t a, uint16_t b, const F& operation) {
-    return was_carry(bitmanip::get_high_byte(a), bitmanip::get_high_byte(b), operation);
+inline bool was_carry_word(uint16_t a, uint16_t b) {
+    unsigned result = a + b;
+    return (result & 0x10000) != 0;
 }
 
 } // namespace internal

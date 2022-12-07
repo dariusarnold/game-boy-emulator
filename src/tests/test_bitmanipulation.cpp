@@ -144,3 +144,12 @@ TEST_CASE("Rotate right through carry bit without flag and with carrying") {
     CHECK(bitmanip::rotate_right_carry(0b1100'1110, flag) == 0b0110'0111);
     CHECK_FALSE(flag);
 }
+
+TEST_CASE("Swap nibbles") {
+    CHECK(bitmanip::swap_nibbles(0x01) == 0x10);
+    CHECK(bitmanip::swap_nibbles(0xAF) == 0xFA);
+    CHECK(bitmanip::swap_nibbles(0x0) == 0x0);
+    CHECK(bitmanip::swap_nibbles(0x10) == 0x1);
+    CHECK(bitmanip::swap_nibbles(0xFF) == 0xFF);
+    CHECK(bitmanip::swap_nibbles(0x1D) == 0xD1);
+}

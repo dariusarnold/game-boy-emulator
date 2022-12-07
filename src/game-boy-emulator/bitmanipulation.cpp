@@ -41,6 +41,10 @@ uint8_t get_high_nibble(uint8_t x) {
     return (x & HIGH_NIBBLE) >> (constants::BYTE_SIZE / 2);
 }
 
+uint8_t swap_nibbles(uint8_t x) {
+    return (get_low_nibble(x) << 4) | get_high_nibble(x);
+}
+
 uint8_t rotate_left(uint8_t x) {
     return static_cast<uint8_t>(x << 1);
 }

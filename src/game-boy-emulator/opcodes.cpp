@@ -136,7 +136,8 @@ constexpr std::array<Instruction, 0x100> instructions{
     Instruction{InstructionType::JR, InteractionType::ImmediateByte, RegisterType::None,
                 RegisterType::None, ConditionType::Carry},
     // 0x39
-    Instruction{},
+    Instruction{InstructionType::ADD, InteractionType::Register_Register, RegisterType::HL,
+                RegisterType::SP},
     // 0x3A
     Instruction{InstructionType::LDD, InteractionType::Register_AddressRegister, RegisterType::A,
                 RegisterType::HL},

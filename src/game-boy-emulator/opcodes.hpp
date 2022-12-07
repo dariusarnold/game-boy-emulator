@@ -26,6 +26,8 @@ enum class InstructionType {
     // Add with carry flag
     ADC,
     ADD,
+    // Special case for 0xE8, where the immediate value is treated as signed
+    ADD_Signed,
     SUB,
     INC,
     DEC,

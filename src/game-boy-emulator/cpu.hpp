@@ -180,6 +180,8 @@ private:
 
     void instructionADD(opcodes::Instruction instruction, uint16_t data);
 
+    void instructionADD_Signed(int8_t data);
+
     void instructionJP(opcodes::Instruction instruction, uint16_t data);
 
     void instructionRETI();

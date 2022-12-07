@@ -620,7 +620,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xE7
     Instruction{},
     // 0xE8
-    Instruction{},
+    Instruction{InstructionType::ADD_Signed, InteractionType::ImmediateByte, RegisterType::SP},
     // 0xE9
     Instruction{InstructionType::JP, InteractionType::AddressRegister, RegisterType::HL},
     // 0xEA
@@ -649,9 +649,9 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xF5
     Instruction{InstructionType::PUSH, InteractionType::None, RegisterType::AF},
     // 0xF6
-    Instruction{},
-    // 0xF7
     Instruction{InstructionType::OR, InteractionType::ImmediateByte, RegisterType::A},
+    // 0xF7
+    Instruction{},
     // 0xF8
     Instruction{InstructionType::LDHL, InteractionType::ImmediateByte, RegisterType::HL,
                 RegisterType::SP},

@@ -69,6 +69,9 @@ void Cpu::step() {
     case opcodes::InstructionType::ADD:
         instructionADD(current_instruction, data);
         break;
+    case opcodes::InstructionType::ADD_Signed:
+        instructionADD_Signed(data);
+        break;
     case opcodes::InstructionType::NOP:
         m_emulator->elapse_cycle();
         break;
@@ -896,6 +899,17 @@ void Cpu::instructionADD(opcodes::Instruction instruction, uint16_t data) {
     } else {
         m_emulator->elapse_cycle();
     }
+}
+
+void Cpu::instructionADD_Signed(int8_t data) {
+    set_zero_flag(BitValues::Inactive);
+    set_subtract_flag(BitValues::Inactive);
+    int result = static_cast<int>(registers.sp + data);
+    registers.sp = result;
+    set_half_carry_flag(((registers.sp ^ data ^ (result & 0xFFFF)) & 0x10) == 0x10);
+    set_carry_flag(((registers.sp ^ data ^ (result & 0xFFFF)) & 0x100) == 0);
+    m_emulator->elapse_cycle();
+    m_emulator->elapse_cycle();
 }
 
 void Cpu::instructionRETI() {

@@ -435,9 +435,24 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
         m_emulator->elapse_cycle();
         return;
     case opcodes::InteractionType::AddressWord_Register:
-        m_emulator->get_bus()->write_byte(data,
-                                          get_register_value(instruction.register_type_source));
-        m_emulator->elapse_cycle();
+        // Save register value to address given by immediate word
+        switch (instruction.register_type_source) {
+        case opcodes::RegisterType::BC:
+        case opcodes::RegisterType::DE:
+        case opcodes::RegisterType::HL:
+        case opcodes::RegisterType::SP:
+            value = get_register_value(instruction.register_type_source);
+            m_emulator->get_bus()->write_byte(data, bitmanip::get_low_byte(value));
+            m_emulator->elapse_cycle();
+            m_emulator->get_bus()->write_byte(data + 1, bitmanip::get_high_byte(value));
+            m_emulator->elapse_cycle();
+            break;
+        default:
+            m_emulator->get_bus()->write_byte(data,
+                                              get_register_value(instruction.register_type_source));
+            m_emulator->elapse_cycle();
+            break;
+        }
         return;
     case opcodes::InteractionType::Register_AddressWord:
         value = m_emulator->get_bus()->read_byte(data);

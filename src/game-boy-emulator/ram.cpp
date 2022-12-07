@@ -4,8 +4,9 @@
 #include "exceptions.hpp"
 
 #include <fmt/format.h>
+#include "spdlog/spdlog.h"
 
-Ram::Ram(Emulator* emulator) : m_emulator(emulator) {}
+Ram::Ram(Emulator* emulator) : m_emulator(emulator), m_logger(spdlog::get("")) {}
 
 uint8_t Ram::read_byte(uint16_t address) const {
     if (memmap::is_in(address, memmap::InternalRam)) {
@@ -27,6 +28,9 @@ uint16_t Ram::read_word(uint16_t address) const {
 
 void Ram::write_byte(uint16_t address, uint8_t value) {
     if (memmap::is_in(address, memmap::InternalRam)) {
+        if (address == 0xDD01) {
+            m_logger->error("Write {:02X} to DD01", value);
+        }
         address -= memmap::InternalRamBegin;
         internalRam[address] = value;
     } else if (memmap::is_in(address, memmap::HighRam)) {

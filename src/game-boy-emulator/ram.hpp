@@ -4,7 +4,11 @@
 
 #include <array>
 #include <cstdint>
+#include <memory>
 
+namespace spdlog {
+class logger;
+}
 class Emulator;
 
 
@@ -12,6 +16,7 @@ class Ram {
     std::array<uint8_t, memmap::InternalRamSize> internalRam{};
     std::array<uint8_t, memmap::HighRamSize> highRam{};
     Emulator* m_emulator;
+    std::shared_ptr<spdlog::logger> m_logger;
 
 public:
     explicit Ram(Emulator* emulator);

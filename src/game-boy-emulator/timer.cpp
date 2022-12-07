@@ -12,14 +12,14 @@
 Timer::Timer(Emulator* emulator) : m_emulator(emulator), m_logger(spdlog::get("")) {}
 
 namespace {
-constexpr int CLOCK_RATE_M = 4'194'304;
+constexpr int CLOCK_RATE_T = 4'194'304;
 // The cycle count is in M cycles, meaning it is a quarter of the actual clock rate/the T cycle
 // count. This means after one M cycle, 4 T cycles have elapsed. Since the divider is given by T
 // frequency, the number of cycles has to be divided by 4 to know after how many M cycles a timer
 // should increment.
-constexpr int CLOCK_RATE_T = CLOCK_RATE_M / 4;
+constexpr int CLOCK_RATE_M = CLOCK_RATE_T / 4;
 constexpr std::array<uint32_t, 4> N_CYCLES_TIMER_COUNTER{
-    CLOCK_RATE_T / 4096, CLOCK_RATE_T / 262144, CLOCK_RATE_T / 65536, CLOCK_RATE_T / 16384};
+    CLOCK_RATE_M / 4096, CLOCK_RATE_M / 262144, CLOCK_RATE_M / 65536, CLOCK_RATE_M / 16384};
 } // namespace
 
 void Timer::cycle_elapsed_callback(size_t cycle_num) {

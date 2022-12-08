@@ -1,6 +1,6 @@
 *.asm
 *.bin
-*.gb
+
 
 .idea
 cmake-build-*

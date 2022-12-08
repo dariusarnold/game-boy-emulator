@@ -13,9 +13,9 @@
 
 
 TEST_CASE("Compare boot sequence") {
-    auto expected_output = read_log_file("BootromLog.txt");
+    auto expected_output = read_log_file("recorded-logs/BootromLog.txt");
     REQUIRE_FALSE(expected_output.empty());
-    auto boot_rom_path = std::filesystem::absolute(("dmg01-boot.bin"));
+    auto boot_rom_path = std::filesystem::absolute(("roms/dmg01-boot.bin"));
     auto boot_rom = load_boot_rom_file(boot_rom_path);
     std::vector<uint8_t> cartridge(1024, 0);
     // clang-format off

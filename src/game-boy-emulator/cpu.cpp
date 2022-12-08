@@ -611,6 +611,28 @@ void Cpu::instruction_cb_swap(opcodes::RegisterType register_type) {
     cb_set_data(register_type, value);
 }
 
+void Cpu::instruction_cb_rlc(opcodes::RegisterType register_type) {
+    auto value = cb_fetch_data(register_type);
+    bool cf = false;
+    value = bitmanip::rotate_left_carry(value, cf);
+    set_zero_flag(value == 0);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+    set_carry_flag(cf);
+    cb_set_data(register_type, value);
+}
+
+void Cpu::instruction_cb_rrc(opcodes::RegisterType register_type) {
+    auto value = cb_fetch_data(register_type);
+    bool cf = false;
+    value = bitmanip::rotate_right_carry(value, cf);
+    set_zero_flag(value == 0);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+    set_carry_flag(cf);
+    cb_set_data(register_type, value);
+}
+
 void Cpu::cb_set_data(opcodes::RegisterType register_type, uint8_t value) {
     if (register_type == opcodes::RegisterType::HL) {
         // Indirect access
@@ -639,6 +661,12 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
                     magic_enum::enum_name(register_type));
 
     switch (instruction_type) {
+    case opcodes::InstructionType::CB_RLC:
+        instruction_cb_rlc(register_type);
+        break;
+    case opcodes::InstructionType::CB_RRC:
+        instruction_cb_rrc(register_type);
+        break;
     case opcodes::InstructionType::CB_SET:
     case opcodes::InstructionType::CB_RES:
         instruction_cb_set_reset_bit(instruction_type, register_type, bit_position);

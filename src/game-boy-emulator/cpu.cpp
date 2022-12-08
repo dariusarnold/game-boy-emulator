@@ -113,10 +113,10 @@ void Cpu::step() {
         instructionCCF();
         break;
     case opcodes::InstructionType::RLC:
-        instructionRLC();
+        registers.a = instructionRLC(registers.a);
         break;
     case opcodes::InstructionType::RRC:
-        instructionRRC();
+        registers.a = instructionRRC(registers.a);
         break;
     default:
         abort_execution<NotImplementedError>(
@@ -613,23 +613,15 @@ void Cpu::instruction_cb_swap(opcodes::RegisterType register_type) {
 
 void Cpu::instruction_cb_rlc(opcodes::RegisterType register_type) {
     auto value = cb_fetch_data(register_type);
-    bool cf = false;
-    value = bitmanip::rotate_left_carry(value, cf);
+    value = instructionRLC(value);
     set_zero_flag(value == 0);
-    set_subtract_flag(BitValues::Inactive);
-    set_half_carry_flag(BitValues::Inactive);
-    set_carry_flag(cf);
     cb_set_data(register_type, value);
 }
 
 void Cpu::instruction_cb_rrc(opcodes::RegisterType register_type) {
     auto value = cb_fetch_data(register_type);
-    bool cf = false;
-    value = bitmanip::rotate_right_carry(value, cf);
+    value = instructionRRC(value);
     set_zero_flag(value == 0);
-    set_subtract_flag(BitValues::Inactive);
-    set_half_carry_flag(BitValues::Inactive);
-    set_carry_flag(cf);
     cb_set_data(register_type, value);
 }
 
@@ -1061,22 +1053,24 @@ void Cpu::instructionCCF() {
     set_half_carry_flag(BitValues::Inactive);
 }
 
-void Cpu::instructionRLC() {
-    bool cf = bitmanip::is_bit_set(registers.a, 7);
+uint8_t Cpu::instructionRLC(uint8_t data) {
+    bool cf = bitmanip::is_bit_set(data, 7);
     set_carry_flag(cf);
-    registers.a = bitmanip::rotate_left_carry(registers.a, cf);
+    data = bitmanip::rotate_left_carry(data, cf);
     set_zero_flag(BitValues::Inactive);
     set_subtract_flag(BitValues::Inactive);
     set_half_carry_flag(BitValues::Inactive);
+    return data;
 }
 
-void Cpu::instructionRRC() {
-    bool cf = bitmanip::is_bit_set(registers.a, 0);
+uint8_t Cpu::instructionRRC(uint8_t data) {
+    bool cf = bitmanip::is_bit_set(data, 0);
     set_carry_flag(cf);
-    registers.a = bitmanip::rotate_right_carry(registers.a, cf);
+    data = bitmanip::rotate_right_carry(data, cf);
     set_zero_flag(BitValues::Inactive);
     set_subtract_flag(BitValues::Inactive);
     set_half_carry_flag(BitValues::Inactive);
+    return data;
 }
 
 

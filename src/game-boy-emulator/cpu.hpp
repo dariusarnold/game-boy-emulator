@@ -211,9 +211,9 @@ private:
 
     void instructionCCF();
 
-    void instructionRLC();
+    uint8_t instructionRLC(uint8_t data);
 
-    void instructionRRC();
+    uint8_t instructionRRC(uint8_t data);
 };
 
 namespace internal {

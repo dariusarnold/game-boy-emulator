@@ -478,21 +478,18 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
 
 void Cpu::instructionLDH(opcodes::Instruction instruction, uint16_t data) {
     const uint16_t offset = 0xFF00;
-    if (instruction.interaction_type == opcodes::InteractionType::ImmediateByte) {
-        if (instruction.register_type_destination == opcodes::RegisterType::None) {
-            // 0xE0 LDH (n),A data is the address where we have to store A
-            m_emulator->get_bus()->write_byte(data + offset, registers.a);
-            m_emulator->elapse_cycle();
-        } else {
-            // 0xF0 LDH A,(n)
-            registers.a = m_emulator->get_bus()->read_byte(data + offset);
-            m_emulator->elapse_cycle();
-        }
-    } else {
-        // 0xF2 LDH (C),A
-        m_emulator->get_bus()->write_byte(registers.c + offset, registers.a);
-        m_emulator->elapse_cycle();
+    if (instruction.interaction_type == opcodes::InteractionType::None) {
+        // For other instruction type (ImmediateByte), data already contains the address offset
+        data = registers.c;
     }
+    if (instruction.register_type_source == opcodes::RegisterType::A) {
+        // 0xE0/0xE2 Store A at (FF00+u8/C)
+        m_emulator->get_bus()->write_byte(data + offset, registers.a);
+    } else {
+        // 0xF0/0xF2 Read A from (FF00+u8/C)
+        registers.a = m_emulator->get_bus()->read_byte(data + offset);
+    }
+    m_emulator->elapse_cycle();
 }
 
 void Cpu::instructionLDHL(uint8_t data) {

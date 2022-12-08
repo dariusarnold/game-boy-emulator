@@ -649,7 +649,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0xF1
     Instruction{InstructionType::POP, InteractionType::None, RegisterType::AF},
     // 0xF2
-    Instruction{},
+    Instruction{InstructionType::LDH, InteractionType::None, RegisterType::A, RegisterType::C},
     // 0xF3
     Instruction{InstructionType::DI},
     // 0xF4

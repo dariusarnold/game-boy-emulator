@@ -112,6 +112,12 @@ void Cpu::step() {
     case opcodes::InstructionType::CCF:
         instructionCCF();
         break;
+    case opcodes::InstructionType::RLC:
+        instructionRLC();
+        break;
+    case opcodes::InstructionType::RRC:
+        instructionRRC();
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -998,6 +1004,25 @@ void Cpu::instructionCCF() {
     set_subtract_flag(BitValues::Inactive);
     set_half_carry_flag(BitValues::Inactive);
 }
+
+void Cpu::instructionRLC() {
+    bool cf = bitmanip::is_bit_set(registers.a, 7);
+    set_carry_flag(cf);
+    registers.a = bitmanip::rotate_left_carry(registers.a, cf);
+    set_zero_flag(BitValues::Inactive);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+}
+
+void Cpu::instructionRRC() {
+    bool cf = bitmanip::is_bit_set(registers.a, 0);
+    set_carry_flag(cf);
+    registers.a = bitmanip::rotate_right_carry(registers.a, cf);
+    set_zero_flag(BitValues::Inactive);
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
+}
+
 
 void Cpu::call_isr(uint16_t isr_address) {
     m_emulator->elapse_cycle();

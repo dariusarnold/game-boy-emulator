@@ -204,6 +204,10 @@ private:
     void instructionSCF();
 
     void instructionCCF();
+
+    void instructionRLC();
+
+    void instructionRRC();
 };
 
 namespace internal {

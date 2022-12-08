@@ -159,6 +159,9 @@ private:
     void instruction_cb_rlc(opcodes::RegisterType register_type);
     void instruction_cb_rrc(opcodes::RegisterType register_type);
 
+    void instruction_cb_sla(opcodes::RegisterType register_type);
+    void instruction_cb_sra(opcodes::RegisterType register_type);
+
     void instructionLD(opcodes::Instruction instruction, uint16_t data);
     void instructionLDH(opcodes::Instruction instruction, uint16_t data);
     void instructionLDHL(uint8_t data);

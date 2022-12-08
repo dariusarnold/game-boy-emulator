@@ -16,6 +16,7 @@ add_executable(game_boy_emulator_tests
         test_blargg8_comparison.cpp
         test_blargg9_comparison.cpp
         test_blargg10_comparison.cpp
+        test_blargg11_comparison.cpp
         )
 
 target_link_libraries(game_boy_emulator_tests PRIVATE

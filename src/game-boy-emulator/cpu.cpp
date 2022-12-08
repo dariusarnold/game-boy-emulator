@@ -931,10 +931,11 @@ void Cpu::instructionADC(opcodes::Instruction instruction, uint8_t data) {
         auto address = get_register_value(instruction.register_type_source);
         data = m_emulator->get_bus()->read_byte(address);
     }
-    data += bitmanip::bit_value(registers.f, static_cast<uint8_t>(flags::carry));
-    auto was_carry = internal::was_carry(registers.a, data, std::plus{});
-    auto was_half_carry = internal::was_half_carry(registers.a, data, std::plus{});
-    registers.a += data;
+    auto carry = bitmanip::bit_value(registers.f, static_cast<uint8_t>(flags::carry));
+    auto sum = registers.a + data + carry;
+    auto was_carry = sum > 0xFF;
+    auto was_half_carry = ((registers.a & 0xF) +  (data & 0xF) + carry) > 0xF;
+    registers.a = sum;
     set_zero_flag(registers.a == 0);
     set_subtract_flag(BitValues::Inactive);
     set_half_carry_flag(was_half_carry);

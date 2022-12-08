@@ -90,6 +90,8 @@ enum class InstructionType {
     RETI,
     HALT,
     RST,
+    // Set carry flag
+    SCF,
 };
 
 enum class RegisterType {

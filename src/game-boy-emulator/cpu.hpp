@@ -200,6 +200,8 @@ private:
     void instructionRST(uint8_t opcode);
 
     void instructionCPL();
+
+    void instructionSCF();
 };
 
 namespace internal {

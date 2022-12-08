@@ -8,6 +8,7 @@
 #include "test_helpers.hpp"
 
 #include "fmt/format.h"
+#include "spdlog/spdlog.h"
 
 #include <filesystem>
 

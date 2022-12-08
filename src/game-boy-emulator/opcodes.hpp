@@ -89,6 +89,7 @@ enum class InstructionType {
     DI,
     RETI,
     HALT,
+    RST,
 };
 
 enum class RegisterType {
@@ -166,6 +167,7 @@ struct Instruction {
     RegisterType register_type_destination = RegisterType::None;
     RegisterType register_type_source = RegisterType::None;
     ConditionType condition_type = ConditionType::None;
+    uint8_t opcode = 0;
 };
 
 Instruction get_instruction_by_value(uint8_t value);

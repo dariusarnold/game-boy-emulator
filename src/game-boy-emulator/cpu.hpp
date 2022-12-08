@@ -196,6 +196,8 @@ private:
     void instructionSBC(opcodes::Instruction instruction, uint8_t data);
 
     void instructionDAA();
+
+    void instructionRST(uint8_t opcode);
 };
 
 namespace internal {

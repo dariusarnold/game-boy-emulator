@@ -100,6 +100,9 @@ void Cpu::step() {
     case opcodes::InstructionType::HALT:
         m_emulator->halt();
         break;
+    case opcodes::InstructionType::RST:
+        instructionRST(current_instruction.opcode);
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -235,6 +238,7 @@ opcodes::Instruction Cpu::fetch_instruction() {
     registers.pc++;
     m_logger->info("Fetched opcode {:02X}", byte);
     m_emulator->elapse_cycle();
+    instruction.opcode = byte;
     return instruction;
 }
 
@@ -912,7 +916,7 @@ void Cpu::instructionADC(opcodes::Instruction instruction, uint8_t data) {
     auto carry = bitmanip::bit_value(registers.f, static_cast<uint8_t>(flags::carry));
     auto sum = registers.a + data + carry;
     auto was_carry = sum > 0xFF;
-    auto was_half_carry = ((registers.a & 0xF) +  (data & 0xF) + carry) > 0xF;
+    auto was_half_carry = ((registers.a & 0xF) + (data & 0xF) + carry) > 0xF;
     registers.a = sum;
     set_zero_flag(registers.a == 0);
     set_subtract_flag(BitValues::Inactive);
@@ -931,7 +935,7 @@ void Cpu::instructionSBC(opcodes::Instruction instruction, uint8_t data) {
     auto carry = bitmanip::bit_value(registers.f, static_cast<uint8_t>(flags::carry));
     auto result = registers.a - data - carry;
     auto was_carry = result < 0;
-    auto was_half_carry = ((registers.a & 0xF) -  (data & 0xF) - carry) < 0;
+    auto was_half_carry = ((registers.a & 0xF) - (data & 0xF) - carry) < 0;
     registers.a = result;
     set_zero_flag(registers.a == 0);
     set_subtract_flag(BitValues::Active);
@@ -962,6 +966,13 @@ void Cpu::instructionDAA() {
     }
     set_zero_flag(registers.a == 0);
     set_half_carry_flag(BitValues::Inactive);
+}
+
+void Cpu::instructionRST(uint8_t opcode) {
+    m_emulator->elapse_cycle();
+    push_word_on_stack(registers.pc);
+    auto new_address = opcode - 0xC7;
+    registers.pc = new_address;
 }
 
 void Cpu::call_isr(uint16_t isr_address) {

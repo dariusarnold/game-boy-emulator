@@ -742,11 +742,7 @@ void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
     bool condition_met = check_condition(instruction.condition_type);
     if (condition_met) {
         m_emulator->elapse_cycle();
-        auto bus = m_emulator->get_bus();
-        bus->write_byte(--registers.sp, bitmanip::get_high_byte(registers.pc));
-        m_emulator->elapse_cycle();
-        bus->write_byte(--registers.sp, bitmanip::get_low_byte(registers.pc));
-        m_emulator->elapse_cycle();
+        push_word_on_stack(registers.pc);
         registers.pc = data;
         m_emulator->elapse_cycle();
     }
@@ -755,12 +751,7 @@ void Cpu::instructionPUSH(opcodes::Instruction instruction) {
     m_emulator->elapse_cycle();
     auto bus = m_emulator->get_bus();
     auto value = get_register_value(instruction.register_type_destination);
-    registers.sp -= 1;
-    bus->write_byte(registers.sp, bitmanip::get_high_byte(value));
-    m_emulator->elapse_cycle();
-    registers.sp -= 1;
-    bus->write_byte(registers.sp, bitmanip::get_low_byte(value));
-    m_emulator->elapse_cycle();
+    push_word_on_stack(value);
 }
 
 void Cpu::instructionRL(opcodes::Instruction instruction) {
@@ -777,13 +768,7 @@ void Cpu::instructionRL(opcodes::Instruction instruction) {
 }
 
 void Cpu::instructionPOP(opcodes::Instruction instruction) {
-    auto low_byte = m_emulator->get_bus()->read_byte(registers.sp);
-    registers.sp++;
-    m_emulator->elapse_cycle();
-    auto high_byte = m_emulator->get_bus()->read_byte(registers.sp);
-    registers.sp++;
-    m_emulator->elapse_cycle();
-    auto value = bitmanip::word_from_bytes(high_byte, low_byte);
+    auto value = pop_word_from_stack();
     if (instruction.register_type_destination == opcodes::RegisterType::AF) {
         // The lower nibble of F can't be changed and is always 0, so we avoid writing it here.
         value &= 0xFFF0;
@@ -797,12 +782,7 @@ void Cpu::instructionRET(opcodes::Instruction instruction) {
         m_emulator->elapse_cycle();
     }
     if (condition_met) {
-        auto bus = m_emulator->get_bus();
-        auto low_byte = bus->read_byte(registers.sp++);
-        m_emulator->elapse_cycle();
-        auto high_byte = bus->read_byte(registers.sp++);
-        m_emulator->elapse_cycle();
-        registers.pc = bitmanip::word_from_bytes(high_byte, low_byte);
+        registers.pc = pop_word_from_stack();
         m_emulator->elapse_cycle();
     }
 }
@@ -916,12 +896,7 @@ void Cpu::instructionADD_Signed(int8_t data) {
 }
 
 void Cpu::instructionRETI() {
-    auto bus = m_emulator->get_bus();
-    auto low_byte = bus->read_byte(registers.sp++);
-    m_emulator->elapse_cycle();
-    auto high_byte = bus->read_byte(registers.sp++);
-    m_emulator->elapse_cycle();
-    registers.pc = bitmanip::word_from_bytes(high_byte, low_byte);
+    registers.pc = pop_word_from_stack();
     m_emulator->elapse_cycle();
     m_emulator->set_interrupts_enabled(true);
 }
@@ -993,12 +968,7 @@ void Cpu::call_isr(uint16_t isr_address) {
     m_emulator->elapse_cycle();
     m_emulator->elapse_cycle();
     auto bus = m_emulator->get_bus();
-    registers.sp -= 1;
-    bus->write_byte(registers.sp, bitmanip::get_high_byte(registers.pc));
-    m_emulator->elapse_cycle();
-    registers.sp -= 1;
-    bus->write_byte(registers.sp, bitmanip::get_low_byte(registers.pc));
-    m_emulator->elapse_cycle();
+    push_word_on_stack(registers.pc);
     registers.pc = isr_address;
     m_emulator->elapse_cycle();
 }
@@ -1014,6 +984,27 @@ void Cpu::set_initial_state() {
     registers.l = 0x4D;
     registers.pc = 0x100;
     registers.sp = 0xFFFE;
+}
+
+void Cpu::push_word_on_stack(uint16_t x) {
+    registers.sp--;
+    auto bus = m_emulator->get_bus();
+    bus->write_byte(registers.sp, bitmanip::get_high_byte(x));
+    m_emulator->elapse_cycle();
+    registers.sp--;
+    bus->write_byte(registers.sp, bitmanip::get_low_byte(x));
+    m_emulator->elapse_cycle();
+}
+
+uint16_t Cpu::pop_word_from_stack() {
+    auto bus = m_emulator->get_bus();
+    auto low_byte = bus->read_byte(registers.sp);
+    registers.sp++;
+    m_emulator->elapse_cycle();
+    auto high_byte = bus->read_byte(registers.sp);
+    registers.sp++;
+    m_emulator->elapse_cycle();
+    return bitmanip::word_from_bytes(high_byte, low_byte);
 }
 
 uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {

@@ -130,6 +130,11 @@ private:
     void set_register_value(opcodes::RegisterType register_type, uint16_t value);
     uint16_t get_register_value(opcodes::RegisterType register_type);
 
+    // Helper which puts a value onto the stack in right endian order and elapsing two cycles.
+    void push_word_on_stack(uint16_t x);
+    // Helper which pops a value from the stack in the right endian order and elapsing two cycles.
+    uint16_t pop_word_from_stack();
+
     [[nodiscard]] bool check_condition(opcodes::ConditionType condition_type) const;
 
     // Helper which reads data for CB instructions either from register or main memory in case of

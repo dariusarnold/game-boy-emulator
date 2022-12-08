@@ -150,7 +150,7 @@ constexpr std::array<Instruction, 0x100> instructions{
     // 0x3E
     Instruction{InstructionType::LD, InteractionType::ImmediateByte, RegisterType::A},
     // 0x3F
-    Instruction{},
+    Instruction{InstructionType::CCF},
     // 0x40
     Instruction{InstructionType::LD, InteractionType::Register_Register, RegisterType::B,
                 RegisterType::B},

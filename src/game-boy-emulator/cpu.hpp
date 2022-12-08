@@ -202,6 +202,8 @@ private:
     void instructionCPL();
 
     void instructionSCF();
+
+    void instructionCCF();
 };
 
 namespace internal {

@@ -92,6 +92,8 @@ enum class InstructionType {
     RST,
     // Set carry flag
     SCF,
+    // Complement carry flag
+    CCF,
 };
 
 enum class RegisterType {

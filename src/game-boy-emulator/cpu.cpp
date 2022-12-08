@@ -109,6 +109,9 @@ void Cpu::step() {
     case opcodes::InstructionType::SCF:
         instructionSCF();
         break;
+    case opcodes::InstructionType::CCF:
+        instructionCCF();
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -988,6 +991,12 @@ void Cpu::instructionSCF() {
     set_subtract_flag(BitValues::Inactive);
     set_half_carry_flag(BitValues::Inactive);
     set_carry_flag(BitValues::Active);
+}
+
+void Cpu::instructionCCF() {
+    set_carry_flag(!is_flag_set(flags::carry));
+    set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(BitValues::Inactive);
 }
 
 void Cpu::call_isr(uint16_t isr_address) {

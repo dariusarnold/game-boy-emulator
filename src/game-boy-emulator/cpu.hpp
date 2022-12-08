@@ -198,6 +198,8 @@ private:
     void instructionDAA();
 
     void instructionRST(uint8_t opcode);
+
+    void instructionCPL();
 };
 
 namespace internal {

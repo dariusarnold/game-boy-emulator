@@ -103,6 +103,9 @@ void Cpu::step() {
     case opcodes::InstructionType::RST:
         instructionRST(current_instruction.opcode);
         break;
+    case opcodes::InstructionType::CPL:
+        instructionCPL();
+        break;
     default:
         abort_execution<NotImplementedError>(
             fmt::format("Instruction type {} not implemented",
@@ -970,6 +973,12 @@ void Cpu::instructionRST(uint8_t opcode) {
     push_word_on_stack(registers.pc);
     auto new_address = opcode - 0xC7;
     registers.pc = new_address;
+}
+
+void Cpu::instructionCPL() {
+    registers.a ^= 0xFF;
+    set_subtract_flag(BitValues::Active);
+    set_half_carry_flag(BitValues::Active);
 }
 
 void Cpu::call_isr(uint16_t isr_address) {

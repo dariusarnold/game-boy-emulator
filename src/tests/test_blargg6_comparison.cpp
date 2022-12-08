@@ -10,11 +10,11 @@
 
 #include <filesystem>
 
-TEST_CASE("Compare blargg5 state") {
+TEST_CASE("Compare blargg6 state") {
     spdlog::set_level(spdlog::level::err);
-    auto expected_output = read_log_file("recorded-logs/blargg5.txt");
+    auto expected_output = read_log_file("recorded-logs/blargg6.txt");
     REQUIRE_FALSE(expected_output.empty());
-    auto blargg_rom = load_rom_file(std::filesystem::absolute("roms/05-op rp.gb"));
+    auto blargg_rom = load_rom_file(std::filesystem::absolute("roms/06-ld r,r.gb"));
     Emulator emulator{blargg_rom};
     for (auto i = 0; const auto& expected_line : expected_output) {
         auto actual_output = emulator.get_debug_state();

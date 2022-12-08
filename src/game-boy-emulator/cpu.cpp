@@ -91,6 +91,9 @@ void Cpu::step() {
     case opcodes::InstructionType::ADC:
         instructionADC(current_instruction, data);
         break;
+    case opcodes::InstructionType::SBC:
+        instructionSBC(current_instruction, data);
+        break;
     case opcodes::InstructionType::DAA:
         instructionDAA();
         break;
@@ -938,6 +941,25 @@ void Cpu::instructionADC(opcodes::Instruction instruction, uint8_t data) {
     registers.a = sum;
     set_zero_flag(registers.a == 0);
     set_subtract_flag(BitValues::Inactive);
+    set_half_carry_flag(was_half_carry);
+    set_carry_flag(was_carry);
+}
+
+void Cpu::instructionSBC(opcodes::Instruction instruction, uint8_t data) {
+    // For ImmediateByte interaction type data was already fetched
+    if (instruction.interaction_type == opcodes::InteractionType::Register_Register) {
+        data = get_register_value(instruction.register_type_source);
+    } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
+        auto address = get_register_value(instruction.register_type_source);
+        data = m_emulator->get_bus()->read_byte(address);
+    }
+    auto carry = bitmanip::bit_value(registers.f, static_cast<uint8_t>(flags::carry));
+    auto result = registers.a - data - carry;
+    auto was_carry = result < 0;
+    auto was_half_carry = ((registers.a & 0xF) -  (data & 0xF) - carry) < 0;
+    registers.a = result;
+    set_zero_flag(registers.a == 0);
+    set_subtract_flag(BitValues::Active);
     set_half_carry_flag(was_half_carry);
     set_carry_flag(was_carry);
 }

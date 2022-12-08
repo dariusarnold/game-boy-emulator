@@ -188,6 +188,8 @@ private:
 
     void instructionADC(opcodes::Instruction instruction, uint8_t data);
 
+    void instructionSBC(opcodes::Instruction instruction, uint8_t data);
+
     void instructionDAA();
 };
 

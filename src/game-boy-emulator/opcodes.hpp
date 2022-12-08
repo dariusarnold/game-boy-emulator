@@ -29,6 +29,8 @@ enum class InstructionType {
     // Special case for 0xE8, where the immediate value is treated as signed
     ADD_Signed,
     SUB,
+    // Sub with carry flag
+    SBC,
     INC,
     DEC,
     // Rotate left with carry

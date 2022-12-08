@@ -13,6 +13,7 @@
 
 
 TEST_CASE("Compare boot sequence") {
+    spdlog::set_level(spdlog::level::err);
     auto expected_output = read_log_file("recorded-logs/BootromLog.txt");
     REQUIRE_FALSE(expected_output.empty());
     auto boot_rom_path = std::filesystem::absolute(("roms/dmg01-boot.bin"));

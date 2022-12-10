@@ -3,6 +3,7 @@
 #include "memorymap.hpp"
 
 #include "fmt/format.h"
+#include <span>
 
 Gpu::Gpu() = default;
 
@@ -19,4 +20,8 @@ void Gpu::write_byte(uint16_t address, uint8_t value) {
     } else {
         throw LogicError(fmt::format("GPU can't write to {:04X}", address));
     }
+}
+
+std::span<uint8_t, 8192> Gpu::get_vram() {
+    return {vram};
 }

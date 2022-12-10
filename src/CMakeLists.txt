@@ -48,6 +48,7 @@ target_link_libraries(game_boy_emulator_library PUBLIC
 
 add_executable(game_boy_emulator
         main.cpp
+        game-boy-emulator/window.cpp
         )
 # Add external vendor code as an object library so it can be excluded from clang-tidy
 add_library(imgui_bindings OBJECT

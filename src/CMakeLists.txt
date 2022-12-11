@@ -21,6 +21,7 @@ add_library(game_boy_emulator_library
         game-boy-emulator/addressbus.hpp
         game-boy-emulator/ram.cpp
         game-boy-emulator/ram.hpp
+        game-boy-emulator/memorymap.cpp
         game-boy-emulator/memorymap.hpp
         game-boy-emulator/exceptions.cpp
         game-boy-emulator/exceptions.hpp

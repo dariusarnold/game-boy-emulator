@@ -7,6 +7,50 @@
  * Contains constant definition for the memory map.
  */
 
+namespace memmap {
+// Single value address using one comparison for is_in
+class Single {
+    uint16_t m_address;
+
+public:
+    constexpr Single(uint16_t address, uint16_t) : m_address(address) {}
+
+    [[nodiscard]] bool is_in(uint16_t address) const {
+        return address == m_address;
+    }
+
+    [[nodiscard]] uint16_t size() const {
+        return 1;
+    }
+};
+
+// Address spanning a range using two comparisons for is_in
+class Multi {
+    uint16_t m_address_begin;
+    uint16_t m_address_end;
+
+public:
+    constexpr Multi(uint16_t address_begin, uint16_t address_end) :
+            m_address_begin(address_begin), m_address_end(address_end) {}
+    [[nodiscard]] bool is_in(uint16_t address) const {
+        return address >= m_address_begin && address <= m_address_end;
+    }
+
+    [[nodiscard]] uint16_t size() const {
+        return m_address_end - m_address_begin + 1;
+    }
+};
+
+// Statically forward to Multi or single
+template <typename T>
+struct AddressRange : public T {
+    [[nodiscard]] bool is_in(uint16_t address) const {
+        return T::is_in(address);
+    }
+    using T::T;
+};
+
+
 // Begin and End are both inclusive
 #define X_MEMORY_MAP                                                                               \
     X(0x0100, 0x014F, CartridgeHeader)                                                             \
@@ -30,29 +74,23 @@
     X(0xFF80, 0xFFFE, HighRam)                                                                     \
     X(0xFF0F, 0xFF0F, InterruptFlag)                                                               \
     X(0xFF01, 0xFF02, SerialPort)                                                                  \
+    X(0xFF50, 0xFF50, DisableBootRom)                                                              \
     X(0xFFFF, 0xFFFF, InterruptEnable)
 
 
-// Make Begin, End, Size and Name constants
 #define X(Begin_, End_, Name_)                                                                     \
-    constexpr std::pair<uint16_t, uint16_t> Name_{Begin_, End_};                                   \
-    constexpr uint16_t Name_##Begin = Begin_;                                                      \
-    constexpr uint16_t Name_##End = End_;                                                          \
-    constexpr uint16_t Name_##Size = End_ - Begin_ + 1;                                            \
-    constexpr std::string_view Name_##Name = #Name_;                                               \
-    static_assert(Begin_ <= End_, #Name_ " range is invalid");
+    static_assert(Begin_ <= End_, #Name_ " range is invalid");                                     \
+    constexpr std::integral_constant<uint16_t, Begin_> Name_##Begin;                               \
+    constexpr std::integral_constant<uint16_t, End_> Name_##End;                                   \
+    constexpr std::integral_constant<uint16_t, End_ - Begin_ + 1> Name_##Size;                     \
+    constexpr AddressRange<std::conditional_t<Begin_ == End_, Single, Multi>> Name_(Begin_, End_);
 
-namespace memmap {
 X_MEMORY_MAP
-} // namespace memmap
 
 #undef X
 
-namespace memmap {
-inline bool is_in(uint16_t address, uint16_t begin, uint16_t end) {
-    return address >= begin && address <= end;
-}
-inline bool is_in(uint16_t address, std::pair<uint16_t, uint16_t> range) {
-    return is_in(address, range.first, range.second);
+template <typename T>
+inline bool is_in(uint16_t address, const AddressRange<T>& address_range) {
+    return address_range.is_in(address);
 }
 } // namespace memmap

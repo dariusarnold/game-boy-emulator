@@ -12,6 +12,7 @@ namespace bitmanip {
  * @param value 0..1
  */
 void set(uint8_t& input, uint8_t position, BitValues value);
+void set(uint8_t& input, uint8_t position, bool value);
 // Set bit in input at position to 1
 void set(uint8_t& input, uint8_t position);
 // Set bit in input at position to 0

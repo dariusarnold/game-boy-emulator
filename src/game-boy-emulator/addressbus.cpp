@@ -28,7 +28,7 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     if (memmap::is_in(address, memmap::InternalRam) || memmap::is_in(address, memmap::HighRam)) {
         return m_emulator->get_ram()->read_byte(address);
     }
-    if (memmap::is_in(address, memmap::VRam)) {
+    if (memmap::is_in(address, memmap::VRam) || memmap::is_in(address, memmap::PpuIoRegisters)) {
         return m_emulator->get_gpu()->read_byte(address);
     }
     if (memmap::is_in(address, memmap::SerialPort)) {
@@ -40,16 +40,14 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     if (memmap::is_in(address, memmap::InterruptEnable)) {
         return m_emulator->get_interrupt_handler()->read_interrupt_enable();
     }
-    if (memmap::is_in(address, memmap::PpuIoRegisters)) {
-        return m_emulator->get_gpu()->read_byte(address);
-    }
     throw NotImplementedError(fmt::format("Addressing unmapped memory byte at {:04X}", address));
 }
 
 void AddressBus::write_byte(uint16_t address, uint8_t value) {
     if (memmap::is_in(address, memmap::InternalRam) || memmap::is_in(address, memmap::HighRam)) {
         m_emulator->get_ram()->write_byte(address, value);
-    } else if (memmap::is_in(address, memmap::VRam)) {
+    } else if (memmap::is_in(address, memmap::VRam)
+               || memmap::is_in(address, memmap::PpuIoRegisters)) {
         m_emulator->get_gpu()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::CartridgeRom)
                || memmap::is_in(address, memmap::CartridgeRam)) {
@@ -62,8 +60,7 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         m_emulator->get_interrupt_handler()->write_interrupt_flag(value);
     } else if (memmap::is_in(address, memmap::Timer)) {
         m_emulator->get_timer()->write_byte(address, value);
-    } else if (memmap::is_in(address, memmap::PpuIoRegisters)) {
-        m_emulator->get_gpu()->write_byte(address, value);
+
     } else if (memmap::is_in(address, memmap::Apu)) {
         m_emulator->get_apu()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::DisableBootRom)) {

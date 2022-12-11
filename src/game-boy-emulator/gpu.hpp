@@ -1,6 +1,7 @@
 #pragma once
 
 #include "memorymap.hpp"
+#include "ppu_registers.hpp"
 class Emulator;
 namespace spdlog {
 class logger;
@@ -10,11 +11,10 @@ class logger;
 #include <memory>
 
 class Gpu {
-    std::array<uint8_t, memmap::VRamSize> vram{};
+    std::array<uint8_t, memmap::VRamSize> m_vram{};
+    PpuRegisters m_registers;
     std::shared_ptr<spdlog::logger> m_logger;
     Emulator* m_emulator;
-
-    uint8_t m_scy_register = 0;
 
 public:
     explicit Gpu(Emulator* emulator);

@@ -3,6 +3,7 @@
 #include "emulator.hpp"
 #include "exceptions.hpp"
 #include "bitmanipulation.hpp"
+#include "interrupthandler.hpp"
 
 #include "spdlog/spdlog.h"
 

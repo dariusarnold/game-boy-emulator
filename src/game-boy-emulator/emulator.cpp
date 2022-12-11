@@ -8,28 +8,35 @@
 #include "ram.hpp"
 #include "timer.hpp"
 #include "serial_port.hpp"
+#include "apu.hpp"
+#include "interrupthandler.hpp"
 
 #include "spdlog/spdlog.h"
 
 
-Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<uint8_t>& game_rom) :
+Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<uint8_t>& game_rom,
+                   EmulatorOptions options) :
+        m_options(options),
         m_cartridge(std::make_shared<Cartridge>(this, game_rom)),
         m_boot_rom(std::make_shared<BootRom>(this, boot_rom)),
         m_address_bus(std::make_shared<AddressBus>(this)),
         m_ram(std::make_shared<Ram>(this)),
         m_cpu(std::make_shared<Cpu>(this)),
-        m_gpu(std::make_shared<Gpu>()),
+        m_apu(std::make_shared<Apu>()),
+        m_gpu(std::make_shared<Gpu>(this)),
         m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
         m_timer(std::make_shared<Timer>(this)),
         m_serial_port(std::make_shared<SerialPort>(this)),
         m_logger(spdlog::get("")) {}
 
-Emulator::Emulator(const std::vector<uint8_t>& game_rom) :
+Emulator::Emulator(const std::vector<uint8_t>& game_rom, EmulatorOptions options) :
+        m_options(options),
         m_cartridge(std::make_shared<Cartridge>(this, game_rom)),
         m_address_bus(std::make_shared<AddressBus>(this)),
         m_ram(std::make_shared<Ram>(this)),
         m_cpu(std::make_shared<Cpu>(this)),
-        m_gpu(std::make_shared<Gpu>()),
+        m_apu(std::make_shared<Apu>()),
+        m_gpu(std::make_shared<Gpu>(this)),
         m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
         m_timer(std::make_shared<Timer>(this)),
         m_serial_port(std::make_shared<SerialPort>(this)),
@@ -140,4 +147,16 @@ void Emulator::halt() {
 
 void Emulator::unhalt() {
     m_state.halted = false;
+}
+
+const EmulatorOptions& Emulator::get_options() const {
+    return m_options;
+}
+
+const EmulatorState& Emulator::get_state() const {
+    return m_state;
+}
+
+std::shared_ptr<Apu> Emulator::get_apu() const {
+    return m_apu;
 }

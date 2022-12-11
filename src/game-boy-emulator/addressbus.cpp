@@ -9,13 +9,13 @@
 #include "ram.hpp"
 #include "timer.hpp"
 #include "serial_port.hpp"
+#include "interrupthandler.hpp"
+#include "apu.hpp"
 
 #include "spdlog/spdlog.h"
 
 
 AddressBus::AddressBus(Emulator* emulator) : m_emulator(emulator), m_logger(spdlog::get("")) {}
-
-uint8_t static io_registerFF42 = 0x64; // NOLINT
 
 uint8_t AddressBus::read_byte(uint16_t address) const {
     if (m_emulator->is_booting() && memmap::is_in(address, memmap::BootRom)) {
@@ -40,16 +40,8 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     if (memmap::is_in(address, memmap::InterruptEnable)) {
         return m_emulator->get_interrupt_handler()->read_interrupt_enable();
     }
-    if (memmap::is_in(address, memmap::IORegisters)) {
-        // TODO Those special cases are required for booting correctly
-        if (address == 0xFF44) {
-            return 0x90;
-        }
-        if (address == 0xFF42) {
-            return io_registerFF42;
-        }
-        m_logger->warn("IGNORED: read from IO register {:04X}", address);
-        return 0xFF;
+    if (memmap::is_in(address, memmap::PpuIoRegisters)) {
+        return m_emulator->get_gpu()->read_byte(address);
     }
     throw NotImplementedError(fmt::format("Addressing unmapped memory byte at {:04X}", address));
 }
@@ -70,16 +62,16 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         m_emulator->get_interrupt_handler()->write_interrupt_flag(value);
     } else if (memmap::is_in(address, memmap::Timer)) {
         m_emulator->get_timer()->write_byte(address, value);
-    } else if (memmap::is_in(address, memmap::IORegisters)) {
+    } else if (memmap::is_in(address, memmap::PpuIoRegisters)) {
+        m_emulator->get_gpu()->write_byte(address, value);
+    } else if (memmap::is_in(address, memmap::Apu)) {
+        m_emulator->get_apu()->write_byte(address, value);
+    } else if (memmap::is_in(address, memmap::DisableBootRom)) {
         if (m_emulator->is_booting()) {
-            if (memmap::is_in(address, memmap::DisableBootRom)) {
-                m_emulator->signal_boot_ended();
-            }
+            m_emulator->signal_boot_ended();
+        } else {
+            m_logger->error("Signal boot end despite not booting");
         }
-        if (address == 0xFF42) {
-            io_registerFF42 = value;
-        }
-        m_logger->warn("IGNORED: write to IO registers {:04X}", address);
     } else {
         throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
     }

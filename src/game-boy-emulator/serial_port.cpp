@@ -1,5 +1,6 @@
 #include "serial_port.hpp"
 #include "emulator.hpp"
+#include "interrupthandler.hpp"
 #include "exceptions.hpp"
 #include "spdlog/spdlog.h"
 

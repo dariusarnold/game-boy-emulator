@@ -1,15 +1,23 @@
 #pragma once
 
 #include "memorymap.hpp"
-
+class Emulator;
+namespace spdlog {
+class logger;
+}
 #include <array>
 #include <span>
+#include <memory>
 
 class Gpu {
     std::array<uint8_t, memmap::VRamSize> vram{};
+    std::shared_ptr<spdlog::logger> m_logger;
+    Emulator* m_emulator;
+
+    uint8_t m_scy_register = 0;
 
 public:
-    Gpu();
+    explicit Gpu(Emulator* emulator);
 
     uint8_t read_byte(uint16_t address);
 

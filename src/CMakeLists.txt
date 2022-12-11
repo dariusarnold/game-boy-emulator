@@ -33,6 +33,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/timer.hpp
         game-boy-emulator/serial_port.cpp
         game-boy-emulator/serial_port.hpp
+        game-boy-emulator/apu.cpp
+        game-boy-emulator/apu.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

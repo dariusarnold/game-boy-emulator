@@ -1,7 +1,7 @@
 #pragma once
 
 #include "constants.h"
-#include "interrupthandler.hpp"
+#include "options.hpp"
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -20,6 +20,7 @@ class BootRom;
 class Cartridge;
 class Timer;
 class SerialPort;
+class InterruptHandler;
 namespace spdlog {
 class logger;
 }
@@ -42,9 +43,9 @@ class Emulator {
 public:
     // Actually run boot rom to initialize emulator and hand off control to game after booting.
     Emulator(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom,
-             const std::vector<uint8_t>& game_rom);
+             const std::vector<uint8_t>& game_rom, EmulatorOptions options);
     // Don't run boot rom and use initial values for registers/flags/memory.
-    explicit Emulator(const std::vector<uint8_t>& game_rom);
+    explicit Emulator(const std::vector<uint8_t>& game_rom, EmulatorOptions options);
     void run();
     bool step();
 
@@ -61,6 +62,9 @@ public:
     [[nodiscard]] opcodes::Instruction get_current_instruction() const;
     [[nodiscard]] opcodes::Instruction get_previous_instruction() const;
 
+    const EmulatorOptions& get_options() const;
+    const EmulatorState& get_state() const;
+
     [[nodiscard]] std::shared_ptr<AddressBus> get_bus() const;
     [[nodiscard]] std::shared_ptr<Ram> get_ram() const;
     [[nodiscard]] std::shared_ptr<BootRom> get_boot_rom() const;
@@ -70,10 +74,12 @@ public:
     [[nodiscard]] std::shared_ptr<InterruptHandler> get_interrupt_handler() const;
     [[nodiscard]] std::shared_ptr<Timer> get_timer() const;
     [[nodiscard]] std::shared_ptr<SerialPort> get_serial_port() const;
+    [[nodiscard]] std::shared_ptr<Apu> get_apu() const;
 
 private:
-    std::shared_ptr<Cartridge> m_cartridge;
     EmulatorState m_state;
+    EmulatorOptions m_options;
+    std::shared_ptr<Cartridge> m_cartridge;
     std::shared_ptr<BootRom> m_boot_rom;
     std::shared_ptr<AddressBus> m_address_bus;
     std::shared_ptr<Ram> m_ram;

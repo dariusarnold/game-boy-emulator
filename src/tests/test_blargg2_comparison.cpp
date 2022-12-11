@@ -16,7 +16,7 @@ TEST_CASE("Compare blargg2 state") {
     auto expected_output = read_log_file("recorded-logs/blargg2.txt");
     REQUIRE_FALSE(expected_output.empty());
     auto blargg_rom = load_rom_file(std::filesystem::absolute("roms/02-interrupts.gb"));
-    Emulator emulator{blargg_rom};
+    Emulator emulator{blargg_rom, {.stub_ly = true}};
     for (auto i = 0; const auto& expected_line : expected_output) {
         auto actual_output = emulator.get_debug_state();
         ++i;

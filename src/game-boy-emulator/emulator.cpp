@@ -84,7 +84,6 @@ CpuDebugState Emulator::get_debug_state() const {
 bool Emulator::step() {
     try {
         if (!m_state.halted) {
-            m_logger->critical(m_cpu->get_minimal_debug_state());
             m_cpu->step();
         } else {
             elapse_cycle();

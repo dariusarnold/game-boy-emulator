@@ -14,6 +14,7 @@ public:
     ~Window();
 
     void draw_frame(std::span<uint8_t, 8192> vram);
+    void draw_vram_viewer(std::span<uint8_t, 8192> vram);
     bool is_done() const;
 
 };

@@ -50,9 +50,9 @@ Window::Window() {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     auto window_flags = static_cast<SDL_WindowFlags>(
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_MAXIMIZED);
-    m_sdl_window = SDL_CreateWindow("game boy emulator", SDL_WINDOWPOS_CENTERED,
-                                    SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    m_sdl_window = SDL_CreateWindow("game boy emulator", SDL_WINDOWPOS_UNDEFINED,
+                                    SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
     m_gl_context = SDL_GL_CreateContext(m_sdl_window);
     SDL_GL_MakeCurrent(m_sdl_window, m_gl_context);
     SDL_GL_SetSwapInterval(1); // Enable vsync
@@ -110,8 +110,32 @@ void Window::draw_frame(std::span<uint8_t, 8192> vram) {
 
     auto& io = ImGui::GetIO();
 
-    // Our state
+    draw_vram_viewer(vram);
+
+    {
+        ImGui::Begin("Game");
+//        ImGui::Image()
+        ImGui::End();
+    }
+
+    // Rendering
+    ImGui::Render();
+    glViewport(0, 0, static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w,
+                 clear_color.z * clear_color.w, clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    SDL_GL_SwapWindow(m_sdl_window);
+}
+
+bool Window::is_done() const {
+    return m_done;
+}
+
+void Window::draw_vram_viewer(std::span<uint8_t, 8192> vram) {
+    auto& io = ImGui::GetIO();
+    // Our state
     float image_scale = 4;
     GLuint my_image_texture = 0;
     // Insgesamt 24*16 Tiles in VRAM, jedes 8x8 Pixel
@@ -167,17 +191,4 @@ void Window::draw_frame(std::span<uint8_t, 8192> vram) {
         }
         ImGui::End();
     }
-
-    // Rendering
-    ImGui::Render();
-    glViewport(0, 0, static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
-    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w,
-                 clear_color.z * clear_color.w, clear_color.w);
-    glClear(GL_COLOR_BUFFER_BIT);
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    SDL_GL_SwapWindow(m_sdl_window);
-}
-
-bool Window::is_done() const {
-    return m_done;
 }

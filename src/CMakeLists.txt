@@ -57,7 +57,7 @@ add_executable(game_boy_emulator
         )
 # Add external vendor code as an object library so it can be excluded from clang-tidy
 add_library(imgui_bindings OBJECT
-        ../bindings/imgui_impl_opengl3.cpp
+        ../bindings/imgui_impl_sdlrenderer.cpp
         ../bindings/imgui_impl_sdl.cpp
         )
 set_target_properties(

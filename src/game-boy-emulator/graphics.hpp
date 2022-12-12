@@ -67,7 +67,7 @@ void map_gb_color_to_rgba(It begin, It end) {
  * It is the callers obligation that image_width_tiles * image_height_tiles == 384.
  * @return width, height of the image in pixels
  */
-std::pair<int, int> tile_data_to_image(std::span<uint8_t, 6143> vram,
+std::pair<int, int> tile_data_to_image(std::span<uint8_t, 8192> vram,
                                        std::span<uint32_t, 384 * 64> image,
                                        size_t image_width_tiles, size_t image_height_tiles);
 

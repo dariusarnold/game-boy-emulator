@@ -45,6 +45,7 @@ std::array<uint8_t, 8> convert_tiles(uint8_t byte1, uint8_t byte2) {
 std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
     std::array<uint32_t, 64> out{};
     for (size_t i = 0; i < 16; i += 2) {
+        // 2 bytes represent one 8 pixel wide row in the tile
         auto row = graphics::gb::convert_tiles(tile_data[i], tile_data[i + 1]);
         for (size_t j = 0; j < row.size(); j++) {
             auto index = (i / 2) * 8 + j;
@@ -54,14 +55,18 @@ std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
     return out;
 }
 
-std::pair<int, int> tile_data_to_image(std::span<uint8_t, 6143> vram,
+std::pair<int, int> tile_data_to_image(std::span<uint8_t, 8192> vram,
                                        std::span<uint32_t, 384 * 64> image,
                                        size_t image_width_tiles, size_t image_height_tiles) {
     for (size_t y = 0; y < image_height_tiles; ++y) {
         for (size_t x = 0; x < image_width_tiles; ++x) {
             size_t offset = y * image_width_tiles + x;
+            // Take the 16 bytes corresponding to one 8x8 tile
             auto s = std::span<uint8_t, 16>(vram.data() + offset * 16, 16);
+            // Convert it to the 4 game boy colors but use uint32 representation to make later in
+            // place conversion to RGBA32 possible.
             auto tile = graphics::gb::tile_to_gb_color(s);
+            // Copy the tile to the image
             for (size_t i = 0; i < tile.size(); ++i) {
                 size_t line_in_tile = i / 8;
                 auto vram_index = i % 8 + line_in_tile * image_width_tiles * 8;

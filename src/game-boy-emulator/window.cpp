@@ -3,10 +3,9 @@
 
 #include "spdlog/spdlog.h"
 #include "imgui.h"
-#include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
+#include "imgui_impl_sdlrenderer.h"
 #include "SDL.h"
-#include "SDL_opengl.h"
 
 Window::Window() {
 
@@ -19,43 +18,12 @@ Window::Window() {
         std::exit(EXIT_FAILURE);
     }
 
-// Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-    // GL ES 2.0 + GLSL 100
-    const char* glsl_version = "#version 100";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif defined(__APPLE__)
-    // GL 3.2 Core + GLSL 150
-    const char* glsl_version = "#version 150";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,
-                        SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-#else
-    // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#endif
-
-
-    // Create window with graphics context
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    auto window_flags = static_cast<SDL_WindowFlags>(
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    auto window_flags
+        = static_cast<SDL_WindowFlags>(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     m_sdl_window = SDL_CreateWindow("game boy emulator", SDL_WINDOWPOS_UNDEFINED,
                                     SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
-    m_gl_context = SDL_GL_CreateContext(m_sdl_window);
-    SDL_GL_MakeCurrent(m_sdl_window, m_gl_context);
-    SDL_GL_SetSwapInterval(1); // Enable vsync
+    m_sdl_renderer = SDL_CreateRenderer(m_sdl_window, -1,
+                                        SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -67,17 +35,19 @@ Window::Window() {
     ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForOpenGL(m_sdl_window, m_gl_context);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplSDL2_InitForSDLRenderer(m_sdl_window, m_sdl_renderer);
+    ImGui_ImplSDLRenderer_Init(m_sdl_renderer);
+
+    m_vram_texture = SDL_CreateTexture(m_sdl_renderer, SDL_PIXELFORMAT_RGBA32,
+                                       SDL_TEXTUREACCESS_STREAMING, 24 * 8, 16 * 8);
 }
 
 Window::~Window() {
-
-    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDLRenderer_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 
-    SDL_GL_DeleteContext(m_gl_context);
+    SDL_DestroyRenderer(m_sdl_renderer);
     SDL_DestroyWindow(m_sdl_window);
     SDL_Quit();
 }
@@ -104,7 +74,7 @@ void Window::draw_frame(std::span<uint8_t, 8192> vram) {
     }
 
     // Start the Dear ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDLRenderer_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
@@ -119,14 +89,14 @@ void Window::draw_frame(std::span<uint8_t, 8192> vram) {
     }
 
     // Rendering
-    ImGui::Render();
-    glViewport(0, 0, static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w,
-                 clear_color.z * clear_color.w, clear_color.w);
-    glClear(GL_COLOR_BUFFER_BIT);
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    SDL_GL_SwapWindow(m_sdl_window);
+    ImGui::Render();
+    SDL_SetRenderDrawColor(m_sdl_renderer, (Uint8)(clear_color.x * 255),
+                           (Uint8)(clear_color.y * 255), (Uint8)(clear_color.z * 255),
+                           (Uint8)(clear_color.w * 255));
+    SDL_RenderClear(m_sdl_renderer);
+    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+    SDL_RenderPresent(m_sdl_renderer);
 }
 
 bool Window::is_done() const {
@@ -137,19 +107,22 @@ void Window::draw_vram_viewer(std::span<uint8_t, 8192> vram) {
     auto& io = ImGui::GetIO();
     // Our state
     float image_scale = 4;
-    GLuint my_image_texture = 0;
     // Insgesamt 24*16 Tiles in VRAM, jedes 8x8 Pixel
     std::array<uint32_t, 384 * 64> tile_data_image = {0xFFFFFFFF};
-    const auto [img_width_pixels, img_height_pixels] = graphics::gb::tile_data_to_image(
-        std::span<uint8_t, 6143>{vram.data(), 6143}, tile_data_image, 24, 16);
+    const auto [img_width_pixels, img_height_pixels]
+        = graphics::gb::tile_data_to_image(vram, tile_data_image, 24, 16);
     graphics::gb::map_gb_color_to_rgba(tile_data_image.begin(), tile_data_image.end());
-    graphics::render::load_texture_rgba(tile_data_image.data(), img_width_pixels, img_height_pixels,
-                                        &my_image_texture);
+
+    void* pixels;
+    int pitch;
+    auto rc = SDL_LockTexture(m_vram_texture, nullptr, &pixels, &pitch);
+    std::memcpy(pixels, tile_data_image.data(), sizeof(uint32_t) * tile_data_image.size());
+    SDL_UnlockTexture(m_vram_texture);
 
     {
 
         ImGui::Begin("VRAM viewer");
-        auto my_tex_id = (void*)(intptr_t)my_image_texture;
+        auto my_tex_id = (void*)m_vram_texture;
         float my_tex_w = img_width_pixels * image_scale;
         float my_tex_h = img_height_pixels * image_scale;
         {

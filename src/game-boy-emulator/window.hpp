@@ -1,13 +1,16 @@
 #pragma once
 
-#include <SDL_video.h>
 class SDL_Window;
+class SDL_Renderer;
+class SDL_Texture;
 #include <span>
+#include <cstdint>
 
 
 class Window {
-    SDL_GLContext m_gl_context;
-    SDL_Window* m_sdl_window;
+    SDL_Window* m_sdl_window = nullptr;
+    SDL_Renderer* m_sdl_renderer = nullptr;
+    SDL_Texture* m_vram_texture = nullptr;
     bool m_done = false;
 public:
     Window();

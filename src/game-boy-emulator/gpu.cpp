@@ -16,8 +16,14 @@ uint8_t Gpu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::VRam)) {
         return m_vram[address - memmap::VRamBegin];
     }
+    if (memmap::is_in(address, memmap::OamRam)) {
+        return reinterpret_cast<uint8_t*>(m_oam_ram.data())[address - memmap::OamRamBegin];
+    }
     if (memmap::is_in(address, memmap::PpuIoRegisters)) {
         return m_registers.get_register_value(address);
+    }
+    if (memmap::is_in(address, memmap::TileMapData)) {
+        return m_tile_maps[address - memmap::TileMapDataBegin];
     }
 
     throw LogicError(fmt::format("GPU can't read from {:04X}", address));
@@ -31,6 +37,10 @@ void Gpu::write_byte(uint16_t address, uint8_t value) {
             throw NotImplementedError("OAM DMA access");
         }
         m_registers.set_register_value(address, value);
+    } else if (memmap::is_in(address, memmap::OamRam)) {
+        reinterpret_cast<uint8_t*>(m_oam_ram.data())[address - memmap::OamRamBegin] = value;
+    } else if (memmap::is_in(address, memmap::TileMapData)) {
+        m_tile_maps[address - memmap::TileMapDataBegin] = value;
     } else {
         m_logger->error("GPU: unhandled write to {:04X}", address);
     }

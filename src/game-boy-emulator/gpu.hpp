@@ -10,8 +10,19 @@ class logger;
 #include <span>
 #include <memory>
 
+struct OamEntry {
+    uint8_t m_y_position;
+    uint8_t m_x_position;
+    uint8_t m_tile_index;
+    uint8_t m_flags;
+};
+static_assert(sizeof(OamEntry) == 4 && "Padding in OamEntry detected");
+static_assert(alignof(OamEntry) == 1 && "Invalid alignment of OamEntry detected");
+
 class Gpu {
     std::array<uint8_t, memmap::VRamSize> m_vram{};
+    std::array<uint8_t, memmap::TileMapDataSize> m_tile_maps{};
+    std::array<OamEntry, memmap::OamRamSize / sizeof(OamEntry)> m_oam_ram{};
     PpuRegisters m_registers;
     std::shared_ptr<spdlog::logger> m_logger;
     Emulator* m_emulator;

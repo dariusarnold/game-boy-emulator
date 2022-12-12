@@ -34,7 +34,7 @@ int main(int argc, char** argv) { // NOLINT
     } catch (const std::exception& e) {
         spdlog::error(e.what());
         spdlog::error(program.help().str());
-        std::exit(1);
+        return EXIT_FAILURE;
     }
 
     std::optional<std::array<uint8_t, 256>> boot_rom;
@@ -43,6 +43,7 @@ int main(int argc, char** argv) { // NOLINT
         boot_rom = load_boot_rom_file(boot_rom_path);
         if (!boot_rom) {
             spdlog::error("Failed to load boot rom from {}", boot_rom_path.string());
+            return EXIT_FAILURE;
         }
     }
     auto rom_path = std::filesystem::absolute(program.get("rom"));
@@ -60,9 +61,9 @@ int main(int argc, char** argv) { // NOLINT
 
     Emulator emulator = [&]() {
         if (boot_rom.has_value()) {
-            return Emulator(boot_rom.value(), game_rom);
+            return Emulator(boot_rom.value(), game_rom, {false});
         }
-        return Emulator(game_rom);
+        return Emulator(game_rom, {false});
     }();
 
     // Main loop

@@ -26,6 +26,8 @@ class Gpu {
     PpuRegisters m_registers;
     std::shared_ptr<spdlog::logger> m_logger;
     Emulator* m_emulator;
+    int m_clock_count = 0;
+
 
 public:
     explicit Gpu(Emulator* emulator);
@@ -35,4 +37,5 @@ public:
     void write_byte(uint16_t address, uint8_t value);
 
     std::span<uint8_t, 8192> get_vram();
+    void cycle_elapsed_callback(size_t cycles_m_num);
 };

@@ -74,6 +74,7 @@ void Emulator::signal_boot_ended() {
 void Emulator::elapse_cycle() {
     m_state.cycles_m += 1;
     m_timer->cycle_elapsed_callback(m_state.cycles_m);
+    m_gpu->cycle_elapsed_callback(m_state.cycles_m);
 }
 
 std::shared_ptr<Gpu> Emulator::get_gpu() const {

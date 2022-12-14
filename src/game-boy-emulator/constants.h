@@ -18,6 +18,12 @@ constexpr size_t RAM_SIZE = 65536;
 constexpr int NIBBLE_SIZE = 4;
 constexpr int BYTE_SIZE = 8;
 
+constexpr size_t SCREEN_RES_WIDTH = 160;
+constexpr size_t SCREEN_RES_HEIGHT = 144;
+
+// Bytes representing a 8x8 tile
+constexpr int BYTES_PER_TILE = 16;
+
 } // namespace constants
 
 

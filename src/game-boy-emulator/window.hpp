@@ -1,6 +1,7 @@
 #pragma once
 
 #include "memorymap.hpp"
+#include "image.hpp"
 class SDL_Window;
 class SDL_Renderer;
 class SDL_Texture;
@@ -13,8 +14,8 @@ class Emulator;
 class Window {
     SDL_Window* m_sdl_window = nullptr;
     SDL_Renderer* m_sdl_renderer = nullptr;
-    SDL_Texture* m_tile_data_texture = nullptr;
-    SDL_Texture* m_bg_texture = nullptr;
+    Image m_tile_data_image;
+    Image m_background_image;
     bool m_done = false;
 public:
     Window();

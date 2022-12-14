@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SDL_opengl.h"
+#include "image.hpp"
 
 #include <algorithm>
 #include <array>
@@ -48,29 +49,31 @@ std::array<uint8_t, 8> convert_tiles(uint8_t byte1, uint8_t byte2);
  */
 std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data);
 
+
+constexpr std::array<uint32_t, 4> get_palette() {
+    return {0xff0fbc9b, 0xff0fac8b, 0xff306230, 0xff0f380f};
+}
+
 template <typename It>
 void map_gb_color_to_rgba(It begin, It end) {
-    constexpr std::array<uint32_t, 4> palette = {
-        0xff0fbc9b,
-        0xff0fac8b,
-        0xff306230,
-        0xff0f380f,
-    };
+    const auto palette = get_palette();
     std::for_each(begin, end, [palette](auto& x) { x = palette[x]; });
 }
+
+void map_gb_color_to_rgba(Image& image);
 
 /**
  * Convert tile data content to a 32bit RGBA image by stitching together all tiles from
  * left to right and top to bottom.
- * Since each tiles takes up 16 bytes in the gameboys 2bpp encoding, the size of tile_data should be a multiple of 16.
- * It is the callers obligation that image_width_tiles * image_height_tiles == 384.
+ * Since each tiles takes up 16 bytes in the gameboys 2bpp encoding, the size of tile_data
+ * should be a multiple of 16. It is the callers obligation that image_width_tiles *
+ * image_height_tiles == 384.
  * @param tile_data A view of at least image_width_tiles * image_height_tiles * 16 bytes.
- * @param image Each tile is 8x8 pixels. This means image should be at least 64 * image_width_tiles * image_height_tiles
- * large.
+ * @param image Each tile is 8x8 pixels. This means image should be at least 64 *
+ * image_width_tiles * image_height_tiles large.
  * @return width, height of the image in pixels
  */
-std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data,
-                                       std::span<uint32_t> image,
+std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data, Image& image,
                                        size_t image_width_tiles, size_t image_height_tiles);
 
 } // namespace gb

@@ -24,6 +24,8 @@ constexpr size_t SCREEN_RES_HEIGHT = 144;
 // Bytes representing a 8x8 tile
 constexpr int BYTES_PER_TILE = 16;
 
+constexpr size_t BACKGROUND_SIZE_PIXELS = 256;
+
 } // namespace constants
 
 

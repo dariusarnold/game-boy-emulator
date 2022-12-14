@@ -56,7 +56,7 @@ std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
     return out;
 }
 
-std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data, std::span<uint32_t> image,
+std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data, Image& image,
                                        size_t image_width_tiles, size_t image_height_tiles) {
     // Every tile is 16 bytes
     assert(tile_data.size() == image_height_tiles * image_width_tiles * 16
@@ -78,10 +78,16 @@ std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data, std::span<u
                 size_t line_in_tile = i / 8;
                 auto vram_index = i % 8 + line_in_tile * image_width_tiles * 8;
                 vram_index += y * 64 * image_width_tiles + x * 8;
-                image[vram_index] = tile[i];
+                image.set_pixel(vram_index, tile[i]);
             }
         }
     }
     return {image_width_tiles * 8, image_height_tiles * 8};
+}
+void gb::map_gb_color_to_rgba(Image& image) {
+    const auto palette = get_palette();
+    for (size_t i = 0; i < image.size(); ++i) {
+        image.set_pixel(i, palette[image.get_pixel(i)]);
+    }
 }
 } // namespace graphics::gb

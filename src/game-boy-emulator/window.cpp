@@ -2,6 +2,7 @@
 #include "graphics.hpp"
 #include "emulator.hpp"
 #include "gpu.hpp"
+#include "constants.h"
 
 #include "spdlog/spdlog.h"
 #include "imgui.h"
@@ -9,8 +10,9 @@
 #include "imgui_impl_sdlrenderer.h"
 #include "SDL.h"
 
-Window::Window() {
-
+Window::Window() :
+        m_tile_data_image(24 * 8, 16 * 8),
+        m_background_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS) {
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a
     // minority of Windows systems, depending on whether SDL_INIT_GAMECONTROLLER is enabled or
@@ -40,10 +42,8 @@ Window::Window() {
     ImGui_ImplSDL2_InitForSDLRenderer(m_sdl_window, m_sdl_renderer);
     ImGui_ImplSDLRenderer_Init(m_sdl_renderer);
 
-    m_tile_data_texture = SDL_CreateTexture(m_sdl_renderer, SDL_PIXELFORMAT_RGBA32,
-                                       SDL_TEXTUREACCESS_STREAMING, 24 * 8, 16 * 8);
-    m_bg_texture = SDL_CreateTexture(m_sdl_renderer, SDL_PIXELFORMAT_RGBA32,
-                                     SDL_TEXTUREACCESS_STREAMING, 32 * 8, 32 * 8);
+    m_tile_data_image.init_texture(m_sdl_renderer);
+    m_background_image.init_texture(m_sdl_renderer);
 }
 
 Window::~Window() {
@@ -107,21 +107,13 @@ void Window::draw_tile_data_viewer(std::span<uint8_t, memmap::TileDataSize> vram
     auto& io = ImGui::GetIO();
     // Our state
     float image_scale = 4;
-    // Insgesamt 24*16 Tiles in VRAM, jedes 8x8 Pixel
-    std::array<uint32_t, 384 * 64> tile_data_image = {0xFFFFFFFF};
     const auto [img_width_pixels, img_height_pixels]
-        = graphics::gb::tile_data_to_image(vram, tile_data_image, 24, 16);
-    graphics::gb::map_gb_color_to_rgba(tile_data_image.begin(), tile_data_image.end());
-
-    void* pixels;
-    int pitch;
-    auto rc = SDL_LockTexture(m_tile_data_texture, nullptr, &pixels, &pitch);
-    std::memcpy(pixels, tile_data_image.data(), sizeof(uint32_t) * tile_data_image.size());
-    SDL_UnlockTexture(m_tile_data_texture);
-
+        = graphics::gb::tile_data_to_image(vram, m_tile_data_image, 24, 16);
+    graphics::gb::map_gb_color_to_rgba(m_tile_data_image);
+    m_tile_data_image.upload_to_texture();
 
     ImGui::Begin("Tile data");
-    auto my_tex_id = (void*)m_tile_data_texture;
+    auto my_tex_id = (void*)m_tile_data_image.get_texture();
     float my_tex_w = img_width_pixels * image_scale;
     float my_tex_h = img_height_pixels * image_scale;
     ImGui::Text("%.0fx%.0f", my_tex_w, my_tex_h);
@@ -163,19 +155,18 @@ void Window::draw_tile_data_viewer(std::span<uint8_t, memmap::TileDataSize> vram
 void Window::draw_background(std::vector<uint8_t> background) {
     // 32x32 tiles, each 16 bytes in size
     assert(background.size() == 32 * 32 * 16 && "Background size check");
-    std::array<uint32_t, 256 * 256> bg_data_image = {0xFFFFFFFF};
     const auto [img_width_pixels, img_height_pixels]
-        = graphics::gb::tile_data_to_image(background, bg_data_image, 32, 32);
-    graphics::gb::map_gb_color_to_rgba(bg_data_image.begin(), bg_data_image.end());
-    void* pixels;
-    int pitch;
-    auto rc = SDL_LockTexture(m_bg_texture, nullptr, &pixels, &pitch);
-    std::memcpy(pixels, bg_data_image.data(), sizeof(uint32_t) * bg_data_image.size());
-    SDL_UnlockTexture(m_bg_texture);
+        = graphics::gb::tile_data_to_image(background, m_background_image, 32, 32);
+    graphics::gb::map_gb_color_to_rgba(m_background_image);
+    m_background_image.upload_to_texture();
 
     ImGui::Begin("Background");
-    auto my_tex_id = (void*)m_bg_texture;
+    auto my_tex_id = (void*)m_background_image.get_texture();
     ImGui::Image(my_tex_id, ImVec2(img_width_pixels, img_height_pixels));
+    auto* draw_list = ImGui::GetWindowDrawList();
+    auto color = ImColor(ImVec4(1, 1, 0.4, 1));
+    ImGui::SetCursorPos(ImVec2(50, 50));
+    draw_list->AddRect(ImVec2(0, 0), ImVec2(1000, 1000), color);
 
     ImGui::End();
 }

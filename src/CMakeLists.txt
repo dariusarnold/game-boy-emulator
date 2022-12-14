@@ -37,6 +37,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/apu.hpp
         game-boy-emulator/ppu_registers.cpp
         game-boy-emulator/ppu_registers.hpp
+        game-boy-emulator/image.cpp
+        game-boy-emulator/image.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

@@ -64,3 +64,24 @@ void Image::set_pixel(size_t pixel_index, uint32_t color) {
 uint32_t Image::get_pixel(size_t pixel_index) const {
     return m_buffer[pixel_index];
 }
+
+/**
+ * Draw an unfilled rectangle with 1 pixel wide border on the image
+ * @param img
+ * @param top_left_x
+ * @param top_left_y
+ * @param rect_width
+ * @param rect_height
+ * @param rect_color
+ */
+void draw_rectangle_border(Image& img, size_t top_left_x, size_t top_left_y, size_t rect_width, size_t rect_height,
+                    uint32_t rect_color) {
+    for (size_t x = top_left_x; x < top_left_x + rect_width; ++x) {
+        img.set_pixel(x, top_left_y, rect_color);
+        img.set_pixel(x, top_left_y + rect_height - 1, rect_color);
+    }
+    for (size_t y = top_left_y; y < top_left_y + rect_height; ++y){
+        img.set_pixel(top_left_x, y, rect_color);
+        img.set_pixel(top_left_x + rect_width - 1, y, rect_color);
+    }
+}

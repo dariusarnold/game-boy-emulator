@@ -46,4 +46,6 @@ public:
     std::span<uint8_t, memmap::TileDataSize> get_vram_tile_data();
 
     std::vector<uint8_t> get_background();
+
+    [[nodiscard]] std::pair<uint8_t, uint8_t> get_viewport_position() const;
 };

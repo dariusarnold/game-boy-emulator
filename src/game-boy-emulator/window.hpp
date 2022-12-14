@@ -17,13 +17,14 @@ class Window {
     Image m_tile_data_image;
     Image m_background_image;
     bool m_done = false;
+
 public:
     Window();
     ~Window();
 
     void draw_frame(const Emulator& emulator);
     void draw_tile_data_viewer(std::span<uint8_t, memmap::TileDataSize> vram);
-    void draw_background(std::vector<uint8_t> background);
+    void draw_background(std::vector<uint8_t> background,
+                         std::pair<uint8_t, uint8_t> viewport_position);
     bool is_done() const;
-
 };

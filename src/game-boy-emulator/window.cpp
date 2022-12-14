@@ -86,7 +86,8 @@ void Window::draw_frame(const Emulator& emulator) {
 
     draw_tile_data_viewer(emulator.get_gpu()->get_vram_tile_data());
 
-    draw_background(emulator.get_gpu()->get_background());
+    draw_background(emulator.get_gpu()->get_background(),
+                    emulator.get_gpu()->get_viewport_position());
 
     // Rendering
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -152,21 +153,19 @@ void Window::draw_tile_data_viewer(std::span<uint8_t, memmap::TileDataSize> vram
     ImGui::End();
 }
 
-void Window::draw_background(std::vector<uint8_t> background) {
+void Window::draw_background(std::vector<uint8_t> background,
+                             std::pair<uint8_t, uint8_t> viewport_position) {
     // 32x32 tiles, each 16 bytes in size
     assert(background.size() == 32 * 32 * 16 && "Background size check");
     const auto [img_width_pixels, img_height_pixels]
         = graphics::gb::tile_data_to_image(background, m_background_image, 32, 32);
     graphics::gb::map_gb_color_to_rgba(m_background_image);
+    draw_rectangle_border(m_background_image, viewport_position.first, viewport_position.second,
+                          constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT, 0xd31d1d);
     m_background_image.upload_to_texture();
 
     ImGui::Begin("Background");
     auto my_tex_id = (void*)m_background_image.get_texture();
     ImGui::Image(my_tex_id, ImVec2(img_width_pixels, img_height_pixels));
-    auto* draw_list = ImGui::GetWindowDrawList();
-    auto color = ImColor(ImVec4(1, 1, 0.4, 1));
-    ImGui::SetCursorPos(ImVec2(50, 50));
-    draw_list->AddRect(ImVec2(0, 0), ImVec2(1000, 1000), color);
-
     ImGui::End();
 }

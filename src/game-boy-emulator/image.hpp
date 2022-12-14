@@ -54,4 +54,5 @@ public:
     [[nodiscard]] SDL_Texture* get_texture() const;
 };
 
-void draw_rectangle(Image& img, )
+void draw_rectangle_border(Image& img, size_t top_left_x, size_t top_left_y, size_t rect_width,
+                           size_t rect_height, uint32_t rect_color);

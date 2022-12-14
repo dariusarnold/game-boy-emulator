@@ -26,6 +26,9 @@ constexpr int BYTES_PER_TILE = 16;
 
 constexpr size_t BACKGROUND_SIZE_PIXELS = 256;
 
+constexpr int VIEWPORT_WIDTH = 160;
+constexpr int VIEWPORT_HEIGHT = 144;
+
 } // namespace constants
 
 

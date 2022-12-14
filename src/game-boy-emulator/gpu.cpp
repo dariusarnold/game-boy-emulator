@@ -198,3 +198,8 @@ std::vector<uint8_t> Gpu::get_background() {
     return bg_pixels;
 }
 
+std::pair<uint8_t, uint8_t> Gpu::get_viewport_position() const {
+    auto x = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
+    auto y = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
+    return {x, y};
+}

@@ -77,7 +77,7 @@ int main(int argc, char** argv) { // NOLINT
         seconds_since_last_frame += delta_seconds;
 
         if (seconds_since_last_frame >= 1 / 59.7) {
-            window.draw_frame(emulator.get_gpu()->get_vram());
+            window.draw_frame(emulator);
             seconds_since_last_frame = 0;
         }
     }

@@ -1,5 +1,7 @@
 #include "window.hpp"
 #include "graphics.hpp"
+#include "emulator.hpp"
+#include "gpu.hpp"
 
 #include "spdlog/spdlog.h"
 #include "imgui.h"
@@ -38,7 +40,7 @@ Window::Window() {
     ImGui_ImplSDL2_InitForSDLRenderer(m_sdl_window, m_sdl_renderer);
     ImGui_ImplSDLRenderer_Init(m_sdl_renderer);
 
-    m_vram_texture = SDL_CreateTexture(m_sdl_renderer, SDL_PIXELFORMAT_RGBA32,
+    m_tile_data_texture = SDL_CreateTexture(m_sdl_renderer, SDL_PIXELFORMAT_RGBA32,
                                        SDL_TEXTUREACCESS_STREAMING, 24 * 8, 16 * 8);
 }
 
@@ -52,7 +54,7 @@ Window::~Window() {
     SDL_Quit();
 }
 
-void Window::draw_frame(std::span<uint8_t, 8192> vram) {
+void Window::draw_frame(const Emulator& emulator) {
     // Poll and handle events (inputs, window resize, etc.)
     // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui
     // wants to use your inputs.
@@ -80,7 +82,7 @@ void Window::draw_frame(std::span<uint8_t, 8192> vram) {
 
     auto& io = ImGui::GetIO();
 
-    draw_vram_viewer(vram);
+    draw_tile_data_viewer(emulator.get_gpu()->get_vram_tile_data());
 
     {
         ImGui::Begin("Game");
@@ -103,7 +105,7 @@ bool Window::is_done() const {
     return m_done;
 }
 
-void Window::draw_vram_viewer(std::span<uint8_t, 8192> vram) {
+void Window::draw_tile_data_viewer(std::span<uint8_t, memmap::TileDataSize> vram) {
     auto& io = ImGui::GetIO();
     // Our state
     float image_scale = 4;
@@ -115,53 +117,48 @@ void Window::draw_vram_viewer(std::span<uint8_t, 8192> vram) {
 
     void* pixels;
     int pitch;
-    auto rc = SDL_LockTexture(m_vram_texture, nullptr, &pixels, &pitch);
+    auto rc = SDL_LockTexture(m_tile_data_texture, nullptr, &pixels, &pitch);
     std::memcpy(pixels, tile_data_image.data(), sizeof(uint32_t) * tile_data_image.size());
-    SDL_UnlockTexture(m_vram_texture);
+    SDL_UnlockTexture(m_tile_data_texture);
 
-    {
 
-        ImGui::Begin("VRAM viewer");
-        auto my_tex_id = (void*)m_vram_texture;
-        float my_tex_w = img_width_pixels * image_scale;
-        float my_tex_h = img_height_pixels * image_scale;
-        {
-            ImGui::Text("%.0fx%.0f", my_tex_w, my_tex_h);
-            ImVec2 pos = ImGui::GetCursorScreenPos();
-            ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-            ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-            ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-            ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
-            ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col,
-                         border_col);
-            auto min = ImGui::GetItemRectMin();
-            if (ImGui::IsItemHovered()) {
-                ImGui::BeginTooltip();
-                ImGui::Text("Image x %f y %f", io.MousePos.x - min.x, io.MousePos.y - min.y);
-                float tooltip_zoom = 3;
-                float region_sz = 32.0f;
-                float region_x = io.MousePos.x - pos.x - region_sz * 0.5f;
-                float region_y = io.MousePos.y - pos.y - region_sz * 0.5f;
-                if (region_x < 0.0f) {
-                    region_x = 0.0f;
-                } else if (region_x > my_tex_w - region_sz) {
-                    region_x = my_tex_w - region_sz;
-                }
-                if (region_y < 0.0f) {
-                    region_y = 0.0f;
-                } else if (region_y > my_tex_h - region_sz) {
-                    region_y = my_tex_h - region_sz;
-                }
-                ImVec2 uv0 = ImVec2((region_x) / my_tex_w, (region_y) / my_tex_h);
-                ImVec2 uv1
-                    = ImVec2((region_x + region_sz) / my_tex_w, (region_y + region_sz) / my_tex_h);
-                ImGui::Image(my_tex_id,
-                             ImVec2(region_sz * (image_scale + tooltip_zoom),
-                                    region_sz * (image_scale + tooltip_zoom)),
-                             uv0, uv1, tint_col, border_col);
-                ImGui::EndTooltip();
-            }
+    ImGui::Begin("Tile data");
+    auto my_tex_id = (void*)m_tile_data_texture;
+    float my_tex_w = img_width_pixels * image_scale;
+    float my_tex_h = img_height_pixels * image_scale;
+    ImGui::Text("%.0fx%.0f", my_tex_w, my_tex_h);
+    ImVec2 pos = ImGui::GetCursorScreenPos();
+    ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+    ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+    ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+    ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+    auto min = ImGui::GetItemRectMin();
+    if (ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        ImGui::Text("Image x %f y %f", io.MousePos.x - min.x, io.MousePos.y - min.y);
+        float tooltip_zoom = 3;
+        float region_sz = 32.0f;
+        float region_x = io.MousePos.x - pos.x - region_sz * 0.5f;
+        float region_y = io.MousePos.y - pos.y - region_sz * 0.5f;
+        if (region_x < 0.0f) {
+            region_x = 0.0f;
+        } else if (region_x > my_tex_w - region_sz) {
+            region_x = my_tex_w - region_sz;
         }
-        ImGui::End();
+        if (region_y < 0.0f) {
+            region_y = 0.0f;
+        } else if (region_y > my_tex_h - region_sz) {
+            region_y = my_tex_h - region_sz;
+        }
+        ImVec2 uv0 = ImVec2((region_x) / my_tex_w, (region_y) / my_tex_h);
+        ImVec2 uv1 = ImVec2((region_x + region_sz) / my_tex_w, (region_y + region_sz) / my_tex_h);
+        ImGui::Image(my_tex_id,
+                     ImVec2(region_sz * (image_scale + tooltip_zoom),
+                            region_sz * (image_scale + tooltip_zoom)),
+                     uv0, uv1, tint_col, border_col);
+        ImGui::EndTooltip();
     }
+    ImGui::End();
 }
+

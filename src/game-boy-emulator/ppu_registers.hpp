@@ -21,7 +21,7 @@ public:
         LcdcRegister = 0xFF40,
         StatRegister = 0xFF41,
         ScyRegister = 0xFF42,
-        ScxRegister = 0xFF42,
+        ScxRegister = 0xFF43,
         LyRegister = 0xFF44,
         LycRegister = 0xFF45,
         DmaTransfer = 0xFF46,

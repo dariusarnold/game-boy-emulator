@@ -50,6 +50,23 @@ bool PpuRegisters::is_stat_interrupt_enabled(
     return bitmanip::is_bit_set(get(Register::StatRegister), static_cast<int>(stat_interrupt));
 }
 
+PpuRegisters::BgWinAddressMode PpuRegisters::get_bg_win_address_mode() const {
+    auto bit4 = get_register_bit(Register::LcdcRegister,
+                                 static_cast<uint8_t>(LcdcBits::BgWindowTileDataArea));
+    if (bit4 == 1) {
+        return BgWinAddressMode::Unsigned;
+    }
+    return BgWinAddressMode::Signed;
+}
+
+PpuRegisters::TileMapAddressRange PpuRegisters::get_background_address_range() const {
+    auto lcdc = get(Register::LcdcRegister);
+    if (bitmanip::is_bit_set(lcdc, static_cast<int>(LcdcBits::BgTileMapArea))) {
+        return TileMapAddressRange::High;
+    }
+    return TileMapAddressRange::Low;
+}
+
 void PpuRegisters::set_register_bit(PpuRegisters::Register r, uint8_t bit_position,
                                     uint8_t bit_value) {
     auto& x = get(r);

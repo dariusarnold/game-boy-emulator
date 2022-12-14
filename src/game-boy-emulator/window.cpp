@@ -42,6 +42,8 @@ Window::Window() {
 
     m_tile_data_texture = SDL_CreateTexture(m_sdl_renderer, SDL_PIXELFORMAT_RGBA32,
                                        SDL_TEXTUREACCESS_STREAMING, 24 * 8, 16 * 8);
+    m_bg_texture = SDL_CreateTexture(m_sdl_renderer, SDL_PIXELFORMAT_RGBA32,
+                                     SDL_TEXTUREACCESS_STREAMING, 32 * 8, 32 * 8);
 }
 
 Window::~Window() {
@@ -84,11 +86,7 @@ void Window::draw_frame(const Emulator& emulator) {
 
     draw_tile_data_viewer(emulator.get_gpu()->get_vram_tile_data());
 
-    {
-        ImGui::Begin("Game");
-//        ImGui::Image()
-        ImGui::End();
-    }
+    draw_background(emulator.get_gpu()->get_background());
 
     // Rendering
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -162,3 +160,22 @@ void Window::draw_tile_data_viewer(std::span<uint8_t, memmap::TileDataSize> vram
     ImGui::End();
 }
 
+void Window::draw_background(std::vector<uint8_t> background) {
+    // 32x32 tiles, each 16 bytes in size
+    assert(background.size() == 32 * 32 * 16 && "Background size check");
+    std::array<uint32_t, 256 * 256> bg_data_image = {0xFFFFFFFF};
+    const auto [img_width_pixels, img_height_pixels]
+        = graphics::gb::tile_data_to_image(background, bg_data_image, 32, 32);
+    graphics::gb::map_gb_color_to_rgba(bg_data_image.begin(), bg_data_image.end());
+    void* pixels;
+    int pitch;
+    auto rc = SDL_LockTexture(m_bg_texture, nullptr, &pixels, &pitch);
+    std::memcpy(pixels, bg_data_image.data(), sizeof(uint32_t) * bg_data_image.size());
+    SDL_UnlockTexture(m_bg_texture);
+
+    ImGui::Begin("Background");
+    auto my_tex_id = (void*)m_bg_texture;
+    ImGui::Image(my_tex_id, ImVec2(img_width_pixels, img_height_pixels));
+
+    ImGui::End();
+}

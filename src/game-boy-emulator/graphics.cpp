@@ -1,3 +1,4 @@
+#include <cassert>
 #include "graphics.hpp"
 #include "bitmanipulation.hpp"
 
@@ -55,14 +56,20 @@ std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
     return out;
 }
 
-std::pair<int, int> tile_data_to_image(std::span<uint8_t, 8192> vram,
-                                       std::span<uint32_t, 384 * 64> image,
+std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data, std::span<uint32_t> image,
                                        size_t image_width_tiles, size_t image_height_tiles) {
+    // Every tile is 16 bytes
+    assert(tile_data.size() == image_height_tiles * image_width_tiles * 16
+           && "Tile data size requirement check");
+    // Every tile is 8x8 pixels
+    assert(image.size() == image_width_tiles * image_height_tiles * 64
+           && "Image pixel count requirement check");
     for (size_t y = 0; y < image_height_tiles; ++y) {
         for (size_t x = 0; x < image_width_tiles; ++x) {
             size_t offset = y * image_width_tiles + x;
             // Take the 16 bytes corresponding to one 8x8 tile
-            auto s = std::span<uint8_t, 16>(vram.data() + offset * 16, 16);
+            auto s = std::span<uint8_t, 16>(tile_data.data() + offset * constants::BYTES_PER_TILE,
+                                            constants::BYTES_PER_TILE);
             // Convert it to the 4 game boy colors but use uint32 representation to make later in
             // place conversion to RGBA32 possible.
             auto tile = graphics::gb::tile_to_gb_color(s);

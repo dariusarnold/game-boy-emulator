@@ -60,15 +60,17 @@ void map_gb_color_to_rgba(It begin, It end) {
 }
 
 /**
- * Convert VRAM tile data content to a 32bit RGBA image by stitching together all tiles from
+ * Convert tile data content to a 32bit RGBA image by stitching together all tiles from
  * left to right and top to bottom.
- * Tile data is stored from 0x8000-0x97FF. Since each tiles takes up 16 bytes in the gameboys
- * 2bpp encoding, this means 384 tiles, each of which is 8x8 pixels are stored in the tile data
+ * Since each tiles takes up 16 bytes in the gameboys 2bpp encoding, the size of tile_data should be a multiple of 16.
  * It is the callers obligation that image_width_tiles * image_height_tiles == 384.
+ * @param tile_data A view of at least image_width_tiles * image_height_tiles * 16 bytes.
+ * @param image Each tile is 8x8 pixels. This means image should be at least 64 * image_width_tiles * image_height_tiles
+ * large.
  * @return width, height of the image in pixels
  */
-std::pair<int, int> tile_data_to_image(std::span<uint8_t, 8192> vram,
-                                       std::span<uint32_t, 384 * 64> image,
+std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data,
+                                       std::span<uint32_t> image,
                                        size_t image_width_tiles, size_t image_height_tiles);
 
 } // namespace gb

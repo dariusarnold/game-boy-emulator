@@ -41,6 +41,28 @@ public:
         LycEqualsLy = 6,
     };
 
+    enum class BgWinAddressMode {
+        /*
+         * BG/Window tile IDs:
+         * 0-127 in 8000-87FF
+         * 128-255 in 8800-8FFF
+         */
+        Unsigned,
+        /*
+         * BG/Window tile IDs:
+         * 0-127 in 9000-97FF
+         * 128-255 in 8800-88FF
+         */
+        Signed,
+    };
+
+    enum class TileMapAddressRange {
+        // Use tile map at 9800-9BFF
+        Low,
+        // Use tile map at 9C00-9FFF
+        High,
+    };
+
     enum class LcdcBits {
         BgWindowEnablePriority = 0,
         ObjEnable = 1,
@@ -60,6 +82,8 @@ public:
     void set_mode(PpuMode mode);
     [[nodiscard]] PpuMode get_mode() const;
     [[nodiscard]] bool is_stat_interrupt_enabled(StatInterruptSource stat_interrupt) const;
+    [[nodiscard]] BgWinAddressMode get_bg_win_address_mode() const;
+    [[nodiscard]] TileMapAddressRange get_background_address_range() const;
     [[nodiscard]] bool is_ppu_enabled() const;
 
     // General helper functions for writing/reading from the registers

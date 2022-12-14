@@ -69,7 +69,7 @@ void Gpu::write_byte(uint16_t address, uint8_t value) {
     }
 }
 
-std::span<uint8_t, 8192> Gpu::get_vram() {
+std::span<uint8_t, memmap::TileDataSize> Gpu::get_vram_tile_data() {
     return {m_vram};
 }
 
@@ -169,5 +169,32 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
         }
         break;
     }
+}
+
+std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) {
+    if (m_registers.get_bg_win_address_mode() == PpuRegisters::BgWinAddressMode::Unsigned) {
+        return std::span<uint8_t, constants::BYTES_PER_TILE>{
+            m_vram.data() + tile_index * constants::BYTES_PER_TILE, constants::BYTES_PER_TILE};
+    }
+    return std::span<uint8_t, constants::BYTES_PER_TILE>{
+        m_vram.data() + m_vram.size() - 1 - tile_index * constants::BYTES_PER_TILE,
+        constants::BYTES_PER_TILE};
+}
+
+std::vector<uint8_t> Gpu::get_background() {
+    std::vector<uint8_t> bg_pixels;
+    for (unsigned i = 0; i < 32 * 32; ++i) {
+        unsigned address_offset = 0;
+        if (m_registers.get_background_address_range() == PpuRegisters::TileMapAddressRange::High) {
+            address_offset = memmap::TileMap1Size;
+        }
+        auto tile_index = m_tile_maps[address_offset + i];
+        auto tile = get_tile(tile_index);
+        std::copy(tile.begin(), tile.end(), std::back_inserter(bg_pixels));
+    }
+    m_logger->warn("Tile map indices {}", fmt::join(m_tile_maps, " "));
+    auto all_zero
+        = std::all_of(bg_pixels.begin(), bg_pixels.end(), [](uint8_t x) { return x == 0; });
+    return bg_pixels;
 }
 

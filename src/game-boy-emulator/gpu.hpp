@@ -10,6 +10,7 @@ class logger;
 #include <array>
 #include <span>
 #include <memory>
+#include <vector>
 
 struct OamEntry {
     uint8_t m_y_position;
@@ -37,6 +38,12 @@ public:
 
     void write_byte(uint16_t address, uint8_t value);
 
-    std::span<uint8_t, 8192> get_vram();
     void cycle_elapsed_callback(size_t cycles_m_num);
+
+    // Get one background or window tile from vram using the tile index.
+    std::span<uint8_t, constants::BYTES_PER_TILE> get_tile(uint8_t tile_index);
+
+    std::span<uint8_t, memmap::TileDataSize> get_vram_tile_data();
+
+    std::vector<uint8_t> get_background();
 };

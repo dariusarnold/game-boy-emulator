@@ -2,6 +2,7 @@
 
 #include "memorymap.hpp"
 #include "ppu_registers.hpp"
+#include "constants.h"
 class Emulator;
 namespace spdlog {
 class logger;

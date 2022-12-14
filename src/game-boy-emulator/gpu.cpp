@@ -2,6 +2,7 @@
 #include "exceptions.hpp"
 #include "memorymap.hpp"
 #include "emulator.hpp"
+#include "interrupthandler.hpp"
 #include "fmt/format.h"
 #include "spdlog/spdlog.h"
 #include "magic_enum.hpp"
@@ -107,6 +108,24 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
             m_clock_count = m_clock_count % DURATION_PIXEL_TRANSFER;
             m_registers.set_mode(PpuMode::HBlank_0);
 
+            if (m_registers.is_stat_interrupt_enabled(PpuRegisters::StatInterruptSource::HBlank)) {
+                m_emulator->get_interrupt_handler()->request_interrupt(
+                    InterruptHandler::InterruptType::LcdStat);
+            }
+
+            if (m_registers.is_stat_interrupt_enabled(
+                    PpuRegisters::StatInterruptSource::LycEqualsLy)) {
+                auto ly_equals_lyc
+                    = m_registers.get_register_value(PpuRegisters::Register::LyRegister)
+                      == m_registers.get_register_value(PpuRegisters::Register::LycRegister);
+                if (ly_equals_lyc) {
+                    m_emulator->get_interrupt_handler()->request_interrupt(
+                        InterruptHandler::InterruptType::LcdStat);
+                }
+                m_registers.set_register_bit(
+                    PpuRegisters::Register::StatRegister,
+                    static_cast<int>(PpuRegisters::LcdStatBits::LycEqualsLy), 1);
+            }
         }
         break;
     case PpuMode::HBlank_0:
@@ -118,6 +137,8 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
             // If we are on the last visible line we enter the vblank mode
             if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 144) {
                 new_mode = PpuMode::VBlank_1;
+                m_emulator->get_interrupt_handler()->request_interrupt(
+                    InterruptHandler::InterruptType::VBlank);
             }
 
             m_logger->info("GPU: cycle {}, LY {}, mode {}->{}", m_clock_count,

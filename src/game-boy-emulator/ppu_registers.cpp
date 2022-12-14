@@ -20,9 +20,9 @@ void PpuRegisters::set_register_value(uint16_t address, uint8_t value) {
     set_register_value(static_cast<Register>(address), value);
 }
 
-PpuRegisters::PpuRegisters(bool fix_ly): m_fix_ly_register_value(fix_ly) {
+PpuRegisters::PpuRegisters(bool fix_ly) : m_fix_ly_register_value(fix_ly) {
     set_mode(PpuMode::OamScan_2);
-    }
+}
 
 void PpuRegisters::set_mode(PpuMode mode) {
     auto bit0 = bitmanip::is_bit_set(static_cast<int>(mode), 0);
@@ -43,6 +43,11 @@ uint8_t& PpuRegisters::get(PpuRegisters::Register r) {
 
 const uint8_t& PpuRegisters::get(PpuRegisters::Register r) const {
     return m_registers[static_cast<uint16_t>(r) - static_cast<uint16_t>(Register::LcdcRegister)];
+}
+
+bool PpuRegisters::is_stat_interrupt_enabled(
+    PpuRegisters::StatInterruptSource stat_interrupt) const {
+    return bitmanip::is_bit_set(get(Register::StatRegister), static_cast<int>(stat_interrupt));
 }
 
 void PpuRegisters::set_register_bit(PpuRegisters::Register r, uint8_t bit_position,

@@ -33,6 +33,14 @@ public:
     };
 
 
+    // Values are the bits in the STAT register representing the STAT interrupt enable flag
+    enum class StatInterruptSource {
+        HBlank = 3,
+        VBlank = 4,
+        Oam = 5,
+        LycEqualsLy = 6,
+    };
+
     enum class LcdcBits {
         BgWindowEnablePriority = 0,
         ObjEnable = 1,
@@ -44,10 +52,14 @@ public:
         LcdAndPpuEnable = 7,
     };
 
+    enum class LcdStatBits {
+        LycEqualsLy = 2,
+    };
 
     // Special helper function for querying state from the registers
     void set_mode(PpuMode mode);
     [[nodiscard]] PpuMode get_mode() const;
+    [[nodiscard]] bool is_stat_interrupt_enabled(StatInterruptSource stat_interrupt) const;
     [[nodiscard]] bool is_ppu_enabled() const;
 
     // General helper functions for writing/reading from the registers

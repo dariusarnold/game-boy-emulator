@@ -65,10 +65,8 @@ int main(int argc, char** argv) { // NOLINT
 
     // Main loop
     while (!window.is_done()) {
-        try {
-            emulator.step();
-        } catch (const std::exception& e) {
-            spdlog::error("Error {}", e.what()); // NOLINT
+        auto sucess = emulator.step();
+        if (!sucess) {
             return EXIT_FAILURE;
         }
         current_time = std::chrono::steady_clock::now();

@@ -125,7 +125,9 @@ private:
      */
     opcodes::Instruction fetch_instruction();
 
-    uint16_t fetch_data(opcodes::Instruction instruction);
+    // Only instructions which actually fetch data return a value. All other instructions return an
+    // empty optional.
+    std::optional<uint16_t> fetch_data(opcodes::Instruction instruction);
 
     void set_register_value(opcodes::RegisterType register_type, uint16_t value);
     uint16_t get_register_value(opcodes::RegisterType register_type);

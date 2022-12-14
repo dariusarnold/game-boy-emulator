@@ -10,10 +10,14 @@
 void Cpu::step() {
     previous_instruction = current_instruction;
     current_instruction = fetch_instruction();
+    auto fetched = fetch_data(current_instruction);
+    if (fetched.has_value()) {
+        m_logger->debug("Opcode: {:02X} Data {:04X}", current_instruction.opcode, fetched.value());
+    } else {
+        m_logger->debug("Opcode: {:02X}", current_instruction.opcode);
+    }
+    auto data = fetched.value_or(0);
     m_logger->debug("Executing {}", current_instruction);
-    // TODO: the additional fetch could be done conditionally
-    auto data = fetch_data(current_instruction);
-    m_logger->info("Data {:04X}", data);
     switch (current_instruction.instruction_type) {
     case opcodes::InstructionType::LD:
     case opcodes::InstructionType::LDD:
@@ -251,13 +255,12 @@ opcodes::Instruction Cpu::fetch_instruction() {
             fmt::format("Encountered unsupported opcode {:02X} at pc {:04X}", byte, registers.pc));
     }
     registers.pc++;
-    m_logger->info("Fetched opcode {:02X}", byte);
     m_emulator->elapse_cycle();
     instruction.opcode = byte;
     return instruction;
 }
 
-uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
+std::optional<uint16_t> Cpu::fetch_data(opcodes::Instruction instruction) {
     uint8_t high_byte = 0;
     uint8_t low_byte = 0;
     switch (instruction.interaction_type) {
@@ -267,7 +270,7 @@ uint16_t Cpu::fetch_data(opcodes::Instruction instruction) {
     case opcodes::InteractionType::Register_Register:
     case opcodes::InteractionType::AddressRegister_Register:
     case opcodes::InteractionType::Register_AddressRegister:
-        return 0;
+        return std::nullopt;
     case opcodes::InteractionType::ImmediateByte:
     case opcodes::InteractionType::AddressRegister_ImmediateByte:
         low_byte = m_emulator->get_bus()->read_byte(registers.pc);

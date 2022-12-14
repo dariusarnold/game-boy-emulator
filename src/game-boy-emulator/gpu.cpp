@@ -13,7 +13,7 @@ Gpu::Gpu(Emulator* emulator) :
         m_emulator(emulator) {}
 
 uint8_t Gpu::read_byte(uint16_t address) {
-    if (memmap::is_in(address, memmap::VRam)) {
+    if (memmap::is_in(address, memmap::TileData)) {
         return m_vram[address - memmap::VRamBegin];
     }
     if (memmap::is_in(address, memmap::OamRam)) {
@@ -22,15 +22,15 @@ uint8_t Gpu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::PpuIoRegisters)) {
         return m_registers.get_register_value(address);
     }
-    if (memmap::is_in(address, memmap::TileMapData)) {
-        return m_tile_maps[address - memmap::TileMapDataBegin];
+    if (memmap::is_in(address, memmap::TileMaps)) {
+        return m_tile_maps[address - memmap::TileMapsBegin];
     }
 
     throw LogicError(fmt::format("GPU can't read from {:04X}", address));
 }
 
 void Gpu::write_byte(uint16_t address, uint8_t value) {
-    if (memmap::is_in(address, memmap::VRam)) {
+    if (memmap::is_in(address, memmap::TileData)) {
         m_vram[address - memmap::VRamBegin] = value;
     } else if (memmap::is_in(address, memmap::PpuIoRegisters)) {
         if (address == 0xFF46) {
@@ -39,8 +39,8 @@ void Gpu::write_byte(uint16_t address, uint8_t value) {
         m_registers.set_register_value(address, value);
     } else if (memmap::is_in(address, memmap::OamRam)) {
         reinterpret_cast<uint8_t*>(m_oam_ram.data())[address - memmap::OamRamBegin] = value;
-    } else if (memmap::is_in(address, memmap::TileMapData)) {
-        m_tile_maps[address - memmap::TileMapDataBegin] = value;
+    } else if (memmap::is_in(address, memmap::TileMaps)) {
+        m_tile_maps[address - memmap::TileMapsBegin] = value;
     } else {
         m_logger->error("GPU: unhandled write to {:04X}", address);
     }

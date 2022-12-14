@@ -2,6 +2,9 @@
 #include "bitmanipulation.hpp"
 
 uint8_t PpuRegisters::get_register_value(PpuRegisters::Register r) const {
+    if (r == Register::LyRegister && m_fix_ly_register_value) {
+        return 0x90;
+    }
     return get(r);
 }
 
@@ -17,9 +20,7 @@ void PpuRegisters::set_register_value(uint16_t address, uint8_t value) {
     set_register_value(static_cast<Register>(address), value);
 }
 
-PpuRegisters::PpuRegisters(bool fix_ly) {
-    if (fix_ly) {
-        set_register_value(Register::LyRegister, 0x90);
+PpuRegisters::PpuRegisters(bool fix_ly): m_fix_ly_register_value(fix_ly) {
     set_mode(PpuMode::OamScan_2);
     }
 

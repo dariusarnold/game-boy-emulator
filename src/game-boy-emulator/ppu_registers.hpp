@@ -62,5 +62,6 @@ public:
 private:
     uint8_t& get(PpuRegisters::Register r);
     [[nodiscard]] const uint8_t& get(PpuRegisters::Register r) const;
+    bool m_fix_ly_register_value;
 
 };

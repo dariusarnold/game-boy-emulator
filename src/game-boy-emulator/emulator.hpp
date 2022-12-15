@@ -25,6 +25,7 @@ namespace spdlog {
 class logger;
 }
 struct CpuDebugState;
+class Joypad;
 
 struct EmulatorState {
     // Number of m cycles since execution start
@@ -75,6 +76,7 @@ public:
     [[nodiscard]] std::shared_ptr<Timer> get_timer() const;
     [[nodiscard]] std::shared_ptr<SerialPort> get_serial_port() const;
     [[nodiscard]] std::shared_ptr<Apu> get_apu() const;
+    [[nodiscard]] std::shared_ptr<Joypad> get_joypad() const;
 
 private:
     EmulatorState m_state;
@@ -89,5 +91,6 @@ private:
     std::shared_ptr<InterruptHandler> m_interrupt_handler;
     std::shared_ptr<Timer> m_timer;
     std::shared_ptr<SerialPort> m_serial_port;
+    std::shared_ptr<Joypad> m_joypad;
     std::shared_ptr<spdlog::logger> m_logger;
 };

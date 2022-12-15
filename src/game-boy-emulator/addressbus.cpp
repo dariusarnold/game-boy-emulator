@@ -11,6 +11,7 @@
 #include "serial_port.hpp"
 #include "interrupthandler.hpp"
 #include "apu.hpp"
+#include "joypad.hpp"
 
 #include "spdlog/spdlog.h"
 
@@ -39,6 +40,9 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     }
     if (memmap::is_in(address, memmap::InterruptEnable)) {
         return m_emulator->get_interrupt_handler()->read_interrupt_enable();
+    }
+    if (memmap::is_in(address, memmap::Joypad)) {
+        return m_emulator->get_joypad()->read_byte();
     }
     throw NotImplementedError(fmt::format("Addressing unmapped memory byte at {:04X}", address));
 }
@@ -72,6 +76,8 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
     } else if (memmap::is_in(address, memmap::Prohibited)) {
         // Some games do this (e.g. Tetris) because of bugs. We should not crash.
         m_logger->error("Write to prohibited memory");
+    } else if (memmap::is_in(address, memmap::Joypad)) {
+        m_emulator->get_joypad()->write_byte(value);
     } else {
         throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
     }

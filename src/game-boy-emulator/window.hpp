@@ -5,7 +5,9 @@
 class SDL_Window;
 class SDL_Renderer;
 class SDL_Texture;
+union SDL_Event;
 class Emulator;
+class Joypad;
 #include <span>
 #include <cstdint>
 #include <vector>
@@ -18,6 +20,8 @@ class Window {
     Image m_background_image;
     Image m_window_image;
     bool m_done = false;
+
+    void handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<Joypad> joypad);
 
 public:
     Window();

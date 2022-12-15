@@ -10,6 +10,7 @@
 #include "serial_port.hpp"
 #include "apu.hpp"
 #include "interrupthandler.hpp"
+#include "joypad.hpp"
 
 #include "spdlog/spdlog.h"
 
@@ -27,6 +28,7 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
         m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
         m_timer(std::make_shared<Timer>(this)),
         m_serial_port(std::make_shared<SerialPort>(this)),
+        m_joypad(std::make_shared<Joypad>()),
         m_logger(spdlog::get("")) {}
 
 Emulator::Emulator(const std::vector<uint8_t>& game_rom, EmulatorOptions options) :
@@ -160,4 +162,8 @@ const EmulatorState& Emulator::get_state() const {
 
 std::shared_ptr<Apu> Emulator::get_apu() const {
     return m_apu;
+}
+
+std::shared_ptr<Joypad> Emulator::get_joypad() const {
+    return m_joypad;
 }

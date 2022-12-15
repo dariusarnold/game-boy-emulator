@@ -3,6 +3,7 @@
 #include "emulator.hpp"
 #include "gpu.hpp"
 #include "constants.h"
+#include "joypad.hpp"
 
 #include "spdlog/spdlog.h"
 #include "imgui.h"
@@ -58,6 +59,18 @@ Window::~Window() {
     SDL_Quit();
 }
 
+namespace {
+// TODO make the key bindings configurable
+constexpr SDL_KeyCode KEY_UP = SDLK_w;
+constexpr SDL_Keycode KEY_LEFT = SDLK_a;
+constexpr SDL_Keycode KEY_DOWN = SDLK_s;
+constexpr SDL_Keycode KEY_RIGHT = SDLK_d;
+constexpr SDL_Keycode KEY_A = SDLK_j;
+constexpr SDL_Keycode KEY_B = SDLK_k;
+constexpr SDL_Keycode KEY_START = SDLK_n;
+constexpr SDL_Keycode KEY_SELECT = SDLK_l;
+} // namespace
+
 void Window::draw_frame(const Emulator& emulator) {
     // Poll and handle events (inputs, window resize, etc.)
     // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui
@@ -77,6 +90,7 @@ void Window::draw_frame(const Emulator& emulator) {
             && event.window.windowID == SDL_GetWindowID(m_sdl_window)) {
             m_done = true;
         }
+        handle_user_keyboard_input(event, emulator.get_joypad());
     }
 
     // Start the Dear ImGui frame
@@ -101,6 +115,69 @@ void Window::draw_frame(const Emulator& emulator) {
     SDL_RenderClear(m_sdl_renderer);
     ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
     SDL_RenderPresent(m_sdl_renderer);
+}
+
+void Window::handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<Joypad> joypad) {
+    auto& io = ImGui::GetIO();
+    if (!io.WantCaptureKeyboard) {
+        // Ignore repeated down events since they don't alter joypad state
+        if (event.type == SDL_KEYDOWN && event.key.repeat != 0) {
+            switch (event.key.keysym.sym) {
+            case KEY_UP:
+                joypad->press_key(Joypad::Keys::Up);
+                break;
+            case KEY_LEFT:
+                joypad->press_key(Joypad::Keys::Left);
+                break;
+            case KEY_DOWN:
+                joypad->press_key(Joypad::Keys::Down);
+                break;
+            case KEY_RIGHT:
+                joypad->press_key(Joypad::Keys::Right);
+                break;
+            case KEY_A:
+                joypad->press_key(Joypad::Keys::A);
+                break;
+            case KEY_B:
+                joypad->press_key(Joypad::Keys::B);
+                break;
+            case KEY_START:
+                joypad->press_key(Joypad::Keys::Start);
+                break;
+            case KEY_SELECT:
+                joypad->press_key(Joypad::Keys::Select);
+                break;
+            }
+        }
+        if (event.type == SDL_KEYUP) {
+            switch (event.key.keysym.sym) {
+            case KEY_UP:
+                joypad->release_key(Joypad::Keys::Up);
+                break;
+            case KEY_LEFT:
+                joypad->release_key(Joypad::Keys::Left);
+                break;
+            case KEY_DOWN:
+                joypad->release_key(Joypad::Keys::Down);
+                break;
+            case KEY_RIGHT:
+                joypad->release_key(Joypad::Keys::Right);
+                break;
+            case KEY_A:
+                joypad->release_key(Joypad::Keys::A);
+                break;
+            case KEY_B:
+                joypad->release_key(Joypad::Keys::B);
+                break;
+            case KEY_START:
+                joypad->release_key(Joypad::Keys::Start);
+                break;
+            case KEY_SELECT:
+                joypad->release_key(Joypad::Keys::Select);
+                break;
+            }
+        }
+    }
 }
 
 bool Window::is_done() const {

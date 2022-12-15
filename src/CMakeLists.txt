@@ -39,6 +39,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/ppu_registers.hpp
         game-boy-emulator/image.cpp
         game-boy-emulator/image.hpp
+        game-boy-emulator/joypad.cpp
+        game-boy-emulator/joypad.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

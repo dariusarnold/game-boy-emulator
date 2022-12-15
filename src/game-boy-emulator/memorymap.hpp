@@ -73,6 +73,7 @@ struct AddressRange : public T {
     X(0xC000, 0xDFFF, InternalRam)                                                                 \
     X(0xFE00, 0xFE9F, OamRam)                                                                      \
     X(0xFF00, 0xFF7F, IORegisters)                                                                 \
+    X(0xFF00, 0xFF00, Joypad)                                                                      \
     X(0xFF10, 0xFF26, Apu)                                                                         \
     X(0xFF40, 0xFF4B, PpuIoRegisters)                                                              \
     X(0xFF04, 0xFF07, Timer)                                                                       \

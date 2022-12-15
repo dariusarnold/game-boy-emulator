@@ -76,6 +76,7 @@ struct AddressRange : public T {
     X(0xFF10, 0xFF26, Apu)                                                                         \
     X(0xFF40, 0xFF4B, PpuIoRegisters)                                                              \
     X(0xFF04, 0xFF07, Timer)                                                                       \
+    X(0xFEA0, 0xFEFF, Prohibited)                                                                  \
     X(0xFF80, 0xFFFE, HighRam)                                                                     \
     X(0xFF0F, 0xFF0F, InterruptFlag)                                                               \
     X(0xFF01, 0xFF02, SerialPort)                                                                  \

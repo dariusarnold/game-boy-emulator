@@ -69,6 +69,9 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         } else {
             m_logger->error("Signal boot end despite not booting");
         }
+    } else if (memmap::is_in(address, memmap::Prohibited)) {
+        // Some games do this (e.g. Tetris) because of bugs. We should not crash.
+        m_logger->error("Write to prohibited memory");
     } else {
         throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
     }

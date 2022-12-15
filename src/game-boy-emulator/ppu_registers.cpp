@@ -9,6 +9,9 @@ uint8_t PpuRegisters::get_register_value(PpuRegisters::Register r) const {
 }
 
 void PpuRegisters::set_register_value(PpuRegisters::Register r, uint8_t value) {
+    if (r == Register::DmaTransfer) {
+        m_oam_transfer_requested = true;
+    }
     get(r) = value;
 }
 
@@ -86,4 +89,12 @@ uint8_t PpuRegisters::get_register_bit(PpuRegisters::Register r, uint8_t bit_pos
 bool PpuRegisters::is_ppu_enabled() const {
     return get_register_bit(Register::LcdcRegister, static_cast<uint8_t>(LcdcBits::LcdAndPpuEnable))
            == 1;
+}
+
+bool PpuRegisters::was_oam_transfer_requested() const {
+    return m_oam_transfer_requested;
+}
+
+void PpuRegisters::clear_oam_transfer_request() {
+    m_oam_transfer_requested = false;
 }

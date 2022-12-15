@@ -85,6 +85,8 @@ public:
     [[nodiscard]] BgWinAddressMode get_bg_win_address_mode() const;
     [[nodiscard]] TileMapAddressRange get_background_address_range() const;
     [[nodiscard]] bool is_ppu_enabled() const;
+    [[nodiscard]] bool was_oam_transfer_requested() const;
+    void clear_oam_transfer_request();
 
     // General helper functions for writing/reading from the registers
     uint8_t get_register_value(PpuRegisters::Register r) const;
@@ -99,5 +101,5 @@ private:
     uint8_t& get(PpuRegisters::Register r);
     [[nodiscard]] const uint8_t& get(PpuRegisters::Register r) const;
     bool m_fix_ly_register_value;
-
+    bool m_oam_transfer_requested = false;
 };

@@ -3,6 +3,8 @@
 #include "memorymap.hpp"
 #include "emulator.hpp"
 #include "interrupthandler.hpp"
+#include "addressbus.hpp"
+#include "bitmanipulation.hpp"
 #include "fmt/format.h"
 #include "spdlog/spdlog.h"
 #include "magic_enum.hpp"
@@ -47,9 +49,6 @@ void Gpu::write_byte(uint16_t address, uint8_t value) {
         }
         m_vram[address - memmap::VRamBegin] = value;
     } else if (memmap::is_in(address, memmap::PpuIoRegisters)) {
-        if (address == 0xFF46) {
-            throw NotImplementedError("OAM DMA access");
-        }
         m_registers.set_register_value(address, value);
     } else if (memmap::is_in(address, memmap::OamRam)) {
         if (m_registers.is_ppu_enabled()
@@ -83,6 +82,18 @@ const int DURATION_V_BLANK = 10 * (20 + 43 + 51);
 } // namespace
 
 void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
+    if (m_registers.was_oam_transfer_requested()) {
+        m_registers.clear_oam_transfer_request();
+        auto high_byte_address
+            = m_registers.get_register_value(PpuRegisters::Register::DmaTransfer);
+        auto start_address = bitmanip::word_from_bytes(high_byte_address, 0);
+        m_logger->info("OAM DMA transfer from {:04X}", start_address);
+        for (int i = 0; i < memmap::OamRamSize; ++i) {
+            auto x = m_emulator->get_bus()->read_byte(start_address + i);
+            reinterpret_cast<uint8_t*>(m_oam_ram.data())[i] = x;
+        }
+    }
+
     (void)cycles_m_num;
     auto mode = m_registers.get_mode();
     m_clock_count++;
@@ -192,9 +203,6 @@ std::vector<uint8_t> Gpu::get_background() {
         auto tile = get_tile(tile_index);
         std::copy(tile.begin(), tile.end(), std::back_inserter(bg_pixels));
     }
-    m_logger->warn("Tile map indices {}", fmt::join(m_tile_maps, " "));
-    auto all_zero
-        = std::all_of(bg_pixels.begin(), bg_pixels.end(), [](uint8_t x) { return x == 0; });
     return bg_pixels;
 }
 

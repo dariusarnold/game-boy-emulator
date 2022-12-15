@@ -46,7 +46,7 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
 void AddressBus::write_byte(uint16_t address, uint8_t value) {
     if (memmap::is_in(address, memmap::InternalRam) || memmap::is_in(address, memmap::HighRam)) {
         m_emulator->get_ram()->write_byte(address, value);
-    } else if (memmap::is_in(address, memmap::VRam)
+    } else if (memmap::is_in(address, memmap::VRam) || memmap::is_in(address, memmap::OamRam)
                || memmap::is_in(address, memmap::PpuIoRegisters)) {
         m_emulator->get_gpu()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::CartridgeRom)

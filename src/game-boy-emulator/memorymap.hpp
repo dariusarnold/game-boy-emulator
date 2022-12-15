@@ -71,7 +71,7 @@ struct AddressRange : public T {
     X(0x9C00, 0x9FFF, TileMap2)                                                                    \
     X(0xA000, 0xBFFF, CartridgeRam)                                                                \
     X(0xC000, 0xDFFF, InternalRam)                                                                 \
-    X(0xFE00, 0xFE9C, OamRam)                                                                      \
+    X(0xFE00, 0xFE9F, OamRam)                                                                      \
     X(0xFF00, 0xFF7F, IORegisters)                                                                 \
     X(0xFF10, 0xFF26, Apu)                                                                         \
     X(0xFF40, 0xFF4B, PpuIoRegisters)                                                              \

@@ -16,6 +16,7 @@ class Window {
     SDL_Renderer* m_sdl_renderer = nullptr;
     Image m_tile_data_image;
     Image m_background_image;
+    Image m_window_image;
     bool m_done = false;
 
 public:
@@ -26,5 +27,7 @@ public:
     void draw_tile_data_viewer(std::span<uint8_t, memmap::TileDataSize> vram);
     void draw_background(std::vector<uint8_t> background,
                          std::pair<uint8_t, uint8_t> viewport_position);
+    void draw_window(std::vector<uint8_t> window);
+
     bool is_done() const;
 };

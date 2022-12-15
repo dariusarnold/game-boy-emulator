@@ -12,7 +12,8 @@
 
 Window::Window() :
         m_tile_data_image(24 * 8, 16 * 8),
-        m_background_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS) {
+        m_background_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS),
+        m_window_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS) {
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a
     // minority of Windows systems, depending on whether SDL_INIT_GAMECONTROLLER is enabled or
@@ -44,6 +45,7 @@ Window::Window() :
 
     m_tile_data_image.init_texture(m_sdl_renderer);
     m_background_image.init_texture(m_sdl_renderer);
+    m_window_image.init_texture(m_sdl_renderer);
 }
 
 Window::~Window() {
@@ -88,6 +90,7 @@ void Window::draw_frame(const Emulator& emulator) {
 
     draw_background(emulator.get_gpu()->get_background(),
                     emulator.get_gpu()->get_viewport_position());
+    draw_window(emulator.get_gpu()->get_window());
 
     // Rendering
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -166,6 +169,20 @@ void Window::draw_background(std::vector<uint8_t> background,
 
     ImGui::Begin("Background");
     auto my_tex_id = (void*)m_background_image.get_texture();
+    ImGui::Image(my_tex_id, ImVec2(img_width_pixels, img_height_pixels));
+    ImGui::End();
+}
+
+void Window::draw_window(std::vector<uint8_t> window) {
+    // 32x32 tiles, each 16 bytes in size
+    assert(window.size() == 32 * 32 * 16 && "Window size check");
+    const auto [img_width_pixels, img_height_pixels]
+        = graphics::gb::tile_data_to_image(window, m_window_image, 32, 32);
+    graphics::gb::map_gb_color_to_rgba(m_window_image);
+    m_window_image.upload_to_texture();
+
+    ImGui::Begin("Window");
+    auto my_tex_id = (void*)m_window_image.get_texture();
     ImGui::Image(my_tex_id, ImVec2(img_width_pixels, img_height_pixels));
     ImGui::End();
 }

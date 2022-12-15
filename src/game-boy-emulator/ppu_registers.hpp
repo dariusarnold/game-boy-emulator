@@ -82,8 +82,12 @@ public:
     void set_mode(PpuMode mode);
     [[nodiscard]] PpuMode get_mode() const;
     [[nodiscard]] bool is_stat_interrupt_enabled(StatInterruptSource stat_interrupt) const;
+    // Get bit 4 in LCDC register
     [[nodiscard]] BgWinAddressMode get_bg_win_address_mode() const;
+    // Get bit 3 in LCDC register
     [[nodiscard]] TileMapAddressRange get_background_address_range() const;
+    // Get bit 6 in LCDC register
+    [[nodiscard]] TileMapAddressRange get_window_address_range() const;
     [[nodiscard]] bool is_ppu_enabled() const;
     [[nodiscard]] bool was_oam_transfer_requested() const;
     void clear_oam_transfer_request();

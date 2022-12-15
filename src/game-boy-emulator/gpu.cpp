@@ -206,6 +206,20 @@ std::vector<uint8_t> Gpu::get_background() {
     return bg_pixels;
 }
 
+std::vector<uint8_t> Gpu::get_window() {
+    std::vector<uint8_t> window_pixels;
+    for (unsigned i = 0; i < 32 * 32; ++i) {
+        unsigned address_offset = 0;
+        if (m_registers.get_window_address_range() == PpuRegisters::TileMapAddressRange::High) {
+            address_offset = memmap::TileMap1Size;
+        }
+        auto tile_index = m_tile_maps[address_offset + i];
+        auto tile = get_tile(tile_index);
+        std::copy(tile.begin(), tile.end(), std::back_inserter(window_pixels));
+    }
+    return window_pixels;
+}
+
 std::pair<uint8_t, uint8_t> Gpu::get_viewport_position() const {
     auto x = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
     auto y = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);

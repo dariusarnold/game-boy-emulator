@@ -70,6 +70,14 @@ PpuRegisters::TileMapAddressRange PpuRegisters::get_background_address_range() c
     return TileMapAddressRange::Low;
 }
 
+PpuRegisters::TileMapAddressRange PpuRegisters::get_window_address_range() const {
+    auto lcdc = get(Register::LcdcRegister);
+    if (bitmanip::is_bit_set(lcdc, static_cast<int>(LcdcBits::WindowTileMapArea))) {
+        return TileMapAddressRange::High;
+    }
+    return TileMapAddressRange::Low;
+}
+
 void PpuRegisters::set_register_bit(PpuRegisters::Register r, uint8_t bit_position,
                                     uint8_t bit_value) {
     auto& x = get(r);

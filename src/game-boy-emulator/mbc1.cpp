@@ -74,21 +74,10 @@ void Mbc1::write_registers(uint16_t address, uint8_t value) {
 void Mbc1::write_values(uint16_t address, uint8_t value) {
     // Actual RAM/ROM writes
     if (memmap::is_in(address, memmap::CartridgeRomFixedBank)) {
-        uint32_t bank_number = 0;
-        if (m_banking_mode_select == 1) {
-            bank_number = static_cast<uint32_t>(m_bank2 << 5);
-        }
-        uint32_t address_in_rom = get_address_in_rom(address, bank_number);
-        assert(address_in_rom < m_rom.size() && "Write ROM fixed bank out of bounds");
-        m_rom[address_in_rom] = value;
-        return;
+        throw LogicError("Write to fixed ROM bank");
     }
     if (memmap::is_in(address, memmap::CartridgeRomBankSwitchable)) {
-        auto bank_number = static_cast<uint32_t>((m_bank2 << 5) | m_bank1);
-        uint32_t address_in_rom = get_address_in_rom(address, bank_number);
-        assert(address_in_rom < m_rom.size() && "Write ROM switchable bank out of bounds");
-        m_rom[address_in_rom] = value;
-        return;
+        throw LogicError("Write to switchable ROM bank");
     }
     if (memmap::is_in(address, memmap::CartridgeRam)) {
         if (!m_ram_enable) {

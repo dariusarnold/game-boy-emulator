@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cartridge.hpp"
+#include "mbc.hpp"
 
 class Mbc1 : public Mbc {
 

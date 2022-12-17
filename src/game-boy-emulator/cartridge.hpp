@@ -4,32 +4,11 @@ class Emulator;
 namespace spdlog {
 class logger;
 }
+#include "mbc.hpp"
 #include <memory>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
-
-
-class Mbc {
-    std::vector<uint8_t> m_rom;
-    std::shared_ptr<spdlog::logger> m_logger;
-
-protected:
-    Mbc(const Mbc&) = default;
-    Mbc(Mbc&&) = default;
-    Mbc& operator=(const Mbc&) = default;
-    Mbc& operator=(Mbc&&) = default;
-
-    std::vector<uint8_t>& get_rom();
-    [[nodiscard]] const std::vector<uint8_t>& get_rom() const;
-    std::shared_ptr<spdlog::logger> get_logger();
-
-public:
-    [[nodiscard]] virtual uint8_t read_byte(uint16_t address) const = 0;
-    virtual void write_byte(uint16_t address, uint8_t value) = 0;
-    explicit Mbc(std::vector<uint8_t> rom);
-    virtual ~Mbc();
-};
 
 class Cartridge {
 public:
@@ -74,6 +53,18 @@ private:
 
     [[nodiscard]] static Cartridge::CartridgeType
     get_cartridge_type(const std::vector<uint8_t>& rom);
+
+    struct RomInfo {
+        int size_bytes = 0;
+        int num_banks = 0;
+    };
+    struct RamInfo {
+        int size_bytes = 0;
+        int num_banks = 0;
+    };
+
+    [[nodiscard]] RomInfo get_rom_size_info(const std::vector<uint8_t>& rom) const;
+    [[nodiscard]] RamInfo get_ram_size_info(const std::vector<uint8_t>& rom) const;
 
     Emulator* m_emulator;
     std::shared_ptr<spdlog::logger> m_logger;

@@ -4,6 +4,7 @@
 #include "memorymap.hpp"
 #include "exceptions.hpp"
 #include "bitmanipulation.hpp"
+#include "mbc.hpp"
 #include "mbc1.hpp"
 
 #include "fmt/format.h"
@@ -14,7 +15,9 @@
 
 namespace {
 const int CARTRIDGE_TYPE_OFFSET = 0x147;
-}
+const int ROM_SIZE = 0x148;
+const int RAM_SIZE = 0x149;
+} // namespace
 
 Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
         m_emulator(emulator), m_logger(spdlog::get("")) {
@@ -22,13 +25,16 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
         throw LogicError(
             fmt::format("ROM only {} bytes, does not contain cartridge header", rom.size()));
     }
+    auto ram_size_info = get_ram_size_info(rom);
+
     // Initialize after size check to avoid potential out-of-bounds access.
     m_cartridge_type = get_cartridge_type(rom);
+    m_logger->info("Detected MBC type {}", magic_enum::enum_name(m_cartridge_type));
     switch (m_cartridge_type) {
     case CartridgeType::ROM_ONLY:
     case CartridgeType::MBC1:
     case CartridgeType::MBC1_RAM:
-        m_mbc = std::make_unique<Mbc1>(std::move(rom));
+        m_mbc = std::make_unique<Mbc1>(std::move(rom), ram_size_info.size_bytes);
         break;
     default:
         throw NotImplementedError(fmt::format("Cartridge type {} not implemented",
@@ -52,18 +58,28 @@ Cartridge::CartridgeType Cartridge::get_cartridge_type(const std::vector<uint8_t
     throw LogicError(fmt::format("Invalid value {:02X} for cartridge type", val));
 }
 
-Mbc::Mbc(std::vector<uint8_t> rom) : m_rom(std::move(rom)), m_logger(spdlog::get("")) {}
-
-std::vector<uint8_t>& Mbc::get_rom() {
-    return m_rom;
+Cartridge::RomInfo Cartridge::get_rom_size_info(const std::vector<uint8_t>& rom) const {
+    auto val = rom[ROM_SIZE];
+    if (val > 0x8) {
+        throw LogicError("Invalid value for ROM size");
+    }
+    return {(32 * 1024) * (1 << val), 1 << val};
 }
 
-const std::vector<uint8_t>& Mbc::get_rom() const {
-    return m_rom;
+Cartridge::RamInfo Cartridge::get_ram_size_info(const std::vector<uint8_t>& rom) const {
+    auto val = rom[RAM_SIZE];
+    switch (val) {
+    case 0:
+        return {0, 0};
+    case 2:
+        return {8 * 104, 1};
+    case 3:
+        return {32 * 1024, 4};
+    case 4:
+        return {128 * 1024, 16};
+    case 5:
+        return {64 * 1024, 8};
+    default:
+        throw LogicError("Invalid value for RAM size");
+    }
 }
-
-std::shared_ptr<spdlog::logger> Mbc::get_logger() {
-    return m_logger;
-}
-
-Mbc::~Mbc() = default;

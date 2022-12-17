@@ -41,6 +41,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/image.hpp
         game-boy-emulator/joypad.cpp
         game-boy-emulator/joypad.hpp
+        game-boy-emulator/mbc.cpp
+        game-boy-emulator/mbc.hpp
         game-boy-emulator/mbc1.cpp
         game-boy-emulator/mbc1.hpp
         )

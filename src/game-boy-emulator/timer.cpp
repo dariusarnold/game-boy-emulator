@@ -44,6 +44,7 @@ void Timer::cycle_elapsed_callback(size_t cycle_num) {
 
 namespace {
 constexpr uint16_t ADDRESS_DIVIDER_REGISTER = 0xFF04;
+constexpr uint16_t ADDRESS_TIMER_COUNTER = 0xFF05;
 constexpr uint16_t ADDRESS_TIMER_MODULO = 0xFF06;
 constexpr uint16_t ADDRESS_TIMER_CONTROL = 0xFF07;
 } // namespace
@@ -65,4 +66,18 @@ void Timer::write_byte(uint16_t address, uint8_t value) {
     } else {
         throw LogicError(fmt::format("Invalid write of {:02X} in timer to {:04X}", value, address));
     }
+}
+
+uint8_t Timer::read_byte(uint16_t address) const {
+    switch (address) {
+    case ADDRESS_DIVIDER_REGISTER:
+        return m_divider_register;
+    case ADDRESS_TIMER_COUNTER:
+        return m_timer_counter;
+    case ADDRESS_TIMER_MODULO:
+        return m_timer_modulo;
+    case ADDRESS_TIMER_CONTROL:
+        return m_timer_control;
+    }
+    throw LogicError(fmt::format("Timer invalid read from {:04X}", address));
 }

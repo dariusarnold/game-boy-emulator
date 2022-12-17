@@ -12,6 +12,7 @@
 #include "interrupthandler.hpp"
 #include "apu.hpp"
 #include "joypad.hpp"
+#include "timer.hpp"
 
 #include "spdlog/spdlog.h"
 
@@ -40,6 +41,9 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     }
     if (memmap::is_in(address, memmap::InterruptEnable)) {
         return m_emulator->get_interrupt_handler()->read_interrupt_enable();
+    }
+    if (memmap::is_in(address, memmap::Timer)) {
+        return m_emulator->get_timer()->read_byte(address);
     }
     if (memmap::is_in(address, memmap::Joypad)) {
         return m_emulator->get_joypad()->read_byte();

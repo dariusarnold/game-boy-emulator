@@ -26,4 +26,5 @@ public:
     void cycle_elapsed_callback(size_t cycle_num);
 
     void write_byte(uint16_t address, uint8_t value);
+    [[nodiscard]] uint8_t read_byte(uint16_t address) const;
 };

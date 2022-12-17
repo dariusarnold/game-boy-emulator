@@ -28,7 +28,7 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
         m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
         m_timer(std::make_shared<Timer>(this)),
         m_serial_port(std::make_shared<SerialPort>(this)),
-        m_joypad(std::make_shared<Joypad>()),
+        m_joypad(std::make_shared<Joypad>(this)),
         m_logger(spdlog::get("")) {}
 
 Emulator::Emulator(const std::vector<uint8_t>& game_rom, EmulatorOptions options) :

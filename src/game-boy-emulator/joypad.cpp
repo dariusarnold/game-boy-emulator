@@ -1,11 +1,22 @@
 #include "joypad.hpp"
 
 #include "bitmanipulation.hpp"
+#include "emulator.hpp"
+#include "interrupthandler.hpp"
 #include <cstddef>
 
 void Joypad::press_key(Joypad::Keys key) {
     m_key_states[static_cast<size_t>(key)] = Joypad::KeyStatus::Pressed;
     update_register();
+    // Only request interrupt if the key type (Action/Movement) is enabled
+    if ((bitmanip::is_bit_set(m_register, static_cast<int>(Joypad::BitValues::SelectActionButtons))
+         && key >= Keys::A)
+        || (bitmanip::is_bit_set(m_register,
+                                 static_cast<int>(Joypad::BitValues::SelectDirectionButtons))
+            && key < Keys::A)) {
+        m_emulator->get_interrupt_handler()->request_interrupt(
+            InterruptHandler::InterruptType::Joypad);
+    }
 }
 
 void Joypad::release_key(Joypad::Keys key) {
@@ -58,4 +69,8 @@ void Joypad::update_register() {
 
 Joypad::KeyStatus Joypad::get_key_state(Joypad::Keys key) const {
     return m_key_states[static_cast<size_t>(key)];
+}
+
+Joypad::Joypad(Emulator* emulator) : m_emulator(emulator) {
+    m_key_states.fill(KeyStatus::Released);
 }

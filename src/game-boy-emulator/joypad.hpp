@@ -1,5 +1,6 @@
 #pragma once
 
+class Emulator;
 #include <cstdint>
 #include <array>
 #include <memory>
@@ -26,20 +27,24 @@ class Joypad {
     // Indexed by keys, store if a key is pressed.
     std::array<KeyStatus, 8> m_key_states;
 
+    Emulator* m_emulator;
+
     void update_register();
 
 public:
+    Joypad(Emulator* emulator);
+
     enum class Keys {
         // Movement buttons
-        Up,
-        Down,
-        Left,
-        Right,
+        Up = 0,
+        Down = 1,
+        Left = 2,
+        Right = 3,
         // Action buttons
-        A,
-        B,
-        Start,
-        Select,
+        A = 4,
+        B = 5,
+        Start = 6,
+        Select = 7,
     };
 
     void press_key(Keys key);

@@ -42,6 +42,7 @@ Emulator::Emulator(const std::vector<uint8_t>& game_rom, EmulatorOptions options
         m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
         m_timer(std::make_shared<Timer>(this)),
         m_serial_port(std::make_shared<SerialPort>(this)),
+        m_joypad(std::make_shared<Joypad>(this)),
         m_logger(spdlog::get("")) {
     m_state.is_booting = false;
     m_cpu->set_initial_state();

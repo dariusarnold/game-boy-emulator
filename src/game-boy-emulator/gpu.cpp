@@ -184,12 +184,30 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
 
 std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) {
     if (m_registers.get_bg_win_address_mode() == PpuRegisters::BgWinAddressMode::Unsigned) {
-        return std::span<uint8_t, constants::BYTES_PER_TILE>{
-            m_vram.data() + tile_index * constants::BYTES_PER_TILE, constants::BYTES_PER_TILE};
+        // In unsigned indexing, the sprites are in order in memory, starting at 0x8000
+        const size_t index_begin = tile_index * constants::BYTES_PER_TILE;
+        assert(index_begin < (m_vram.size() - constants::BYTES_PER_TILE)
+               && "Out of bounds signed tile access");
+        return std::span<uint8_t, constants::BYTES_PER_TILE>{m_vram.data() + index_begin,
+                                                             constants::BYTES_PER_TILE};
     }
+    // In unsigned indexing, the first 0-127 tiles are from 0x9000-0x97FF (last block of the tile
+    // data portion of the vram). The tiles 128-255 are in the second block from 0x8800-0x8FFF.
+    if (tile_index < 128) {
+        // Skip the first 255 sprites (block 0 and 1) and index into block 2.
+        size_t index_begin
+            = 255 * constants::BYTES_PER_TILE + tile_index * constants::BYTES_PER_TILE;
+        assert(index_begin < (m_vram.size() - constants::BYTES_PER_TILE)
+               && "Out of bounds signed tile access in block 2");
+        return std::span<uint8_t, constants::BYTES_PER_TILE>{m_vram.data() + index_begin,
+                                                             constants::BYTES_PER_TILE};
+    }
+    // Tiles 128-255 lie within block 1. We can use the index from 0;jhknasdwaslkjn
+    size_t index_begin = tile_index * constants::BYTES_PER_TILE;
     return std::span<uint8_t, constants::BYTES_PER_TILE>{
-        m_vram.data() + m_vram.size() - 1 - tile_index * constants::BYTES_PER_TILE,
-        constants::BYTES_PER_TILE};
+        m_vram.data() + index_begin, constants::BYTES_PER_TILE};
+}
+
 }
 
 std::vector<uint8_t> Gpu::get_background() {

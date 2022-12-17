@@ -84,7 +84,7 @@ std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data, Image& imag
     }
     return {image_width_tiles * 8, image_height_tiles * 8};
 }
-void gb::map_gb_color_to_rgba(Image& image) {
+void map_gb_color_to_rgba(Image& image) {
     const auto palette = get_palette();
     for (size_t i = 0; i < image.size(); ++i) {
         image.set_pixel(i, palette[image.get_pixel(i)]);

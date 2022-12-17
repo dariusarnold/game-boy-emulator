@@ -53,3 +53,17 @@ Cartridge::CartridgeType Cartridge::get_cartridge_type(const std::vector<uint8_t
 }
 
 Mbc::Mbc(std::vector<uint8_t> rom) : m_rom(std::move(rom)), m_logger(spdlog::get("")) {}
+
+std::vector<uint8_t>& Mbc::get_rom() {
+    return m_rom;
+}
+
+const std::vector<uint8_t>& Mbc::get_rom() const {
+    return m_rom;
+}
+
+std::shared_ptr<spdlog::logger> Mbc::get_logger() {
+    return m_logger;
+}
+
+Mbc::~Mbc() = default;

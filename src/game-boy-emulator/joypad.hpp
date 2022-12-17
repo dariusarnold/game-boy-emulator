@@ -25,14 +25,14 @@ class Joypad {
     };
 
     // Indexed by keys, store if a key is pressed.
-    std::array<KeyStatus, 8> m_key_states;
+    std::array<KeyStatus, 8> m_key_states{};
 
     Emulator* m_emulator;
 
     void update_register();
 
 public:
-    Joypad(Emulator* emulator);
+    explicit Joypad(Emulator* emulator);
 
     enum class Keys {
         // Movement buttons

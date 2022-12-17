@@ -26,14 +26,14 @@ uint8_t Mbc1::read_byte(uint16_t address) const {
             bank_number = static_cast<uint32_t>(m_bank2 << 5);
         }
         uint32_t address_in_rom = get_address_in_rom(address, bank_number);
-        assert(address_in_rom < m_rom.size() && "Read ROM fixed bank out of bounds");
-        return m_rom[address_in_rom];
+        assert(address_in_rom < get_rom().size() && "Read ROM fixed bank out of bounds");
+        return get_rom()[address_in_rom];
     }
     if (memmap::is_in(address, memmap::CartridgeRomBankSwitchable)) {
         auto bank_number = static_cast<uint32_t>((m_bank2 << 5) | m_bank1);
         uint32_t address_in_rom = get_address_in_rom(address, bank_number);
-        assert(address_in_rom < m_rom.size() && "Read ROM switchable bank out of bounds");
-        return m_rom[address_in_rom];
+        assert(address_in_rom < get_rom().size() && "Read ROM switchable bank out of bounds");
+        return get_rom()[address_in_rom];
     }
     if (memmap::is_in(address, memmap::CartridgeRam)) {
         uint32_t bank_number = 0;
@@ -41,8 +41,8 @@ uint8_t Mbc1::read_byte(uint16_t address) const {
             bank_number = static_cast<uint32_t>(m_bank2 << 13);
         }
         uint32_t address_in_rom = bank_number << 13 | (address & 0b1111111111111);
-        assert(address_in_rom < m_rom.size() && "Read to cartridge RAM bank out of bounds");
-        return m_rom[address_in_rom];
+        assert(address_in_rom < get_rom().size() && "Read to cartridge RAM bank out of bounds");
+        return get_rom()[address_in_rom];
     }
     throw LogicError(fmt::format("Cartridge trying to read from {:04X}", address));
 }
@@ -58,6 +58,7 @@ void Mbc1::write_registers(uint16_t address, uint8_t value) {
     } else if (memmap::is_in(address, memmap::RomBankNumber)) {
         // BANK1
         if ((value & 0b11111) == 0) {
+            // Rom bank X0 can't be selected. Selecting it will select rom bank X1
             value += 1;
         }
         m_bank1 = (value & 0b11111);
@@ -66,8 +67,8 @@ void Mbc1::write_registers(uint16_t address, uint8_t value) {
     } else if (memmap::is_in(address, memmap::BankingModeSelect)) {
         m_banking_mode_select = value & 1;
     }
-    m_logger->debug("Cartridge registers: RAMG {}, BANK1 {:05B}, BANK2 {:02b}, MODE {:1B}",
-                    m_ram_enable, m_bank1, m_bank2, m_banking_mode_select);
+    get_logger()->debug("Cartridge registers: RAMG {}, BANK1 {:05B}, BANK2 {:02b}, MODE {:1B}",
+                        m_ram_enable, m_bank1, m_bank2, m_banking_mode_select);
 }
 
 void Mbc1::write_values(uint16_t address, uint8_t value) {
@@ -91,14 +92,14 @@ void Mbc1::write_values(uint16_t address, uint8_t value) {
     }
     if (memmap::is_in(address, memmap::CartridgeRam)) {
         if (!m_ram_enable) {
-            m_logger->warn("Write to {:04X} with disabled ram");
+            get_logger()->warn("Write to {:04X} with disabled ram");
         }
         uint32_t bank_number = 0;
         if (m_banking_mode_select == 1) {
             bank_number = static_cast<uint32_t>(m_bank2 << 13);
         }
         uint32_t address_in_rom = bank_number << 13 | (address & 0b1111111111111);
-        assert(address_in_rom < m_rom.size() && "Write to cartridge RAM bank out of bounds");
-        m_rom[address_in_rom] = value;
+        assert(address_in_rom < get_rom().size() && "Write to cartridge RAM bank out of bounds");
+        get_rom()[address_in_rom] = value;
     }
 }

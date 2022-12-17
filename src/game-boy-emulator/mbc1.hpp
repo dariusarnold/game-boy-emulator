@@ -19,6 +19,6 @@ class Mbc1 : public Mbc {
 
 public:
     using Mbc::Mbc;
-    uint8_t read_byte(uint16_t address) const override;
+    [[nodiscard]] uint8_t read_byte(uint16_t address) const override;
     void write_byte(uint16_t address, uint8_t value) override;
 };

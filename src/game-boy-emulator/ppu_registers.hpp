@@ -93,11 +93,11 @@ public:
     void clear_oam_transfer_request();
 
     // General helper functions for writing/reading from the registers
-    uint8_t get_register_value(PpuRegisters::Register r) const;
-    uint8_t get_register_value(uint16_t address) const;
-    uint8_t get_register_bit(PpuRegisters::Register r, uint8_t bit_position) const;
+    [[nodiscard]] uint8_t get_register_value(PpuRegisters::Register r) const;
+    [[nodiscard]] uint8_t get_register_value(uint16_t address) const;
+    [[nodiscard]] uint8_t get_register_bit(PpuRegisters::Register r, uint8_t bit_position) const;
     void set_register_value(PpuRegisters::Register r, uint8_t value);
-    void set_register_value(uint16_t, uint8_t value);
+    void set_register_value(uint16_t address, uint8_t value);
     void set_register_bit(PpuRegisters::Register r, uint8_t bit_position, uint8_t bit_value);
     void increment_register(PpuRegisters::Register r);
 

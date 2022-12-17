@@ -11,14 +11,24 @@ class logger;
 
 
 class Mbc {
-public:
     std::vector<uint8_t> m_rom;
     std::shared_ptr<spdlog::logger> m_logger;
 
+protected:
+    Mbc(const Mbc&) = default;
+    Mbc(Mbc&&) = default;
+    Mbc& operator=(const Mbc&) = default;
+    Mbc& operator=(Mbc&&) = default;
+
+    std::vector<uint8_t>& get_rom();
+    [[nodiscard]] const std::vector<uint8_t>& get_rom() const;
+    std::shared_ptr<spdlog::logger> get_logger();
+
+public:
     [[nodiscard]] virtual uint8_t read_byte(uint16_t address) const = 0;
     virtual void write_byte(uint16_t address, uint8_t value) = 0;
     explicit Mbc(std::vector<uint8_t> rom);
-    virtual ~Mbc() = default;
+    virtual ~Mbc();
 };
 
 class Cartridge {
@@ -62,7 +72,8 @@ private:
         HUC1_RAM_BATTERY,
     };
 
-    [[nodiscard]] static Cartridge::CartridgeType get_cartridge_type(const std::vector<uint8_t>&) ;
+    [[nodiscard]] static Cartridge::CartridgeType
+    get_cartridge_type(const std::vector<uint8_t>& rom);
 
     Emulator* m_emulator;
     std::shared_ptr<spdlog::logger> m_logger;

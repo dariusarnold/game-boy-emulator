@@ -78,7 +78,7 @@ const int DURATION_OAM_SEARCH = 20;
 const int DURATION_PIXEL_TRANSFER = 43;
 const int DURATION_H_BLANK = 51;
 const int DURATION_SCANLINE = DURATION_OAM_SEARCH + DURATION_PIXEL_TRANSFER + DURATION_H_BLANK;
-const int DURATION_V_BLANK = 10 * (20 + 43 + 51);
+//const int DURATION_V_BLANK = 10 * (20 + 43 + 51);
 } // namespace
 
 void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {

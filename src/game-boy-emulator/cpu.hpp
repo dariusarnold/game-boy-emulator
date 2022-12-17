@@ -35,7 +35,7 @@ struct CpuDebugState {
     uint16_t sp;
     uint16_t pc;
     std::array<uint8_t, 4> mem_pc;
-    bool operator==(const CpuDebugState& other) const = default;
+    friend bool operator==(const CpuDebugState& a, const CpuDebugState& b);
 };
 
 std::ostream& operator<<(std::ostream& os, const CpuDebugState& cds);

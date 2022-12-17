@@ -63,8 +63,8 @@ public:
     [[nodiscard]] opcodes::Instruction get_current_instruction() const;
     [[nodiscard]] opcodes::Instruction get_previous_instruction() const;
 
-    const EmulatorOptions& get_options() const;
-    const EmulatorState& get_state() const;
+    [[nodiscard]] const EmulatorOptions& get_options() const;
+    [[nodiscard]] const EmulatorState& get_state() const;
 
     [[nodiscard]] std::shared_ptr<AddressBus> get_bus() const;
     [[nodiscard]] std::shared_ptr<Ram> get_ram() const;

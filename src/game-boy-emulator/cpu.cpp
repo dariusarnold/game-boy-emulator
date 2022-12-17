@@ -1148,3 +1148,5 @@ std::ostream& operator<<(std::ostream& os, const CpuDebugState& cds) {
                cds.a, cds.f, cds.b, cds.c, cds.d, cds.e, cds.h, cds.l, cds.sp, cds.pc,
                cds.mem_pc[0], cds.mem_pc[1], cds.mem_pc[2], cds.mem_pc[3]);
 }
+
+bool operator==(const CpuDebugState& a, const CpuDebugState& b) = default;

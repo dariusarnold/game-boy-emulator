@@ -6,6 +6,7 @@
 #include "bitmanipulation.hpp"
 #include "mbc.hpp"
 #include "mbc1.hpp"
+#include "mbc3.hpp"
 
 #include "fmt/format.h"
 #include "magic_enum.hpp"
@@ -31,10 +32,15 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
     m_cartridge_type = get_cartridge_type(rom);
     m_logger->info("Detected MBC type {}", magic_enum::enum_name(m_cartridge_type));
     switch (m_cartridge_type) {
-    case CartridgeType::ROM_ONLY:
     case CartridgeType::MBC1:
     case CartridgeType::MBC1_RAM:
         m_mbc = std::make_unique<Mbc1>(std::move(rom), ram_size_info.size_bytes);
+        break;
+    case CartridgeType::MBC3:
+    case CartridgeType::MBC3_RAM:
+    case CartridgeType::MBC3_RAM_BATTERY:
+    case CartridgeType::MBC3_TIMER_RAM_BATTERY:
+        m_mbc = std::make_unique<Mbc3>(std::move(rom), ram_size_info.size_bytes);
         break;
     default:
         throw NotImplementedError(fmt::format("Cartridge type {} not implemented",

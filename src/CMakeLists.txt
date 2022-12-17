@@ -45,6 +45,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/mbc.hpp
         game-boy-emulator/mbc1.cpp
         game-boy-emulator/mbc1.hpp
+        game-boy-emulator/mbc3.cpp
+        game-boy-emulator/mbc3.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

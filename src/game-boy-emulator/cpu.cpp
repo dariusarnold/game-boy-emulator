@@ -77,7 +77,6 @@ void Cpu::step() {
         instructionADD_Signed(data);
         break;
     case opcodes::InstructionType::NOP:
-        m_emulator->elapse_cycle();
         break;
     case opcodes::InstructionType::DI:
         m_emulator->set_interrupts_enabled(false);
@@ -249,13 +248,13 @@ bool was_indirect_access(uint8_t opcode_byte) {
 
 opcodes::Instruction Cpu::fetch_instruction() {
     auto byte = m_emulator->get_bus()->read_byte(registers.pc);
+    m_emulator->elapse_cycle();
     auto instruction = opcodes::get_instruction_by_value(byte);
     if (instruction.instruction_type == opcodes::InstructionType::NONE) {
         abort_execution<NotImplementedError>(
             fmt::format("Encountered unsupported opcode {:02X} at pc {:04X}", byte, registers.pc));
     }
     registers.pc++;
-    m_emulator->elapse_cycle();
     instruction.opcode = byte;
     return instruction;
 }
@@ -430,6 +429,10 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
     case opcodes::InteractionType::Register_Register:
         value = get_register_value(instruction.register_type_source);
         set_register_value(instruction.register_type_destination, value);
+        if (instruction.opcode == 0xF9) {
+            // The only word/word LD instruction, it takes one more cycle
+            m_emulator->elapse_cycle();
+        }
         return;
     case opcodes::InteractionType::AddressRegister_Register:
         // This is actually the address of the destination.
@@ -781,16 +784,18 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
         value_original = get_register_value(instruction.register_type_destination);
         set_register_value(instruction.register_type_destination, operation(value_original, 1));
     }
-    // Setting flags
+    // Setting flags ( The two additional cycles are for all word INC/DECs which are not indirect).
     switch (instruction.register_type_destination) {
     case opcodes::RegisterType::BC:
     case opcodes::RegisterType::DE:
     case opcodes::RegisterType::SP:
+        m_emulator->elapse_cycle();
         // No flags set in case of word register operations except when HL is functioning as an
         // address register
         break;
     case opcodes::RegisterType::HL:
         if (instruction.interaction_type == opcodes::InteractionType::Register) {
+            m_emulator->elapse_cycle();
             break;
         }
         [[fallthrough]];
@@ -811,7 +816,6 @@ void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
         m_emulator->elapse_cycle();
         push_word_on_stack(registers.pc);
         registers.pc = data;
-        m_emulator->elapse_cycle();
     }
 }
 void Cpu::instructionPUSH(opcodes::Instruction instruction) {
@@ -861,6 +865,7 @@ void Cpu::instructionCP(opcodes::Instruction instruction, uint8_t data) {
     } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
         auto address = get_register_value(instruction.register_type_source);
         data = m_emulator->get_bus()->read_byte(address);
+        m_emulator->elapse_cycle();
     }
     set_zero_flag(registers.a == data);
     const auto hc = internal::was_half_carry(registers.a, data, std::minus{});
@@ -875,6 +880,7 @@ void Cpu::instructionANDORXOR(opcodes::Instruction instruction, uint8_t data) {
     } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
         auto address = get_register_value(instruction.register_type_source);
         data = m_emulator->get_bus()->read_byte(address);
+        m_emulator->elapse_cycle();
     }
     switch (instruction.instruction_type) {
     case opcodes::InstructionType::AND:
@@ -908,6 +914,7 @@ void Cpu::instructionSUB(opcodes::Instruction instruction, uint8_t data) {
     } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
         auto address = get_register_value(instruction.register_type_source);
         data = m_emulator->get_bus()->read_byte(address);
+        m_emulator->elapse_cycle();
     }
     const auto hc = internal::was_half_carry(registers.a, data, std::minus{});
     set_carry_flag(registers.a < data);
@@ -924,6 +931,7 @@ void Cpu::instructionADD(opcodes::Instruction instruction, uint16_t data) {
     } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
         auto address = get_register_value(instruction.register_type_source);
         data = m_emulator->get_bus()->read_byte(address);
+        m_emulator->elapse_cycle();
     }
     auto destination_register_value = get_register_value(instruction.register_type_destination);
     const auto hc = [&] {
@@ -975,6 +983,7 @@ void Cpu::instructionADC(opcodes::Instruction instruction, uint8_t data) {
     } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
         auto address = get_register_value(instruction.register_type_source);
         data = m_emulator->get_bus()->read_byte(address);
+        m_emulator->elapse_cycle();
     }
     auto carry = bitmanip::bit_value(registers.f, static_cast<uint8_t>(flags::carry));
     auto sum = registers.a + data + carry;
@@ -994,6 +1003,7 @@ void Cpu::instructionSBC(opcodes::Instruction instruction, uint8_t data) {
     } else if (instruction.interaction_type == opcodes::InteractionType::Register_AddressRegister) {
         auto address = get_register_value(instruction.register_type_source);
         data = m_emulator->get_bus()->read_byte(address);
+        m_emulator->elapse_cycle();
     }
     auto carry = bitmanip::bit_value(registers.f, static_cast<uint8_t>(flags::carry));
     auto result = registers.a - data - carry;

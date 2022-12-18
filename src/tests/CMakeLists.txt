@@ -18,6 +18,7 @@ add_executable(game_boy_emulator_tests
         test_blargg10_comparison.cpp
         test_blargg11_comparison.cpp
         test_framebuffer.cpp
+        test_instruction_timing.cpp
         )
 
 target_link_libraries(game_boy_emulator_tests PRIVATE

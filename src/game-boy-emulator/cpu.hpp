@@ -106,18 +106,6 @@ private:
     void instruction_cb_test_bit(opcodes::RegisterType register_type, uint8_t position);
 
     /**
-     * Convert second byte of cb opcodes to the register, upon which this instruction operators
-     * @param opcode_byte
-     * @return
-     */
-    uint8_t op_code_to_register(uint8_t opcode_byte);
-
-    /**
-     * Write value to register specified by the opcode. Used for the second byte of CB instruction.
-     */
-    void write_to_destination(uint8_t opcode_byte, uint8_t value);
-
-    /**
      * Read next instruction from address at program counter.
      * After this method reads the new opcode, the program counter will be incremented to point past
      * the opcode read

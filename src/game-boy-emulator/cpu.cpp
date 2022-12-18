@@ -184,68 +184,6 @@ void Cpu::instruction_cb_test_bit(opcodes::RegisterType register_type, uint8_t p
     set_half_carry_flag(BitValues::Active);
 }
 
-uint8_t Cpu::op_code_to_register(uint8_t opcode_byte) {
-    switch (opcode_byte % 8) {
-    case 0:
-        return registers.b;
-    case 1:
-        return registers.c;
-    case 2:
-        return registers.d;
-    case 3:
-        return registers.e;
-    case 4:
-        return registers.h;
-    case 5:
-        return registers.l;
-    case 6:
-        return m_emulator->get_bus()->read_byte(registers.hl);
-    case 7:
-        return registers.a;
-    default:
-        throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", opcode_byte));
-    }
-}
-
-void Cpu::write_to_destination(uint8_t opcode_byte, uint8_t value) {
-    switch (opcode_byte % 8) {
-    case 0:
-        registers.b = value;
-        break;
-    case 1:
-        registers.c = value;
-        break;
-    case 2:
-        registers.d = value;
-        break;
-    case 3:
-        registers.e = value;
-        break;
-    case 4:
-        registers.h = value;
-        break;
-    case 5:
-        registers.l = value;
-        break;
-    case 6:
-        m_emulator->get_bus()->write_byte(registers.hl, value);
-        break;
-    case 7:
-        registers.a = value;
-        break;
-    default:
-        throw std::logic_error(fmt::format("Wrong register for opcode {:02x}", opcode_byte));
-    }
-}
-
-/**
- * Check if second byte of CB opcode did indirect memory access
- * @return True if RAM was accessed, else false
- */
-bool was_indirect_access(uint8_t opcode_byte) {
-    return opcode_byte % 8 == 6;
-}
-
 opcodes::Instruction Cpu::fetch_instruction() {
     auto byte = m_emulator->get_bus()->read_byte(registers.pc);
     m_emulator->elapse_cycle();
@@ -820,7 +758,6 @@ void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
 }
 void Cpu::instructionPUSH(opcodes::Instruction instruction) {
     m_emulator->elapse_cycle();
-    auto bus = m_emulator->get_bus();
     auto value = get_register_value(instruction.register_type_destination);
     push_word_on_stack(value);
 }
@@ -1090,7 +1027,6 @@ uint8_t Cpu::instructionRRC(uint8_t data) {
 void Cpu::call_isr(uint16_t isr_address) {
     m_emulator->elapse_cycle();
     m_emulator->elapse_cycle();
-    auto bus = m_emulator->get_bus();
     push_word_on_stack(registers.pc);
     registers.pc = isr_address;
     m_emulator->elapse_cycle();

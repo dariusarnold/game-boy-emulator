@@ -1,6 +1,7 @@
 #pragma once
 
 #include "memorymap.hpp"
+#include "graphics.hpp"
 #include <cstdint>
 #include <array>
 
@@ -91,6 +92,9 @@ public:
     [[nodiscard]] bool is_ppu_enabled() const;
     [[nodiscard]] bool was_oam_transfer_requested() const;
     void clear_oam_transfer_request();
+    [[nodiscard]] bool is_background_enabled() const;
+    [[nodiscard]] bool is_window_enabled() const;
+    [[nodiscard]] std::array<graphics::gb::ColorGb, 4> get_background_palette() const;
 
     // General helper functions for writing/reading from the registers
     [[nodiscard]] uint8_t get_register_value(PpuRegisters::Register r) const;

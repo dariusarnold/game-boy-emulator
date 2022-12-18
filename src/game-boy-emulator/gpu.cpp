@@ -5,6 +5,8 @@
 #include "interrupthandler.hpp"
 #include "addressbus.hpp"
 #include "bitmanipulation.hpp"
+#include "graphics.hpp"
+
 #include "fmt/format.h"
 #include "spdlog/spdlog.h"
 #include "magic_enum.hpp"
@@ -14,7 +16,13 @@
 Gpu::Gpu(Emulator* emulator) :
         m_registers(emulator->get_options().stub_ly),
         m_logger(spdlog::get("")),
-        m_emulator(emulator) {}
+        m_emulator(emulator),
+        m_background_framebuffer_gb(constants::BACKGROUND_SIZE_PIXELS,
+                                    constants::BACKGROUND_SIZE_PIXELS,
+                                    graphics::gb::ColorGb::White),
+        m_background_framebuffer_screen(constants::BACKGROUND_SIZE_PIXELS,
+                                        constants::BACKGROUND_SIZE_PIXELS,
+                                        graphics::gb::ColorScreen::White) {}
 
 uint8_t Gpu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::TileData)) {
@@ -142,6 +150,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
     case PpuMode::HBlank_0:
         if (m_clock_count >= DURATION_H_BLANK) {
 
+            write_scanline();
             m_registers.increment_register(PpuRegisters::Register::LyRegister);
 
             auto new_mode = PpuMode::OamScan_2;
@@ -202,26 +211,37 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) 
         return std::span<uint8_t, constants::BYTES_PER_TILE>{m_vram.data() + index_begin,
                                                              constants::BYTES_PER_TILE};
     }
-    // Tiles 128-255 lie within block 1. We can use the index from 0;jhknasdwaslkjn
+    // Tiles 128-255 lie within block 1. We can use the index from 0;
     size_t index_begin = tile_index * constants::BYTES_PER_TILE;
-    return std::span<uint8_t, constants::BYTES_PER_TILE>{
-        m_vram.data() + index_begin, constants::BYTES_PER_TILE};
+    return std::span<uint8_t, constants::BYTES_PER_TILE>{m_vram.data() + index_begin,
+                                                         constants::BYTES_PER_TILE};
 }
 
-}
-
-std::vector<uint8_t> Gpu::get_background() {
-    std::vector<uint8_t> bg_pixels;
-    for (unsigned i = 0; i < 32 * 32; ++i) {
-        unsigned address_offset = 0;
-        if (m_registers.get_background_address_range() == PpuRegisters::TileMapAddressRange::High) {
-            address_offset = memmap::TileMap1Size;
-        }
-        auto tile_index = m_tile_maps[address_offset + i];
-        auto tile = get_tile(tile_index);
-        std::copy(tile.begin(), tile.end(), std::back_inserter(bg_pixels));
+std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile_from_map(uint8_t tile_map_x,
+                                                                     uint8_t tile_map_y) {
+    unsigned address_offset = 0;
+    if (m_registers.get_background_address_range() == PpuRegisters::TileMapAddressRange::High) {
+        address_offset = memmap::TileMap1Size;
     }
-    return bg_pixels;
+    auto tile_map_index = address_offset + tile_map_x + tile_map_y * 32;
+    auto tile_index = m_tile_maps[tile_map_index];
+    return get_tile(tile_index);
+}
+
+const Framebuffer<graphics::gb::ColorScreen>& Gpu::get_background() {
+    return m_background_framebuffer_screen;
+    //    std::vector<uint8_t> bg_pixels;
+    //    unsigned address_offset = 0;
+    //    if (m_registers.get_background_address_range() == PpuRegisters::TileMapAddressRange::High)
+    //    {
+    //        address_offset = memmap::TileMap1Size;
+    //    }
+    //    for (unsigned i = 0; i < 32 * 32; ++i) {
+    //        auto tile_index = m_tile_maps[address_offset + i];
+    //        auto tile = get_tile(tile_index);
+    //        std::copy(tile.begin(), tile.end(), std::back_inserter(bg_pixels));
+    //    }
+    //    return bg_pixels;
 }
 
 std::vector<uint8_t> Gpu::get_window() {
@@ -236,6 +256,66 @@ std::vector<uint8_t> Gpu::get_window() {
         std::copy(tile.begin(), tile.end(), std::back_inserter(window_pixels));
     }
     return window_pixels;
+}
+
+void Gpu::write_scanline() {
+    if (!m_registers.is_ppu_enabled()) {
+        return;
+    }
+    if (m_registers.is_background_enabled()) {
+        draw_background_line();
+    }
+    if (m_registers.is_window_enabled()) {
+        draw_window_line();
+    }
+}
+
+void Gpu::draw_window_line() {}
+
+void Gpu::draw_background_line() {
+    unsigned const screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
+    unsigned const tile_y = screen_y / 8;
+
+    // First update the line in the complete background framebuffer
+    for (unsigned tile_x = 0; tile_x < 32; ++tile_x) {
+        // Get tile by reading index from tile map and fetching indexed tile from tile data.
+        auto tile = get_tile_from_map(tile_x, tile_y);
+        auto in_tile_y = screen_y % 8;
+        // The tile provides an 8 pixel line from 2 bytes
+        auto tile_line
+            = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[in_tile_y * 2 + 1]);
+        auto palette = m_registers.get_background_palette();
+        // Map the colors using the current palette and transfer this tiles line to the buffer
+        for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
+            auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
+            m_background_framebuffer_gb.set_pixel(tile_x * 8 + tile_line_x, screen_y, pixel);
+            m_background_framebuffer_screen.set_pixel(tile_x * 8 + tile_line_x, screen_y,
+                                                      graphics::gb::to_screen_color(pixel));
+        }
+    }
+
+    // Then transfer only the scrolled part of the line to the game framebuffer
+    //    auto scx = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
+    //    auto scy = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
+    //
+    //
+    //    for (unsigned screen_x = 0; screen_x < constants::SCREEN_RES_WIDTH; screen_x++) {
+    //        auto scrolled_x = screen_x + scx;
+    //        auto scrolled_y = screen_y + scy;
+    //
+    //        auto bg_map_x = scrolled_x % constants::BACKGROUND_SIZE_PIXELS;
+    //        auto bg_map_y = scrolled_y % constants::BACKGROUND_SIZE_PIXELS;
+    //
+    //        auto tile_x = bg_map_x / constants::PIXELS_PER_TILE;
+    //        auto tile_y = bg_map_y / constants::PIXELS_PER_TILE;
+    //
+    //        auto tile_pixel_x = bg_map_x % constants::PIXELS_PER_TILE;
+    //        auto tile_pixel_y = bg_map_y % constants::PIXELS_PER_TILE;
+    //
+    //        auto tile = get_tile(tile_x, tile_y);
+    //
+    //
+    //    }
 }
 
 std::pair<uint8_t, uint8_t> Gpu::get_viewport_position() const {

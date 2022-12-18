@@ -3,6 +3,7 @@
 #include "memorymap.hpp"
 #include "ppu_registers.hpp"
 #include "constants.h"
+#include "framebuffer.hpp"
 class Emulator;
 namespace spdlog {
 class logger;
@@ -30,6 +31,14 @@ class Gpu {
     Emulator* m_emulator;
     int m_clock_count = 0;
 
+    void write_scanline();
+    void draw_window_line();
+    void draw_background_line();
+
+    // Framebuffers for the background. Use one in gameboy pixel format to allow easier reuse in
+    // the rendering loop and one in screen pixel format to use with SDL/Dear ImGui.
+    Framebuffer<graphics::gb::ColorGb> m_background_framebuffer_gb;
+    Framebuffer<graphics::gb::ColorScreen> m_background_framebuffer_screen;
 
 public:
     explicit Gpu(Emulator* emulator);
@@ -42,10 +51,12 @@ public:
 
     // Get one background or window tile from vram using the tile index.
     std::span<uint8_t, constants::BYTES_PER_TILE> get_tile(uint8_t tile_index);
+    // Get one background or window tile from vram using tile coordinates (of 32x32)
+    std::span<uint8_t, constants::BYTES_PER_TILE> get_tile_from_map(uint8_t tile_map_x, uint8_t tile_map_y);
 
     std::span<uint8_t, memmap::TileDataSize> get_vram_tile_data();
 
-    std::vector<uint8_t> get_background();
+    const Framebuffer<graphics::gb::ColorScreen>& get_background();
     std::vector<uint8_t> get_window();
 
     [[nodiscard]] std::pair<uint8_t, uint8_t> get_viewport_position() const;

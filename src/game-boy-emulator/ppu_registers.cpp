@@ -1,5 +1,6 @@
 #include "ppu_registers.hpp"
 #include "bitmanipulation.hpp"
+#include "graphics.hpp"
 
 uint8_t PpuRegisters::get_register_value(PpuRegisters::Register r) const {
     if (r == Register::LyRegister && m_fix_ly_register_value) {
@@ -105,4 +106,24 @@ bool PpuRegisters::was_oam_transfer_requested() const {
 
 void PpuRegisters::clear_oam_transfer_request() {
     m_oam_transfer_requested = false;
+}
+
+bool PpuRegisters::is_background_enabled() const {
+    auto lcdc = get(Register::LcdcRegister);
+    return bitmanip::is_bit_set(lcdc, static_cast<int>(LcdcBits::BgWindowEnablePriority));
+}
+
+bool PpuRegisters::is_window_enabled() const {
+    auto lcdc = get(Register::LcdcRegister);
+    return bitmanip::is_bit_set(lcdc, static_cast<int>(LcdcBits::WindowEnable));
+}
+
+std::array<graphics::gb::ColorGb, 4> PpuRegisters::get_background_palette() const {
+    auto bgp = get(Register::BgpRegister);
+    return {
+        static_cast<graphics::gb::ColorGb>(bgp & 0b00000011),
+        static_cast<graphics::gb::ColorGb>((bgp & 0b00001100) >> 2),
+        static_cast<graphics::gb::ColorGb>((bgp & 0b00110000) >> 4),
+        static_cast<graphics::gb::ColorGb>((bgp & 0b11000000) >> 6),
+    };
 }

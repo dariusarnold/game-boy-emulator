@@ -22,7 +22,7 @@ class Framebuffer {
 public:
     using pixel_type_t = PixelType;
 
-    Framebuffer(size_t width, size_t height, PixelType fill);
+    Framebuffer(size_t width, size_t height, PixelType fill = {});
 
     [[nodiscard]] PixelType get_pixel(size_t x, size_t y) const;
     [[nodiscard]] PixelType get_pixel(size_t pixel_index) const;

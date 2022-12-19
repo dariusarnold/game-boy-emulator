@@ -4,6 +4,7 @@
 #include "memorymap.hpp"
 #include "exceptions.hpp"
 #include "bitmanipulation.hpp"
+#include "nombc.hpp"
 #include "mbc.hpp"
 #include "mbc1.hpp"
 #include "mbc3.hpp"
@@ -30,10 +31,19 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
 
     // Initialize after size check to avoid potential out-of-bounds access.
     m_cartridge_type = get_cartridge_type(rom);
-    m_logger->info("Detected MBC type {}", magic_enum::enum_name(m_cartridge_type));
+    m_logger->error("Detected MBC type {}, RAM {} bytes, {} banks",
+                   magic_enum::enum_name(m_cartridge_type), ram_size_info.size_bytes,
+                   ram_size_info.num_banks);
     switch (m_cartridge_type) {
+    case CartridgeType::ROM_ONLY:
+        if (rom.size() != memmap::CartridgeRomSize) {
+            throw LogicError("Invalid ROM size");
+        }
+        m_mbc = std::make_unique<NoMbc>(std::move(rom), ram_size_info.size_bytes);
+        break;
     case CartridgeType::MBC1:
     case CartridgeType::MBC1_RAM:
+    case CartridgeType::MBC1_RAM_BATTERY:
         m_mbc = std::make_unique<Mbc1>(std::move(rom), ram_size_info.size_bytes);
         break;
     case CartridgeType::MBC3:

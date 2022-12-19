@@ -47,6 +47,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/mbc1.hpp
         game-boy-emulator/mbc3.cpp
         game-boy-emulator/mbc3.hpp
+        game-boy-emulator/nombc.cpp
+        game-boy-emulator/nombc.hpp
         game-boy-emulator/framebuffer.tpp
         game-boy-emulator/framebuffer.hpp
         )

@@ -81,6 +81,7 @@ struct AddressRange : public T {
     X(0xFF80, 0xFFFE, HighRam)                                                                     \
     X(0xFF0F, 0xFF0F, InterruptFlag)                                                               \
     X(0xFF01, 0xFF02, SerialPort)                                                                  \
+    X(0xFF30, 0xFF3F, WavePattern)                                                                 \
     X(0xFF50, 0xFF50, DisableBootRom)                                                              \
     X(0xFFFF, 0xFFFF, InterruptEnable)
 

@@ -45,6 +45,9 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     if (memmap::is_in(address, memmap::Timer)) {
         return m_emulator->get_timer()->read_byte(address);
     }
+    if (memmap::is_in(address, memmap::Apu) || memmap::is_in(address, memmap::WavePattern)) {
+        return m_emulator->get_apu()->read_byte(address);
+    }
     if (memmap::is_in(address, memmap::Joypad)) {
         return m_emulator->get_joypad()->read_byte();
     }
@@ -69,7 +72,7 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
     } else if (memmap::is_in(address, memmap::Timer)) {
         m_emulator->get_timer()->write_byte(address, value);
 
-    } else if (memmap::is_in(address, memmap::Apu)) {
+    } else if (memmap::is_in(address, memmap::Apu) || memmap::is_in(address, memmap::WavePattern)) {
         m_emulator->get_apu()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::DisableBootRom)) {
         if (m_emulator->is_booting()) {

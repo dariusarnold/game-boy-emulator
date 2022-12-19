@@ -74,7 +74,7 @@ std::array<UnmappedColorGb, 8> convert_tile_line(uint8_t byte1, uint8_t byte2);
  * @param tile_data
  * @return
  */
-std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data);
+std::array<UnmappedColorGb, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data);
 
 
 constexpr std::array<ColorScreen, 4> get_screen_palette();

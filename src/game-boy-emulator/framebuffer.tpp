@@ -50,6 +50,11 @@ void Framebuffer<PixelType>::copy_into(void* ptr) const {
     std::memcpy(ptr, m_buffer.data(), sizeof(PixelType) * m_buffer.size());
 }
 
+template <typename PixelType>
+void Framebuffer<PixelType>::reset(PixelType fill) {
+    m_buffer.assign(size(), fill);
+}
+
 /**
  * Draw an unfilled rectangle with 1 pixel wide border on the image
  * @param img

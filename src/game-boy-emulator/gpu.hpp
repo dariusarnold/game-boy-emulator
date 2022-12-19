@@ -29,12 +29,14 @@ class Gpu {
     std::array<uint8_t, memmap::TileMapsSize> m_tile_maps{};
     // 0xFE00-0xFE9F
     std::array<OamEntry, memmap::OamRamSize / sizeof(OamEntry)> m_oam_ram{};
+    static_assert(sizeof(m_oam_ram) == 40 * 4);
     PpuRegisters m_registers;
     std::shared_ptr<spdlog::logger> m_logger;
     Emulator* m_emulator;
     int m_clock_count = 0;
 
     void write_scanline();
+    void write_sprites();
     void draw_window_line();
     void draw_background_line();
 
@@ -42,6 +44,10 @@ class Gpu {
     // the rendering loop and one in screen pixel format to use with SDL/Dear ImGui.
     Framebuffer<graphics::gb::ColorGb> m_background_framebuffer_gb;
     Framebuffer<graphics::gb::ColorScreen> m_background_framebuffer_screen;
+
+    Framebuffer<graphics::gb::ColorScreen> m_sprites_framebuffer_screen;
+
+    std::span<uint8_t, 16> get_sprite_tile(uint8_t tile_index);
 
 public:
     explicit Gpu(Emulator* emulator);
@@ -60,6 +66,7 @@ public:
     std::span<uint8_t, memmap::TileDataSize> get_vram_tile_data();
 
     const Framebuffer<graphics::gb::ColorScreen>& get_background();
+    const Framebuffer<graphics::gb::ColorScreen>& get_sprites();
     std::vector<uint8_t> get_window();
 
     [[nodiscard]] std::pair<uint8_t, uint8_t> get_viewport_position() const;

@@ -35,6 +35,9 @@ public:
     [[nodiscard]] size_t width() const;
     [[nodiscard]] size_t height() const;
     [[nodiscard]] size_t size() const;
+
+    // Clear screen buffer
+    void reset(PixelType fill = {});
 };
 
 template <typename PixelType>

@@ -54,6 +54,12 @@ bool PpuRegisters::is_stat_interrupt_enabled(
     return bitmanip::is_bit_set(get(Register::StatRegister), static_cast<int>(stat_interrupt));
 }
 
+uint8_t PpuRegisters::get_sprite_height() const {
+    return bitmanip::is_bit_set(get(Register::LcdcRegister), static_cast<int>(LcdcBits::ObjSize))
+               ? 16
+               : 8;
+}
+
 PpuRegisters::BgWinAddressMode PpuRegisters::get_bg_win_address_mode() const {
     auto bit4 = get_register_bit(Register::LcdcRegister,
                                  static_cast<uint8_t>(LcdcBits::BgWindowTileDataArea));
@@ -120,10 +126,23 @@ bool PpuRegisters::is_window_enabled() const {
 
 std::array<graphics::gb::ColorGb, 4> PpuRegisters::get_background_palette() const {
     auto bgp = get(Register::BgpRegister);
+    return get_palette(bgp);
+}
+
+std::array<graphics::gb::ColorGb, 4> PpuRegisters::get_palette(uint8_t palette_byte) const {
     return {
-        static_cast<graphics::gb::ColorGb>(bgp & 0b00000011),
-        static_cast<graphics::gb::ColorGb>((bgp & 0b00001100) >> 2),
-        static_cast<graphics::gb::ColorGb>((bgp & 0b00110000) >> 4),
-        static_cast<graphics::gb::ColorGb>((bgp & 0b11000000) >> 6),
+        static_cast<graphics::gb::ColorGb>(palette_byte & 0b00000011),
+        static_cast<graphics::gb::ColorGb>((palette_byte & 0b00001100) >> 2),
+        static_cast<graphics::gb::ColorGb>((palette_byte & 0b00110000) >> 4),
+        static_cast<graphics::gb::ColorGb>((palette_byte & 0b11000000) >> 6),
     };
+}
+std::array<graphics::gb::ColorGb, 4> PpuRegisters::get_obj1_palette() const {
+    auto bgp = get(Register::Obp1Register);
+    return get_palette(bgp);
+}
+
+std::array<graphics::gb::ColorGb, 4> PpuRegisters::get_obj0_palette() const {
+    auto bgp = get(Register::Obp0Register);
+    return get_palette(bgp);
 }

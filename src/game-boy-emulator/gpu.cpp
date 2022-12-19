@@ -22,7 +22,8 @@ Gpu::Gpu(Emulator* emulator) :
                                     graphics::gb::ColorGb::White),
         m_background_framebuffer_screen(constants::BACKGROUND_SIZE_PIXELS,
                                         constants::BACKGROUND_SIZE_PIXELS,
-                                        graphics::gb::ColorScreen::White) {}
+                                        graphics::gb::ColorScreen::White),
+        m_sprites_framebuffer_screen(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT) {}
 
 uint8_t Gpu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::TileData)) {
@@ -179,6 +180,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
             m_clock_count = m_clock_count % DURATION_SCANLINE;
 
             if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 154) {
+                write_sprites();
                 m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
                 m_logger->info("GPU: cycle {}, LY {}, mode {}->{}", m_clock_count,
                                m_registers.get_register_value(PpuRegisters::Register::LyRegister),
@@ -258,6 +260,39 @@ void Gpu::write_scanline() {
     }
 }
 
+void Gpu::write_sprites() {
+    m_sprites_framebuffer_screen.reset(graphics::gb::ColorScreen::White);
+    if (m_registers.get_sprite_height() == 16) {
+        throw LogicError("Tall sprites not supported");
+    }
+
+    for (const auto& oam_entry : m_oam_ram) {
+        auto sprite_data = get_sprite_tile(oam_entry.m_tile_index);
+        auto tile = graphics::gb::tile_to_gb_color(sprite_data);
+        auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
+        auto palette = m_registers.get_obj0_palette();
+        if (palette_bit == 1) {
+            palette = m_registers.get_obj1_palette();
+        }
+
+        for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
+            for (unsigned sprite_y = 0; sprite_y < 8; ++sprite_y) {
+                auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
+                auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
+                if (x < 0 || y < 0) {
+                    // This pixel of the sprite is hidden
+                    continue;
+                }
+                auto mapped_color
+                    = palette[magic_enum::enum_integer(tile[sprite_x + sprite_y * 8])];
+                auto color = graphics::gb::to_screen_color(mapped_color);
+                m_sprites_framebuffer_screen.set_pixel(static_cast<size_t>(x),
+                                                       static_cast<size_t>(y), color);
+            }
+        }
+    }
+}
+
 void Gpu::draw_window_line() {}
 
 void Gpu::draw_background_line() {
@@ -310,4 +345,13 @@ std::pair<uint8_t, uint8_t> Gpu::get_viewport_position() const {
     auto x = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
     auto y = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
     return {x, y};
+}
+
+const Framebuffer<graphics::gb::ColorScreen>& Gpu::get_sprites() {
+    return m_sprites_framebuffer_screen;
+}
+
+std::span<uint8_t, 16> Gpu::get_sprite_tile(uint8_t tile_index) {
+    return std::span<uint8_t, 16>{m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE,
+                                  constants::BYTES_PER_TILE};
 }

@@ -66,20 +66,30 @@ TEST_CASE("Tile conversion complete") {
     CHECK(res == expected_res[i]);
 }
 
-//TEST_CASE("Complete tile conversion example") {
-//    std::array<uint8_t, 16> tile{0xFF, 0x00, 0x7E, 0xFF, 0x85, 0x81, 0x89, 0x83,
-//                                 0x93, 0x85, 0xA5, 0x8B, 0xC9, 0x97, 0x7E, 0xFF};
-//    std::span<uint8_t, 16> s{tile.data(), tile.size()};
-//    auto res = graphics::gb::tile_to_gb_color(s);
-//    // clang-format off
-//    std::array<uint32_t, 64> expected_res{1,1,1,1,1,1,1,1,
-//    2,3,3,3,3,3,3,2,
-//    3,0,0,0,0,1,0,3,
-//    3,0,0,0,1,0,2,3,
-//    3,0,0,1,0,2,1,3,
-//    3,0,1,0,2,1,2,3,
-//    3,1,0,2,1,2,2,3,
-//    2,3,3,3,3,3,3,2};
-//    // clang-format on
-//    CHECK(res == expected_res);
-//}
+TEST_CASE("Complete tile conversion example") {
+    std::array<uint8_t, 16> tile{0xFF, 0x00, 0x7E, 0xFF, 0x85, 0x81, 0x89, 0x83,
+                                 0x93, 0x85, 0xA5, 0x8B, 0xC9, 0x97, 0x7E, 0xFF};
+    std::span<uint8_t, 16> s{tile.data(), tile.size()};
+    auto res = graphics::gb::tile_to_gb_color(s);
+    // clang-format off
+    std::array<uint32_t, 64> expected_res{1,1,1,1,1,1,1,1,
+    2,3,3,3,3,3,3,2,
+    3,0,0,0,0,1,0,3,
+    3,0,0,0,1,0,2,3,
+    3,0,0,1,0,2,1,3,
+    3,0,1,0,2,1,2,3,
+    3,1,0,2,1,2,2,3,
+    2,3,3,3,3,3,3,2};
+    // clang-format on
+    for (auto i = 0; i < expected_res.size(); ++i) {
+        CHECK(res[i] == static_cast<graphics::gb::UnmappedColorGb>(expected_res[i]));
+    }
+}
+
+TEST_CASE("Convert tile line") {
+    auto line = graphics::gb::convert_tile_line(0x3C, 0xCC);
+    auto expected = std::vector{2, 2, 1, 1, 3, 3, 0, 0};
+    for (size_t i = 0; i < line.size(); ++i) {
+        CHECK(line[i] == static_cast<graphics::gb::UnmappedColorGb>(expected[i]));
+    }
+}

@@ -19,7 +19,8 @@ void Image::upload_to_texture(const Framebuffer<graphics::gb::ColorScreen>& buff
     assert(m_texture != nullptr && "Call init_texture or pass SDL_Renderer in constructor");
     void* pixels = nullptr;
     int pitch = 0;
-    SDL_LockTexture(m_texture.get(), nullptr, &pixels, &pitch);
+    auto rc = SDL_LockTexture(m_texture.get(), nullptr, &pixels, &pitch);
+    assert(rc == 0 && "Failed to lock texture");
     assert(pitch == int(buffer.width() * sizeof(graphics::gb::ColorScreen)) && "Pitch size assumption error");
     buffer.copy_into(pixels);
     SDL_UnlockTexture(m_texture.get());

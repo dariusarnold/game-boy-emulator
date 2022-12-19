@@ -15,7 +15,8 @@ Window::Window() :
         m_logger(spdlog::get("")),
         m_tile_data_image(24 * 8, 16 * 8),
         m_background_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS),
-        m_window_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS) {
+        m_window_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS),
+        m_sprites_image(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT) {
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a
     // minority of Windows systems, depending on whether SDL_INIT_GAMECONTROLLER is enabled or
@@ -48,6 +49,9 @@ Window::Window() :
     m_tile_data_image.init_texture(m_sdl_renderer);
     m_background_image.init_texture(m_sdl_renderer);
     m_window_image.init_texture(m_sdl_renderer);
+    m_sprites_image.init_texture(m_sdl_renderer);
+
+    m_surface = SDL_CreateRGBSurface(0, 256, 256, 32, 0, 0, 0, 0);
 }
 
 Window::~Window() {
@@ -105,7 +109,13 @@ void Window::draw_frame(const Emulator& emulator) {
 
     draw_background(emulator.get_gpu()->get_background(),
                     emulator.get_gpu()->get_viewport_position());
-//    draw_window(emulator.get_gpu()->get_window());
+    //    draw_window(emulator.get_gpu()->get_window());
+    draw_sprites(emulator.get_gpu()->get_sprites());
+
+    ImGui::Begin("State");
+    auto state = emulator.get_state();
+    ImGui::Text(fmt::format("{} instructions elapsed", state.instructions_executed).c_str());
+    ImGui::End();
 
     // Rendering
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -186,52 +196,52 @@ bool Window::is_done() const {
 }
 
 void Window::draw_tile_data_viewer(std::span<uint8_t, memmap::TileDataSize> vram) {
-//    auto& io = ImGui::GetIO();
-//    // Our state
-//    float image_scale = 4;
-//    const auto [img_width_pixels, img_height_pixels]
-//        = graphics::gb::tile_data_to_image(vram, m_tile_data_image, 24, 16);
-//    graphics::gb::map_gb_color_to_rgba(m_tile_data_image);
-//    m_tile_data_image.upload_to_texture();
-//
-//    ImGui::Begin("Tile data");
-//    auto my_tex_id = (void*)m_tile_data_image.get_texture();
-//    float my_tex_w = img_width_pixels * image_scale;
-//    float my_tex_h = img_height_pixels * image_scale;
-//    ImGui::Text("%.0fx%.0f", my_tex_w, my_tex_h);
-//    ImVec2 pos = ImGui::GetCursorScreenPos();
-//    ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-//    ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-//    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-//    ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
-//    ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
-//    auto min = ImGui::GetItemRectMin();
-//    if (ImGui::IsItemHovered()) {
-//        ImGui::BeginTooltip();
-//        ImGui::Text("Image x %f y %f", io.MousePos.x - min.x, io.MousePos.y - min.y);
-//        float tooltip_zoom = 3;
-//        float region_sz = 32.0f;
-//        float region_x = io.MousePos.x - pos.x - region_sz * 0.5f;
-//        float region_y = io.MousePos.y - pos.y - region_sz * 0.5f;
-//        if (region_x < 0.0f) {
-//            region_x = 0.0f;
-//        } else if (region_x > my_tex_w - region_sz) {
-//            region_x = my_tex_w - region_sz;
-//        }
-//        if (region_y < 0.0f) {
-//            region_y = 0.0f;
-//        } else if (region_y > my_tex_h - region_sz) {
-//            region_y = my_tex_h - region_sz;
-//        }
-//        ImVec2 uv0 = ImVec2((region_x) / my_tex_w, (region_y) / my_tex_h);
-//        ImVec2 uv1 = ImVec2((region_x + region_sz) / my_tex_w, (region_y + region_sz) / my_tex_h);
-//        ImGui::Image(my_tex_id,
-//                     ImVec2(region_sz * (image_scale + tooltip_zoom),
-//                            region_sz * (image_scale + tooltip_zoom)),
-//                     uv0, uv1, tint_col, border_col);
-//        ImGui::EndTooltip();
-//    }
-//    ImGui::End();
+    //    auto& io = ImGui::GetIO();
+    //    // Our state
+    //    float image_scale = 4;
+    //    const auto [img_width_pixels, img_height_pixels]
+    //        = graphics::gb::tile_data_to_image(vram, m_tile_data_image, 24, 16);
+    //    graphics::gb::map_gb_color_to_rgba(m_tile_data_image);
+    //    m_tile_data_image.upload_to_texture();
+    //
+    //    ImGui::Begin("Tile data");
+    //    auto my_tex_id = (void*)m_tile_data_image.get_texture();
+    //    float my_tex_w = img_width_pixels * image_scale;
+    //    float my_tex_h = img_height_pixels * image_scale;
+    //    ImGui::Text("%.0fx%.0f", my_tex_w, my_tex_h);
+    //    ImVec2 pos = ImGui::GetCursorScreenPos();
+    //    ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+    //    ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+    //    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+    //    ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+    //    ImGui::Image(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col);
+    //    auto min = ImGui::GetItemRectMin();
+    //    if (ImGui::IsItemHovered()) {
+    //        ImGui::BeginTooltip();
+    //        ImGui::Text("Image x %f y %f", io.MousePos.x - min.x, io.MousePos.y - min.y);
+    //        float tooltip_zoom = 3;
+    //        float region_sz = 32.0f;
+    //        float region_x = io.MousePos.x - pos.x - region_sz * 0.5f;
+    //        float region_y = io.MousePos.y - pos.y - region_sz * 0.5f;
+    //        if (region_x < 0.0f) {
+    //            region_x = 0.0f;
+    //        } else if (region_x > my_tex_w - region_sz) {
+    //            region_x = my_tex_w - region_sz;
+    //        }
+    //        if (region_y < 0.0f) {
+    //            region_y = 0.0f;
+    //        } else if (region_y > my_tex_h - region_sz) {
+    //            region_y = my_tex_h - region_sz;
+    //        }
+    //        ImVec2 uv0 = ImVec2((region_x) / my_tex_w, (region_y) / my_tex_h);
+    //        ImVec2 uv1 = ImVec2((region_x + region_sz) / my_tex_w, (region_y + region_sz) /
+    //        my_tex_h); ImGui::Image(my_tex_id,
+    //                     ImVec2(region_sz * (image_scale + tooltip_zoom),
+    //                            region_sz * (image_scale + tooltip_zoom)),
+    //                     uv0, uv1, tint_col, border_col);
+    //        ImGui::EndTooltip();
+    //    }
+    //    ImGui::End();
 }
 
 void Window::draw_background(const Framebuffer<graphics::gb::ColorScreen>& background,
@@ -251,16 +261,24 @@ void Window::draw_background(const Framebuffer<graphics::gb::ColorScreen>& backg
     ImGui::End();
 }
 
-//void Window::draw_window(std::vector<uint8_t> window) {
-//    // 32x32 tiles, each 16 bytes in size
-//    assert(window.size() == 32 * 32 * 16 && "Window size check");
-//    const auto [img_width_pixels, img_height_pixels]
-//        = graphics::gb::tile_data_to_image(window, m_window_image, 32, 32);
-//    graphics::gb::map_gb_color_to_rgba(m_window_image);
-//    m_window_image.upload_to_texture();
+void Window::draw_sprites(const Framebuffer<graphics::gb::ColorScreen>& sprites) {
+    ImGui::Begin("Sprites");
+    m_sprites_image.upload_to_texture(sprites);
+    auto my_tex_id = (void*)m_sprites_image.get_texture();
+    ImGui::Image(my_tex_id, ImVec2(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT));
+    ImGui::End();
+}
+
+// void Window::draw_window(std::vector<uint8_t> window) {
+//     // 32x32 tiles, each 16 bytes in size
+//     assert(window.size() == 32 * 32 * 16 && "Window size check");
+//     const auto [img_width_pixels, img_height_pixels]
+//         = graphics::gb::tile_data_to_image(window, m_window_image, 32, 32);
+//     graphics::gb::map_gb_color_to_rgba(m_window_image);
+//     m_window_image.upload_to_texture();
 //
-//    ImGui::Begin("Window");
-//    auto my_tex_id = (void*)m_window_image.get_texture();
-//    ImGui::Image(my_tex_id, ImVec2(img_width_pixels, img_height_pixels));
-//    ImGui::End();
-//}
+//     ImGui::Begin("Window");
+//     auto my_tex_id = (void*)m_window_image.get_texture();
+//     ImGui::Image(my_tex_id, ImVec2(img_width_pixels, img_height_pixels));
+//     ImGui::End();
+// }

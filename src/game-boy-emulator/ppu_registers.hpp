@@ -15,6 +15,9 @@ enum class PpuMode {
 class PpuRegisters {
     std::array<uint8_t, memmap::PpuIoRegistersSize> m_registers{};
 
+
+    [[nodiscard]] std::array<graphics::gb::ColorGb, 4> get_palette(uint8_t palette_byte) const;
+
 public:
     explicit PpuRegisters(bool fix_ly);
 
@@ -83,6 +86,8 @@ public:
     void set_mode(PpuMode mode);
     [[nodiscard]] PpuMode get_mode() const;
     [[nodiscard]] bool is_stat_interrupt_enabled(StatInterruptSource stat_interrupt) const;
+    // Get bit 2 in LCDC register
+    [[nodiscard]] uint8_t get_sprite_height() const;
     // Get bit 4 in LCDC register
     [[nodiscard]] BgWinAddressMode get_bg_win_address_mode() const;
     // Get bit 3 in LCDC register
@@ -95,6 +100,8 @@ public:
     [[nodiscard]] bool is_background_enabled() const;
     [[nodiscard]] bool is_window_enabled() const;
     [[nodiscard]] std::array<graphics::gb::ColorGb, 4> get_background_palette() const;
+    [[nodiscard]] std::array<graphics::gb::ColorGb, 4> get_obj1_palette() const;
+    [[nodiscard]] std::array<graphics::gb::ColorGb, 4> get_obj0_palette() const;
 
     // General helper functions for writing/reading from the registers
     [[nodiscard]] uint8_t get_register_value(PpuRegisters::Register r) const;

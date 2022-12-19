@@ -53,18 +53,18 @@ constexpr std::array<ColorScreen, 4> get_screen_palette() {
     return palette;
 }
 
-// std::array<uint32_t, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
-//     std::array<uint32_t, 64> out{};
-//     for (size_t i = 0; i < 16; i += 2) {
-//         // 2 bytes represent one 8 pixel wide row in the tile
-//         auto row = graphics::gb::convert_tile_line(tile_data[i], tile_data[i + 1]);
-//         for (size_t j = 0; j < row.size(); j++) {
-//             auto index = (i / 2) * 8 + j;
-//             out[index] = row[j];
-//         }
-//     }
-//     return out;
-// }
+ std::array<UnmappedColorGb, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
+     std::array<UnmappedColorGb, 64> out{};
+     for (size_t i = 0; i < 16; i += 2) {
+         // 2 bytes represent one 8 pixel wide row in the tile
+         auto row = graphics::gb::convert_tile_line(tile_data[i], tile_data[i + 1]);
+         for (size_t j = 0; j < row.size(); j++) {
+             auto index = (i / 2) * 8 + j;
+             out[index] = row[j];
+         }
+     }
+     return out;
+ }
 
 // std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data, Framebuffer& image,
 //                                        size_t image_width_tiles, size_t image_height_tiles) {

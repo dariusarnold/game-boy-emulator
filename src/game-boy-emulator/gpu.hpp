@@ -23,8 +23,11 @@ static_assert(sizeof(OamEntry) == 4 && "Padding in OamEntry detected");
 static_assert(alignof(OamEntry) == 1 && "Invalid alignment of OamEntry detected");
 
 class Gpu {
-    std::array<uint8_t, memmap::TileDataSize> m_vram{};
+    // 0x8000-0x97FFF
+    std::array<uint8_t, memmap::TileDataSize> m_tile_data{};
+    // 0x9800-0x9FFF
     std::array<uint8_t, memmap::TileMapsSize> m_tile_maps{};
+    // 0xFE00-0xFE9F
     std::array<OamEntry, memmap::OamRamSize / sizeof(OamEntry)> m_oam_ram{};
     PpuRegisters m_registers;
     std::shared_ptr<spdlog::logger> m_logger;

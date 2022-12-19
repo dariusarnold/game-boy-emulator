@@ -29,7 +29,7 @@ uint8_t Gpu::read_byte(uint16_t address) {
         if (m_registers.is_ppu_enabled() && m_registers.get_mode() == PpuMode::PixelTransfer_3) {
             m_logger->error("GPU: VRAM read at {:04X} during pixel transfer", address);
         }
-        return m_vram[address - memmap::VRamBegin];
+        return m_tile_data[address - memmap::VRamBegin];
     }
     if (memmap::is_in(address, memmap::OamRam)) {
         const auto mode = m_registers.get_mode();
@@ -55,7 +55,7 @@ void Gpu::write_byte(uint16_t address, uint8_t value) {
         if (m_registers.is_ppu_enabled() && m_registers.get_mode() == PpuMode::PixelTransfer_3) {
             m_logger->error("GPU: VRAM write at {:04X} during pixel transfer", address);
         }
-        m_vram[address - memmap::VRamBegin] = value;
+        m_tile_data[address - memmap::VRamBegin] = value;
     } else if (memmap::is_in(address, memmap::PpuIoRegisters)) {
         m_registers.set_register_value(address, value);
     } else if (memmap::is_in(address, memmap::OamRam)) {
@@ -77,7 +77,7 @@ void Gpu::write_byte(uint16_t address, uint8_t value) {
 }
 
 std::span<uint8_t, memmap::TileDataSize> Gpu::get_vram_tile_data() {
-    return {m_vram};
+    return {m_tile_data};
 }
 
 namespace {
@@ -86,7 +86,7 @@ const int DURATION_OAM_SEARCH = 20;
 const int DURATION_PIXEL_TRANSFER = 43;
 const int DURATION_H_BLANK = 51;
 const int DURATION_SCANLINE = DURATION_OAM_SEARCH + DURATION_PIXEL_TRANSFER + DURATION_H_BLANK;
-//const int DURATION_V_BLANK = 10 * (20 + 43 + 51);
+// const int DURATION_V_BLANK = 10 * (20 + 43 + 51);
 } // namespace
 
 void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
@@ -195,9 +195,9 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) 
     if (m_registers.get_bg_win_address_mode() == PpuRegisters::BgWinAddressMode::Unsigned) {
         // In unsigned indexing, the sprites are in order in memory, starting at 0x8000
         const size_t index_begin = tile_index * constants::BYTES_PER_TILE;
-        assert(index_begin < (m_vram.size() - constants::BYTES_PER_TILE)
+        assert(index_begin < (m_tile_data.size() - constants::BYTES_PER_TILE)
                && "Out of bounds signed tile access");
-        return std::span<uint8_t, constants::BYTES_PER_TILE>{m_vram.data() + index_begin,
+        return std::span<uint8_t, constants::BYTES_PER_TILE>{m_tile_data.data() + index_begin,
                                                              constants::BYTES_PER_TILE};
     }
     // In unsigned indexing, the first 0-127 tiles are from 0x9000-0x97FF (last block of the tile
@@ -206,14 +206,14 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) 
         // Skip the first 255 sprites (block 0 and 1) and index into block 2.
         size_t index_begin
             = 255 * constants::BYTES_PER_TILE + tile_index * constants::BYTES_PER_TILE;
-        assert(index_begin < (m_vram.size() - constants::BYTES_PER_TILE)
+        assert(index_begin < (m_tile_data.size() - constants::BYTES_PER_TILE)
                && "Out of bounds signed tile access in block 2");
-        return std::span<uint8_t, constants::BYTES_PER_TILE>{m_vram.data() + index_begin,
+        return std::span<uint8_t, constants::BYTES_PER_TILE>{m_tile_data.data() + index_begin,
                                                              constants::BYTES_PER_TILE};
     }
     // Tiles 128-255 lie within block 1. We can use the index from 0;
     size_t index_begin = tile_index * constants::BYTES_PER_TILE;
-    return std::span<uint8_t, constants::BYTES_PER_TILE>{m_vram.data() + index_begin,
+    return std::span<uint8_t, constants::BYTES_PER_TILE>{m_tile_data.data() + index_begin,
                                                          constants::BYTES_PER_TILE};
 }
 
@@ -230,18 +230,6 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile_from_map(uint8_t til
 
 const Framebuffer<graphics::gb::ColorScreen>& Gpu::get_background() {
     return m_background_framebuffer_screen;
-    //    std::vector<uint8_t> bg_pixels;
-    //    unsigned address_offset = 0;
-    //    if (m_registers.get_background_address_range() == PpuRegisters::TileMapAddressRange::High)
-    //    {
-    //        address_offset = memmap::TileMap1Size;
-    //    }
-    //    for (unsigned i = 0; i < 32 * 32; ++i) {
-    //        auto tile_index = m_tile_maps[address_offset + i];
-    //        auto tile = get_tile(tile_index);
-    //        std::copy(tile.begin(), tile.end(), std::back_inserter(bg_pixels));
-    //    }
-    //    return bg_pixels;
 }
 
 std::vector<uint8_t> Gpu::get_window() {

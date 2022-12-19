@@ -47,7 +47,18 @@ class Gpu {
 
     Framebuffer<graphics::gb::ColorScreen> m_sprites_framebuffer_screen;
 
+    Framebuffer<graphics::gb::ColorGb> m_window_framebuffer_gb;
+    Framebuffer<graphics::gb::ColorScreen> m_window_framebuffer_screen;
     std::span<uint8_t, 16> get_sprite_tile(uint8_t tile_index);
+
+    enum class TileType {
+        Background,
+        Window
+    };
+    // Get one background or window tile from vram using the tile index.
+    std::span<uint8_t, constants::BYTES_PER_TILE> get_tile(uint8_t tile_index);
+    // Get one background or window tile from vram using tile coordinates (of 32x32)
+    std::span<uint8_t, constants::BYTES_PER_TILE> get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_y);
 
 public:
     explicit Gpu(Emulator* emulator);
@@ -58,16 +69,11 @@ public:
 
     void cycle_elapsed_callback(size_t cycles_m_num);
 
-    // Get one background or window tile from vram using the tile index.
-    std::span<uint8_t, constants::BYTES_PER_TILE> get_tile(uint8_t tile_index);
-    // Get one background or window tile from vram using tile coordinates (of 32x32)
-    std::span<uint8_t, constants::BYTES_PER_TILE> get_tile_from_map(uint8_t tile_map_x, uint8_t tile_map_y);
-
     std::span<uint8_t, memmap::TileDataSize> get_vram_tile_data();
 
     const Framebuffer<graphics::gb::ColorScreen>& get_background();
     const Framebuffer<graphics::gb::ColorScreen>& get_sprites();
-    std::vector<uint8_t> get_window();
+    const Framebuffer<graphics::gb::ColorScreen>& get_window();
 
     [[nodiscard]] std::pair<uint8_t, uint8_t> get_viewport_position() const;
 };

@@ -23,7 +23,12 @@ Gpu::Gpu(Emulator* emulator) :
         m_background_framebuffer_screen(constants::BACKGROUND_SIZE_PIXELS,
                                         constants::BACKGROUND_SIZE_PIXELS,
                                         graphics::gb::ColorScreen::White),
-        m_sprites_framebuffer_screen(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT) {}
+        m_sprites_framebuffer_screen(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT),
+        m_window_framebuffer_gb(constants::BACKGROUND_SIZE_PIXELS,
+                                constants::BACKGROUND_SIZE_PIXELS, graphics::gb::ColorGb::White),
+        m_window_framebuffer_screen(constants::BACKGROUND_SIZE_PIXELS,
+                                    constants::BACKGROUND_SIZE_PIXELS,
+                                    graphics::gb::ColorScreen::White) {}
 
 uint8_t Gpu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::TileData)) {
@@ -219,11 +224,20 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) 
                                                          constants::BYTES_PER_TILE};
 }
 
-std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile_from_map(uint8_t tile_map_x,
-                                                                     uint8_t tile_map_y) {
+std::span<uint8_t, constants::BYTES_PER_TILE>
+Gpu::get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_y) {
     unsigned address_offset = 0;
-    if (m_registers.get_background_address_range() == PpuRegisters::TileMapAddressRange::High) {
-        address_offset = memmap::TileMap1Size;
+    switch (tile_type) {
+    case TileType::Background:
+        if (m_registers.get_background_address_range() == PpuRegisters::TileMapAddressRange::High) {
+            address_offset = memmap::TileMap1Size;
+        }
+        break;
+    case TileType::Window:
+        if (m_registers.get_window_address_range() == PpuRegisters::TileMapAddressRange::High) {
+            address_offset = memmap::TileMap1Size;
+        }
+        break;
     }
     auto tile_map_index = address_offset + tile_map_x + tile_map_y * 32;
     auto tile_index = m_tile_maps[tile_map_index];
@@ -234,18 +248,8 @@ const Framebuffer<graphics::gb::ColorScreen>& Gpu::get_background() {
     return m_background_framebuffer_screen;
 }
 
-std::vector<uint8_t> Gpu::get_window() {
-    std::vector<uint8_t> window_pixels;
-    for (unsigned i = 0; i < 32 * 32; ++i) {
-        unsigned address_offset = 0;
-        if (m_registers.get_window_address_range() == PpuRegisters::TileMapAddressRange::High) {
-            address_offset = memmap::TileMap1Size;
-        }
-        auto tile_index = m_tile_maps[address_offset + i];
-        auto tile = get_tile(tile_index);
-        std::copy(tile.begin(), tile.end(), std::back_inserter(window_pixels));
-    }
-    return window_pixels;
+const Framebuffer<graphics::gb::ColorScreen>& Gpu::get_window() {
+    return m_window_framebuffer_screen;
 }
 
 void Gpu::write_scanline() {
@@ -293,16 +297,14 @@ void Gpu::write_sprites() {
     }
 }
 
-void Gpu::draw_window_line() {}
-
-void Gpu::draw_background_line() {
+void Gpu::draw_window_line() {
     unsigned const screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
     unsigned const tile_y = screen_y / 8;
 
-    // First update the line in the complete background framebuffer
+    // First update the line in the complete window framebuffer
     for (unsigned tile_x = 0; tile_x < 32; ++tile_x) {
         // Get tile by reading index from tile map and fetching indexed tile from tile data.
-        auto tile = get_tile_from_map(tile_x, tile_y);
+        auto tile = get_tile_from_map(TileType::Window, tile_x, tile_y);
         auto in_tile_y = screen_y % 8;
         // The tile provides an 8 pixel line from 2 bytes
         auto tile_line
@@ -311,8 +313,33 @@ void Gpu::draw_background_line() {
         // Map the colors using the current palette and transfer this tiles line to the buffer
         for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
             auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
-            m_background_framebuffer_gb.set_pixel(tile_x * 8 + tile_line_x, screen_y, pixel);
-            m_background_framebuffer_screen.set_pixel(tile_x * 8 + tile_line_x, screen_y,
+            auto screen_x = tile_x * 8 + tile_line_x;
+            m_window_framebuffer_gb.set_pixel(screen_x, screen_y, pixel);
+            m_window_framebuffer_screen.set_pixel(screen_x, screen_y,
+                                                  graphics::gb::to_screen_color(pixel));
+        }
+    }
+}
+
+void Gpu::draw_background_line() {
+    unsigned const screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
+    unsigned const tile_y = screen_y / 8;
+
+    // First update the line in the complete background framebuffer
+    for (unsigned tile_x = 0; tile_x < 32; ++tile_x) {
+        // Get tile by reading index from tile map and fetching indexed tile from tile data.
+        auto tile = get_tile_from_map(TileType::Background, tile_x, tile_y);
+        auto in_tile_y = screen_y % 8;
+        // The tile provides an 8 pixel line from 2 bytes
+        auto tile_line
+            = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[in_tile_y * 2 + 1]);
+        auto palette = m_registers.get_background_palette();
+        // Map the colors using the current palette and transfer this tiles line to the buffer
+        for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
+            auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
+            auto screen_x = tile_x * 8 + tile_line_x;
+            m_background_framebuffer_gb.set_pixel(screen_x, screen_y, pixel);
+            m_background_framebuffer_screen.set_pixel(screen_x, screen_y,
                                                       graphics::gb::to_screen_color(pixel));
         }
     }

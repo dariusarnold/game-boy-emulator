@@ -109,7 +109,7 @@ void Window::draw_frame(const Emulator& emulator) {
 
     draw_background(emulator.get_gpu()->get_background(),
                     emulator.get_gpu()->get_viewport_position());
-    //    draw_window(emulator.get_gpu()->get_window());
+    draw_window(emulator.get_gpu()->get_window());
     draw_sprites(emulator.get_gpu()->get_sprites());
 
     ImGui::Begin("State");
@@ -256,8 +256,7 @@ void Window::draw_background(const Framebuffer<graphics::gb::ColorScreen>& backg
 
     ImGui::Begin("Background");
     auto my_tex_id = (void*)m_background_image.get_texture();
-    ImGui::Image(my_tex_id,
-                 ImVec2(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS));
+    ImGui::Image(my_tex_id, ImVec2(background.width(), background.height()));
     ImGui::End();
 }
 
@@ -265,20 +264,14 @@ void Window::draw_sprites(const Framebuffer<graphics::gb::ColorScreen>& sprites)
     ImGui::Begin("Sprites");
     m_sprites_image.upload_to_texture(sprites);
     auto my_tex_id = (void*)m_sprites_image.get_texture();
-    ImGui::Image(my_tex_id, ImVec2(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT));
+    ImGui::Image(my_tex_id, ImVec2(sprites.width(), sprites.height()));
     ImGui::End();
 }
 
-// void Window::draw_window(std::vector<uint8_t> window) {
-//     // 32x32 tiles, each 16 bytes in size
-//     assert(window.size() == 32 * 32 * 16 && "Window size check");
-//     const auto [img_width_pixels, img_height_pixels]
-//         = graphics::gb::tile_data_to_image(window, m_window_image, 32, 32);
-//     graphics::gb::map_gb_color_to_rgba(m_window_image);
-//     m_window_image.upload_to_texture();
-//
-//     ImGui::Begin("Window");
-//     auto my_tex_id = (void*)m_window_image.get_texture();
-//     ImGui::Image(my_tex_id, ImVec2(img_width_pixels, img_height_pixels));
-//     ImGui::End();
-// }
+void Window::draw_window(const Framebuffer<graphics::gb::ColorScreen>& window) {
+    ImGui::Begin("Window");
+    m_window_image.upload_to_texture(window);
+    auto my_tex_id = (void*)m_window_image.get_texture();
+    ImGui::Image(my_tex_id, ImVec2(window.width(), window.height()));
+    ImGui::End();
+}

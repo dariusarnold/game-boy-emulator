@@ -12,7 +12,6 @@
 #include "interrupthandler.hpp"
 #include "apu.hpp"
 #include "joypad.hpp"
-#include "timer.hpp"
 
 #include "spdlog/spdlog.h"
 

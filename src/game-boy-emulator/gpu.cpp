@@ -209,11 +209,11 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) 
     }
     // In unsigned indexing, the first 0-127 tiles are from 0x9000-0x97FF (last block of the tile
     // data portion of the vram). The tiles 128-255 are in the second block from 0x8800-0x8FFF.
-    if (tile_index < 128) {
-        // Skip the first 255 sprites (block 0 and 1) and index into block 2.
+    if (static_cast<int8_t>(tile_index) > 0) {
+        // Skip the first 256 sprites (block 0 and 1) and index into block 2.
         size_t index_begin
-            = 255 * constants::BYTES_PER_TILE + tile_index * constants::BYTES_PER_TILE;
-        assert(index_begin < (m_tile_data.size() - constants::BYTES_PER_TILE)
+            = 256 * constants::BYTES_PER_TILE + tile_index * constants::BYTES_PER_TILE;
+        assert(index_begin <= (m_tile_data.size() - constants::BYTES_PER_TILE)
                && "Out of bounds signed tile access in block 2");
         return std::span<uint8_t, constants::BYTES_PER_TILE>{m_tile_data.data() + index_begin,
                                                              constants::BYTES_PER_TILE};

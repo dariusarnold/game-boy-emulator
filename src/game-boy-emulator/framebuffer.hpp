@@ -29,6 +29,11 @@ public:
     void set_pixel(size_t x, size_t y, PixelType color);
     void set_pixel(size_t pixel_index, PixelType color);
 
+    // Sets a pixel within the framebuffer, but a coordinate outside of the buffer will be mapped
+    // into the buffer.
+    void set_pixel_wraparound(int x, int y, PixelType color);
+    [[nodiscard]] PixelType get_pixel_wraparound(int x, int y) const;
+
     // Transfer frame buffer content into another buffer.
     void copy_into(void* ptr) const;
 

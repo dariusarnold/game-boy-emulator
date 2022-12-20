@@ -1,5 +1,6 @@
-#include <cstring>
 #include "framebuffer.hpp"
+#include <cstring>
+#include <cstdlib>
 
 template <typename PixelType>
 Framebuffer<PixelType>::Framebuffer(size_t width, size_t height, PixelType fill) :
@@ -53,6 +54,42 @@ void Framebuffer<PixelType>::copy_into(void* ptr) const {
 template <typename PixelType>
 void Framebuffer<PixelType>::reset(PixelType fill) {
     m_buffer.assign(size(), fill);
+}
+
+template <typename PixelType>
+void Framebuffer<PixelType>::set_pixel_wraparound(int x, int y, PixelType color) {
+
+    auto x_unsigned = [&] {
+        if (x < 0) {
+            return static_cast<int>(m_width) - (std::abs(x) % static_cast<int>(m_width));
+        }
+        return x % static_cast<int>(m_width);
+    }();
+    auto y_unsigned = [&] {
+        if (y < 0) {
+            return static_cast<int>(m_height) - (std::abs(y) % static_cast<int>(m_height));
+        }
+        return y % static_cast<int>(m_height);
+    }();
+    set_pixel(static_cast<size_t>(x_unsigned), static_cast<size_t>(y_unsigned), color);
+}
+
+template <typename PixelType>
+PixelType Framebuffer<PixelType>::get_pixel_wraparound(int x, int y) const {
+
+    auto x_unsigned = [&] {
+        if (x < 0) {
+            return static_cast<int>(m_width) - (std::abs(x) % static_cast<int>(m_width));
+        }
+        return x % static_cast<int>(m_width);
+    }();
+    auto y_unsigned = [&] {
+        if (y < 0) {
+            return static_cast<int>(m_height) - (std::abs(y) % static_cast<int>(m_height));
+        }
+        return y % static_cast<int>(m_height);
+    }();
+    return get_pixel(static_cast<size_t>(x_unsigned), static_cast<size_t>(y_unsigned));
 }
 
 /**

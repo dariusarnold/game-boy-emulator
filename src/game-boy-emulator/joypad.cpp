@@ -14,8 +14,10 @@ void Joypad::press_key(Joypad::Keys key) {
         || (bitmanip::is_bit_set(m_register,
                                  static_cast<int>(Joypad::BitValues::SelectDirectionButtons))
             && key < Keys::A)) {
-        m_emulator->get_interrupt_handler()->request_interrupt(
-            InterruptHandler::InterruptType::Joypad);
+        if (m_emulator != nullptr) {
+            m_emulator->get_interrupt_handler()->request_interrupt(
+                InterruptHandler::InterruptType::Joypad);
+        }
     }
 }
 

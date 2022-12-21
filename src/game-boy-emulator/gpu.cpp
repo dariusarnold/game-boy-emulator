@@ -155,20 +155,23 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
             write_scanline();
             m_registers.increment_register(PpuRegisters::Register::LyRegister);
 
-            auto new_mode = PpuMode::OamScan_2;
+            m_clock_count = m_clock_count % DURATION_H_BLANK;
+
+            PpuMode new_mode{};
             // If we are on the last visible line we enter the vblank mode
             if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 144) {
                 new_mode = PpuMode::VBlank_1;
+                m_registers.set_mode(new_mode);
                 m_emulator->get_interrupt_handler()->request_interrupt(
                     InterruptHandler::InterruptType::VBlank);
+            } else {
+                new_mode = PpuMode::OamScan_2;
+                m_registers.set_mode(new_mode);
             }
 
             m_logger->info("GPU: cycle {}, LY {}, mode {}->{}", m_clock_count,
                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                            static_cast<int>(m_registers.get_mode()), static_cast<int>(new_mode));
-
-            m_clock_count = m_clock_count % DURATION_H_BLANK;
-            m_registers.set_mode(new_mode);
         }
         break;
     case PpuMode::VBlank_1:
@@ -202,8 +205,6 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) 
     if (m_registers.get_bg_win_address_mode() == PpuRegisters::BgWinAddressMode::Unsigned) {
         // In unsigned indexing, the sprites are in order in memory, starting at 0x8000
         const size_t index_begin = tile_index * constants::BYTES_PER_TILE;
-        assert(index_begin < (m_tile_data.size() - constants::BYTES_PER_TILE)
-               && "Out of bounds signed tile access");
         return std::span<uint8_t, constants::BYTES_PER_TILE>{m_tile_data.data() + index_begin,
                                                              constants::BYTES_PER_TILE};
     }
@@ -213,8 +214,6 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) 
         // Skip the first 256 sprites (block 0 and 1) and index into block 2.
         size_t const index_begin
             = 256 * constants::BYTES_PER_TILE + tile_index * constants::BYTES_PER_TILE;
-        assert(index_begin <= (m_tile_data.size() - constants::BYTES_PER_TILE)
-               && "Out of bounds signed tile access in block 2");
         return std::span<uint8_t, constants::BYTES_PER_TILE>{m_tile_data.data() + index_begin,
                                                              constants::BYTES_PER_TILE};
     }

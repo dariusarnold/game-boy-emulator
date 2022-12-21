@@ -48,7 +48,7 @@ class Cpu {
     opcodes::Instruction current_instruction;
     opcodes::Instruction previous_instruction;
     // Amount of cycles executing the last instruction took.
-    size_t m_cycles_previous_instruction;
+    size_t m_cycles_previous_instruction = 0;
 
 public:
     explicit Cpu(Emulator* emulator);

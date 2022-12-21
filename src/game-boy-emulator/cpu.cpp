@@ -142,19 +142,19 @@ void Cpu::run() {
 Cpu::Cpu(Emulator* emulator) : m_emulator(emulator), m_logger(spdlog::get("")) {}
 
 void Cpu::set_subtract_flag(BitValues value) {
-    bitmanip::set(registers.f, as_integral(flags::subtract), value);
+    bitmanip::set_bit(registers.f, as_integral(flags::subtract), as_integral(value));
 }
 
 void Cpu::set_half_carry_flag(BitValues value) {
-    bitmanip::set(registers.f, as_integral(flags::half_carry), value);
+    bitmanip::set_bit(registers.f, as_integral(flags::half_carry), as_integral(value));
 }
 
 void Cpu::set_zero_flag(BitValues value) {
-    bitmanip::set(registers.f, as_integral(flags::zero), value);
+    bitmanip::set_bit(registers.f, as_integral(flags::zero), as_integral(value));
 }
 
 void Cpu::set_carry_flag(BitValues value) {
-    bitmanip::set(registers.f, as_integral(flags::carry), value);
+    bitmanip::set_bit(registers.f, as_integral(flags::carry), as_integral(value));
 }
 
 void Cpu::set_zero_flag(bool flag_set) {

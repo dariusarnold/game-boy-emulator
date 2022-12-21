@@ -29,10 +29,10 @@ PpuRegisters::PpuRegisters(bool fix_ly) : m_fix_ly_register_value(fix_ly) {
 }
 
 void PpuRegisters::set_mode(PpuMode mode) {
-    auto bit0 = bitmanip::is_bit_set(static_cast<int>(mode), 0);
-    auto bit1 = bitmanip::is_bit_set(static_cast<int>(mode), 1);
-    bitmanip::set(get(Register::StatRegister), 0, bit0);
-    bitmanip::set(get(Register::StatRegister), 1, bit1);
+    auto bit0 = bitmanip::bit_value(static_cast<int>(mode), 0);
+    auto bit1 = bitmanip::bit_value(static_cast<int>(mode), 1);
+    bitmanip::set_bit(get(Register::StatRegister), 0, bit0);
+    bitmanip::set_bit(get(Register::StatRegister), 1, bit1);
 }
 
 PpuMode PpuRegisters::get_mode() const {
@@ -88,7 +88,7 @@ PpuRegisters::TileMapAddressRange PpuRegisters::get_window_address_range() const
 void PpuRegisters::set_register_bit(PpuRegisters::Register r, uint8_t bit_position,
                                     uint8_t bit_value) {
     auto& x = get(r);
-    bitmanip::set(x, bit_position, bit_value > 0);
+    bitmanip::set_bit(x, bit_position, bit_value);
 }
 
 void PpuRegisters::increment_register(PpuRegisters::Register r) {

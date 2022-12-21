@@ -158,22 +158,22 @@ TEST_CASE("Set bit testing") {
     uint8_t in = 0b00000001;
 
     SECTION("1->1") {
-        bitmanip::set(in, 0, BitValues::Active);
+        bitmanip::set_bit(in, 0, 1);
         CHECK(in == 0b00000001);
     }
 
     SECTION("1->0") {
-        bitmanip::set(in, 0, BitValues::Inactive);
+        bitmanip::set_bit(in, 0, 0);
         CHECK(in == 0b00000000);
     }
 
     SECTION("0->0") {
-        bitmanip::set(in, 1, BitValues::Inactive);
+        bitmanip::set_bit(in, 1, 0);
         CHECK(in == 0b00000001);
     }
 
     SECTION("0->1") {
-        bitmanip::set(in, 1, BitValues::Active);
+        bitmanip::set_bit(in, 1, 1);
         CHECK(in == 0b00000011);
     }
 }

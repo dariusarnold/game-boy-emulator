@@ -3,26 +3,19 @@
 
 namespace bitmanip {
 
-// TODO This overload is not clearly distinguished by name from set
-// TODO position as enum
 void set(uint8_t& input, uint8_t position) {
-    set(input, position, BitValues::Active);
+    set_bit(input, position, 1);
 }
 
 void unset(uint8_t& input, uint8_t position) {
-    set(input, position, BitValues::Inactive);
+    set_bit(input, position, 0);
 }
 
-void set(uint8_t& input, uint8_t position, BitValues value) {
+void set_bit(uint8_t& input, uint8_t position, uint8_t value) {
     assert(position < 8 && "A byte only has 8 bits");
-    switch (value) {
-    case BitValues::Active:
-        input |= 1U << position;
-        break;
-    case BitValues::Inactive:
-        input &= ~(1U << position);
-    }
+    input = (input & ~(1U << position)) | ((value & 1U) << position);
 }
+
 uint8_t get_high_byte(uint16_t x) {
     constexpr int WHOLE_BYTE = 0xFF;
     return (x >> constants::BYTE_SIZE) & WHOLE_BYTE;
@@ -55,7 +48,7 @@ uint8_t rotate_left_carry(uint8_t x, bool& carry_flag) {
     constexpr int LOWEST_BIT_IN_BYTE = 0;
     carry_flag = is_bit_set(x, HIGHEST_BIT_IN_BYTE);
     x = x << 1;
-    set(x, LOWEST_BIT_IN_BYTE, prev_carry_flag ? BitValues::Active : BitValues::Inactive);
+    set_bit(x, LOWEST_BIT_IN_BYTE, static_cast<uint8_t>(prev_carry_flag));
     return x;
 }
 
@@ -69,7 +62,7 @@ uint8_t rotate_right_carry(uint8_t x, bool& carry_flag) {
     constexpr int LOWEST_BIT_IN_BYTE = 0;
     carry_flag = is_bit_set(x, LOWEST_BIT_IN_BYTE);
     x = x >> 1;
-    set(x, HIGHEST_BIT_IN_BYTE, prev_carry_flag ? BitValues::Active : BitValues::Inactive);
+    set_bit(x, HIGHEST_BIT_IN_BYTE, static_cast<uint8_t>(prev_carry_flag));
     return x;
 }
 
@@ -77,11 +70,4 @@ uint16_t word_from_bytes(uint8_t high_byte, uint8_t low_byte) {
     return (high_byte << constants::BYTE_SIZE) + low_byte;
 }
 
-void set(uint8_t& input, uint8_t position, bool value) {
-    set(input, position, value ? BitValues::Active : BitValues::Inactive);
-}
-
-void set_bit_value(uint8_t& input, uint8_t position, uint8_t value) {
-    set(input, position, static_cast<BitValues>(value & 1));
-}
 } // namespace bitmanip

@@ -35,13 +35,13 @@ uint8_t Joypad::read_byte() {
         auto pressed_action = m_key_states[i + 4];
 
         if (select_action && select_direction) {
-            bitmanip::set_bit_value(m_register, i,
-                                    static_cast<uint8_t>(pressed_action)
-                                        & static_cast<uint8_t>(pressed_direction));
+            bitmanip::set_bit(m_register, i,
+                              static_cast<uint8_t>(pressed_action)
+                                  & static_cast<uint8_t>(pressed_direction));
         } else if (select_action) {
-            bitmanip::set_bit_value(m_register, i, static_cast<uint8_t>(pressed_action));
+            bitmanip::set_bit(m_register, i, static_cast<uint8_t>(pressed_action));
         } else if (select_direction) {
-            bitmanip::set_bit_value(m_register, i, static_cast<uint8_t>(pressed_direction));
+            bitmanip::set_bit(m_register, i, static_cast<uint8_t>(pressed_direction));
         }
     }
     return m_register;
@@ -54,9 +54,9 @@ void Joypad::write_byte(uint8_t value) {
         = bitmanip::bit_value(value, static_cast<int>(Joypad::BitValues::SelectActionButtons));
     auto select_direction_bit
         = bitmanip::bit_value(value, static_cast<int>(Joypad::BitValues::SelectDirectionButtons));
-    bitmanip::set_bit_value(m_register, static_cast<int>(Joypad::BitValues::SelectActionButtons),
+    bitmanip::set_bit(m_register, static_cast<int>(Joypad::BitValues::SelectActionButtons),
                             select_action_bit);
-    bitmanip::set_bit_value(m_register, static_cast<int>(Joypad::BitValues::SelectDirectionButtons),
+    bitmanip::set_bit(m_register, static_cast<int>(Joypad::BitValues::SelectDirectionButtons),
                             select_direction_bit);
 }
 

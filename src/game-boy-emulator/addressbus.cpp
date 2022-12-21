@@ -50,7 +50,8 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     if (memmap::is_in(address, memmap::Joypad)) {
         return m_emulator->get_joypad()->read_byte();
     }
-    throw NotImplementedError(fmt::format("Addressing unmapped memory byte at {:04X}", address));
+    m_logger->error("Addressing unmapped memory byte at {:04X}", address);
+    return 0xFF;
 }
 
 void AddressBus::write_byte(uint16_t address, uint8_t value) {
@@ -85,6 +86,6 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
     } else if (memmap::is_in(address, memmap::Joypad)) {
         m_emulator->get_joypad()->write_byte(value);
     } else {
-        throw NotImplementedError(fmt::format("Writing unmapped memory byte at {:04X}", address));
+    m_logger->error("Writing unmapped memory byte at {:04X}", address);
     }
 }

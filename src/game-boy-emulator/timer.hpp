@@ -10,14 +10,17 @@ class logger;
 class Timer {
     Emulator* m_emulator;
     // DIV 0xFF04
-    uint8_t m_divider_register = 0;
+    uint8_t m_divider_register = 0xAB;
     // TIMA 0xFF05
     uint8_t m_timer_counter = 0;
     // TMA 0xFF06
     uint8_t m_timer_modulo = 0;
     // TAC 0xFF07
-    uint8_t m_timer_control = 0;
+    uint8_t m_timer_control = 0xF8;
     std::shared_ptr<spdlog::logger> m_logger;
+
+    bool m_overflow_flag = false;
+    bool m_was_counter_reloaded = false;
 
 public:
     explicit Timer(Emulator* emulator);

@@ -11,7 +11,8 @@
 #include "imgui_impl_sdlrenderer.h"
 #include "SDL.h"
 
-Window::Window() :
+Window::Window(Emulator& emulator) :
+        m_emulator(emulator),
         m_logger(spdlog::get("")),
         m_tile_data_image(24 * 8, 16 * 8),
         m_background_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS),
@@ -76,7 +77,7 @@ constexpr SDL_Keycode KEY_START = SDLK_n;
 constexpr SDL_Keycode KEY_SELECT = SDLK_l;
 } // namespace
 
-void Window::draw_frame(const Emulator& emulator) {
+void Window::draw_frame() {
     // Poll and handle events (inputs, window resize, etc.)
     // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui
     // wants to use your inputs.
@@ -95,7 +96,7 @@ void Window::draw_frame(const Emulator& emulator) {
             && event.window.windowID == SDL_GetWindowID(m_sdl_window)) {
             m_done = true;
         }
-        handle_user_keyboard_input(event, emulator.get_joypad());
+        handle_user_keyboard_input(event, m_emulator.get_joypad());
     }
 
     // Start the Dear ImGui frame
@@ -105,14 +106,14 @@ void Window::draw_frame(const Emulator& emulator) {
 
     auto& io = ImGui::GetIO();
 
-    draw_tile_data_viewer(emulator.get_gpu()->get_vram_tile_data());
+    draw_tile_data_viewer(m_emulator.get_gpu()->get_vram_tile_data());
 
-    draw_background(emulator.get_gpu()->get_background(),
-                    emulator.get_gpu()->get_viewport_position());
-    draw_window(emulator.get_gpu()->get_window());
-    draw_sprites(emulator.get_gpu()->get_sprites());
+    draw_background(m_emulator.get_gpu()->get_background(),
+                    m_emulator.get_gpu()->get_viewport_position());
+    draw_window(m_emulator.get_gpu()->get_window());
+    draw_sprites(m_emulator.get_gpu()->get_sprites());
     draw_game();
-    draw_info(emulator.get_state());
+    draw_info(m_emulator.get_state());
 
     // Rendering
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -291,6 +292,7 @@ void Window::draw_window(const Framebuffer<graphics::gb::ColorScreen>& window) {
 
 void Window::vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game) {
     m_game_image.upload_to_texture(game);
+    draw_frame();
 }
 
 void Window::draw_game() {

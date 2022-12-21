@@ -19,6 +19,7 @@ class logger;
 
 
 class Window {
+    Emulator& m_emulator;
     std::shared_ptr<spdlog::logger> m_logger;
     SDL_Window* m_sdl_window = nullptr;
     SDL_Renderer* m_sdl_renderer = nullptr;
@@ -35,10 +36,10 @@ class Window {
     void handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<Joypad> joypad);
 
 public:
-    Window();
+    explicit Window(Emulator& emulator);
     ~Window();
 
-    void draw_frame(const Emulator& emulator);
+    void draw_frame();
     void draw_tile_data_viewer(std::span<uint8_t, memmap::TileDataSize> vram);
     void draw_background(const Framebuffer<graphics::gb::ColorScreen>& background,
                          std::pair<uint8_t, uint8_t> viewport_position);

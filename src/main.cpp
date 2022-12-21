@@ -1,20 +1,14 @@
-#include "bitmanipulation.hpp"
 #include "constants.h"
 #include "emulator.hpp"
 #include "io.hpp"
-#include "graphics.hpp"
 #include "window.hpp"
 #include "gpu.hpp"
 
-#include "fmt/format.h"
-#include "fmt/ranges.h"
 #include "spdlog/spdlog.h"
 #include "argparse/argparse.hpp"
 
 #include <filesystem>
-#include <fstream>
 #include <optional>
-#include <numeric>
 #include <span>
 #include <cstdlib>
 
@@ -50,12 +44,6 @@ int main(int argc, char** argv) { // NOLINT
         return EXIT_FAILURE;
     }
 
-    Window window;
-    std::chrono::steady_clock::time_point previous_time = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::time_point current_time;
-    double delta_seconds = 0;
-    double seconds_since_last_frame = 0;
-
     Emulator emulator = [&]() {
         if (boot_rom.has_value()) {
             return Emulator(boot_rom.value(), game_rom, {false});
@@ -63,6 +51,7 @@ int main(int argc, char** argv) { // NOLINT
         return Emulator(game_rom, {false});
     }();
 
+    Window window(emulator);
     emulator.set_draw_function([&](const auto& buffer) { window.vblank_callback(buffer); });
 
     // Main loop
@@ -71,19 +60,8 @@ int main(int argc, char** argv) { // NOLINT
         if (!sucess) {
             return EXIT_FAILURE;
         }
-        current_time = std::chrono::steady_clock::now();
-        delta_seconds = std::chrono::duration_cast<std::chrono::duration<double>>(current_time
-                                                                                  - previous_time)
-                            .count();
-        previous_time = current_time;
-        seconds_since_last_frame += delta_seconds;
 
-        if (seconds_since_last_frame >= 1 / 59.7) {
-            window.draw_frame(emulator);
-            seconds_since_last_frame = 0;
-        }
     }
-
 
     return EXIT_SUCCESS;
 }

@@ -129,7 +129,7 @@ void Window::handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<
     auto& io = ImGui::GetIO();
     if (!io.WantCaptureKeyboard) {
         // Ignore repeated down events since they don't alter joypad state
-        if (event.type == SDL_KEYDOWN) {
+        if (event.type == SDL_KEYDOWN && event.key.repeat == 0) {
             switch (event.key.keysym.sym) {
             case KEY_UP:
                 joypad->press_key(Joypad::Keys::Up);

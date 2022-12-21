@@ -16,19 +16,20 @@ uint8_t Mbc3::read_byte(uint16_t address) const {
         return get_rom()[address];
     }
     if (memmap::is_in(address, memmap::CartridgeRomBankSwitchable)) {
-        const uint32_t address_in_rom
-            = address - memmap::CartridgeRomBankSwitchableBegin
-              + m_rom_bank_number * memmap::CartridgeRomBankSwitchableSize;
-        assert(address_in_rom < get_rom().size() && "Read ROM switchable bank out of bounds");
-        return get_rom()[address_in_rom];
+        const auto address_in_rom = address - memmap::CartridgeRomBankSwitchableBegin
+                                    + m_rom_bank_number * memmap::CartridgeRomBankSwitchableSize;
+        assert(address_in_rom < static_cast<int>(get_rom().size())
+               && "Read ROM switchable bank out of bounds");
+        return get_rom()[static_cast<size_t>(address_in_rom)];
     }
     if (memmap::is_in(address, memmap::CartridgeRam)) {
         if (m_ram_or_rtc_mapped == RamOrRtcMapped::RamMapped) {
             // Ram mapped, access it
-            const uint32_t address_in_ram = address - memmap::CartridgeRamBegin
-                                            + m_ram_bank_number * memmap::CartridgeRamSize;
-            assert(address_in_ram < get_ram().size() && "Read RAM switchable bank out of bounds");
-            return get_ram()[address_in_ram];
+            const auto address_in_ram = address - memmap::CartridgeRamBegin
+                                        + m_ram_bank_number * memmap::CartridgeRamSize;
+            assert(address_in_ram < static_cast<int>(get_ram().size())
+                   && "Read RAM switchable bank out of bounds");
+            return get_ram()[static_cast<size_t>(address_in_ram)];
         }
         // RTC mapped
         switch (m_current_rtc_register) {
@@ -101,11 +102,11 @@ void Mbc3::write_values(uint16_t address, uint8_t value) {
         }
         if (m_ram_or_rtc_mapped == RamOrRtcMapped::RamMapped) {
             // Access RAM
-            const uint32_t address_in_ram = address - memmap::CartridgeRamBegin
-                                            + m_ram_bank_number * memmap::CartridgeRamSize;
-            assert(address_in_ram < get_ram().size()
+            const auto address_in_ram = address - memmap::CartridgeRamBegin
+                                        + m_ram_bank_number * memmap::CartridgeRamSize;
+            assert(address_in_ram < static_cast<int>(get_ram().size())
                    && "Write to cartridge RAM bank out of bounds");
-            get_ram()[address_in_ram] = value;
+            get_ram()[static_cast<size_t>(address_in_ram)] = value;
         } else {
             // Access RTC
             switch (m_current_rtc_register) {

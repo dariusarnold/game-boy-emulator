@@ -292,8 +292,8 @@ void Gpu::write_sprites() {
             for (unsigned sprite_y = 0; sprite_y < 8; ++sprite_y) {
                 auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
                 auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
-                if (x < 0 || y < 0 || x >= m_sprites_framebuffer_screen.width()
-                    || y >= m_sprites_framebuffer_screen.height()) {
+                if (x < 0 || y < 0 || x >= static_cast<int>(m_sprites_framebuffer_screen.width())
+                    || y >= static_cast<int>(m_sprites_framebuffer_screen.height())) {
                     // This pixel of the sprite is hidden
                     continue;
                 }

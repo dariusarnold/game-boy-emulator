@@ -2,10 +2,13 @@
 
 #include "constants.h"
 #include "options.hpp"
+#include "graphics.hpp"
+#include "framebuffer.hpp"
 #include <array>
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <functional>
 
 namespace opcodes {
 struct Instruction;
@@ -78,6 +81,9 @@ public:
     [[nodiscard]] std::shared_ptr<Apu> get_apu() const;
     [[nodiscard]] std::shared_ptr<Joypad> get_joypad() const;
 
+    void draw(const Framebuffer<graphics::gb::ColorScreen>& game);
+    void set_draw_function(std::function<void(const Framebuffer<graphics::gb::ColorScreen>& )> f);
+
     size_t get_cycle_count();
 
 private:
@@ -95,4 +101,6 @@ private:
     std::shared_ptr<SerialPort> m_serial_port;
     std::shared_ptr<Joypad> m_joypad;
     std::shared_ptr<spdlog::logger> m_logger;
+
+    std::function<void(const Framebuffer<graphics::gb::ColorScreen>&)> m_draw_function;
 };

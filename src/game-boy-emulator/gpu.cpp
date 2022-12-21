@@ -17,18 +17,15 @@ Gpu::Gpu(Emulator* emulator) :
         m_registers(emulator->get_options().stub_ly),
         m_logger(spdlog::get("")),
         m_emulator(emulator),
-        m_background_framebuffer_gb(constants::BACKGROUND_SIZE_PIXELS,
-                                    constants::BACKGROUND_SIZE_PIXELS,
-                                    graphics::gb::ColorGb::White),
         m_background_framebuffer_screen(constants::BACKGROUND_SIZE_PIXELS,
                                         constants::BACKGROUND_SIZE_PIXELS,
                                         graphics::gb::ColorScreen::White),
         m_sprites_framebuffer_screen(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT),
-        m_window_framebuffer_gb(constants::BACKGROUND_SIZE_PIXELS,
-                                constants::BACKGROUND_SIZE_PIXELS, graphics::gb::ColorGb::White),
         m_window_framebuffer_screen(constants::BACKGROUND_SIZE_PIXELS,
                                     constants::BACKGROUND_SIZE_PIXELS,
-                                    graphics::gb::ColorScreen::White) {}
+                                    graphics::gb::ColorScreen::White),
+        m_game_framebuffer_screen(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT,
+                                  graphics::gb::ColorScreen::White) {}
 
 uint8_t Gpu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::TileData)) {
@@ -186,6 +183,10 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
 
             if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 154) {
                 write_sprites();
+
+                m_emulator->draw(m_game_framebuffer_screen);
+                m_game_framebuffer_screen.reset();
+
                 m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
                 m_logger->info("GPU: cycle {}, LY {}, mode {}->{}", m_clock_count,
                                m_registers.get_register_value(PpuRegisters::Register::LyRegister),
@@ -207,11 +208,11 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) 
         return std::span<uint8_t, constants::BYTES_PER_TILE>{m_tile_data.data() + index_begin,
                                                              constants::BYTES_PER_TILE};
     }
-    // In unsigned indexing, the first 0-127 tiles are from 0x9000-0x97FF (last block of the tile
+    // In signed indexing, the first 0-127 tiles are from 0x9000-0x97FF (last block of the tile
     // data portion of the vram). The tiles 128-255 are in the second block from 0x8800-0x8FFF.
     if (static_cast<int8_t>(tile_index) > 0) {
         // Skip the first 256 sprites (block 0 and 1) and index into block 2.
-        size_t index_begin
+        size_t const index_begin
             = 256 * constants::BYTES_PER_TILE + tile_index * constants::BYTES_PER_TILE;
         assert(index_begin <= (m_tile_data.size() - constants::BYTES_PER_TILE)
                && "Out of bounds signed tile access in block 2");
@@ -219,7 +220,7 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) 
                                                              constants::BYTES_PER_TILE};
     }
     // Tiles 128-255 lie within block 1. We can use the index from 0;
-    size_t index_begin = tile_index * constants::BYTES_PER_TILE;
+    size_t const index_begin = tile_index * constants::BYTES_PER_TILE;
     return std::span<uint8_t, constants::BYTES_PER_TILE>{m_tile_data.data() + index_begin,
                                                          constants::BYTES_PER_TILE};
 }
@@ -314,7 +315,6 @@ void Gpu::draw_window_line() {
         for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
             auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
             auto screen_x = tile_x * 8 + tile_line_x;
-            m_window_framebuffer_gb.set_pixel(screen_x, screen_y, pixel);
             m_window_framebuffer_screen.set_pixel(screen_x, screen_y,
                                                   graphics::gb::to_screen_color(pixel));
         }
@@ -323,49 +323,38 @@ void Gpu::draw_window_line() {
 
 void Gpu::draw_background_line() {
     unsigned const screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
+    // Tile index
     unsigned const tile_y = screen_y / 8;
+    // Pixel offset in tile
+    auto in_tile_y = screen_y % 8;
+    auto palette = m_registers.get_background_palette();
 
     // First update the line in the complete background framebuffer
     for (unsigned tile_x = 0; tile_x < 32; ++tile_x) {
         // Get tile by reading index from tile map and fetching indexed tile from tile data.
         auto tile = get_tile_from_map(TileType::Background, tile_x, tile_y);
-        auto in_tile_y = screen_y % 8;
         // The tile provides an 8 pixel line from 2 bytes
         auto tile_line
             = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[in_tile_y * 2 + 1]);
-        auto palette = m_registers.get_background_palette();
         // Map the colors using the current palette and transfer this tiles line to the buffer
         for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
             auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
             auto screen_x = tile_x * 8 + tile_line_x;
-            m_background_framebuffer_gb.set_pixel(screen_x, screen_y, pixel);
             m_background_framebuffer_screen.set_pixel(screen_x, screen_y,
                                                       graphics::gb::to_screen_color(pixel));
         }
     }
 
     // Then transfer only the scrolled part of the line to the game framebuffer
-    //    auto scx = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
-    //    auto scy = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
-    //
-    //
-    //    for (unsigned screen_x = 0; screen_x < constants::SCREEN_RES_WIDTH; screen_x++) {
-    //        auto scrolled_x = screen_x + scx;
-    //        auto scrolled_y = screen_y + scy;
-    //
-    //        auto bg_map_x = scrolled_x % constants::BACKGROUND_SIZE_PIXELS;
-    //        auto bg_map_y = scrolled_y % constants::BACKGROUND_SIZE_PIXELS;
-    //
-    //        auto tile_x = bg_map_x / constants::PIXELS_PER_TILE;
-    //        auto tile_y = bg_map_y / constants::PIXELS_PER_TILE;
-    //
-    //        auto tile_pixel_x = bg_map_x % constants::PIXELS_PER_TILE;
-    //        auto tile_pixel_y = bg_map_y % constants::PIXELS_PER_TILE;
-    //
-    //        auto tile = get_tile(tile_x, tile_y);
-    //
-    //
-    //    }
+    auto scx = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
+    auto scy = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
+
+    for (unsigned screen_x = 0; screen_x < constants::SCREEN_RES_WIDTH; screen_x++) {
+        auto scrolled_x = (screen_x + scx) % m_background_framebuffer_screen.width();
+        auto scrolled_y = (screen_y + scy) % m_background_framebuffer_screen.height();
+        auto pixel = m_background_framebuffer_screen.get_pixel(scrolled_x, scrolled_y);
+        m_game_framebuffer_screen.set_pixel(screen_x, screen_y, pixel);
+    }
 }
 
 std::pair<uint8_t, uint8_t> Gpu::get_viewport_position() const {

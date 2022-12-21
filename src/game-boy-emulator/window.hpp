@@ -25,6 +25,7 @@ class Window {
     Image m_background_image;
     Image m_window_image;
     Image m_sprites_image;
+    Image m_game_image;
     bool m_done = false;
 
     void handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<Joypad> joypad);
@@ -39,8 +40,9 @@ public:
                          std::pair<uint8_t, uint8_t> viewport_position);
     void draw_sprites(const Framebuffer<graphics::gb::ColorScreen>& sprites);
     void draw_window(const Framebuffer<graphics::gb::ColorScreen>& window);
+    void draw_game();
 
-    //    void draw_game(const std::vector<ScreenColor>&)
+    void vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game);
 
     bool is_done() const;
 };

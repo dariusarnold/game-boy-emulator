@@ -146,3 +146,8 @@ std::array<graphics::gb::ColorGb, 4> PpuRegisters::get_obj0_palette() const {
     auto bgp = get(Register::Obp0Register);
     return get_palette(bgp);
 }
+
+bool PpuRegisters::is_sprites_enabled() const {
+    auto lcdc = get(Register::LcdcRegister);
+    return bitmanip::is_bit_set(lcdc, static_cast<uint8_t>(LcdcBits::ObjEnable));
+}

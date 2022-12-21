@@ -42,13 +42,14 @@ class Gpu {
 
     // Framebuffers for the background. Use one in gameboy pixel format to allow easier reuse in
     // the rendering loop and one in screen pixel format to use with SDL/Dear ImGui.
-    Framebuffer<graphics::gb::ColorGb> m_background_framebuffer_gb;
     Framebuffer<graphics::gb::ColorScreen> m_background_framebuffer_screen;
 
     Framebuffer<graphics::gb::ColorScreen> m_sprites_framebuffer_screen;
 
-    Framebuffer<graphics::gb::ColorGb> m_window_framebuffer_gb;
     Framebuffer<graphics::gb::ColorScreen> m_window_framebuffer_screen;
+
+    Framebuffer<graphics::gb::ColorScreen> m_game_framebuffer_screen;
+
     std::span<uint8_t, 16> get_sprite_tile(uint8_t tile_index);
 
     enum class TileType {

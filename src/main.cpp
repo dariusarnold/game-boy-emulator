@@ -63,6 +63,8 @@ int main(int argc, char** argv) { // NOLINT
         return Emulator(game_rom, {false});
     }();
 
+    emulator.set_draw_function([&](const auto& buffer) { window.vblank_callback(buffer); });
+
     // Main loop
     while (!window.is_done()) {
         auto sucess = emulator.step();
@@ -70,7 +72,9 @@ int main(int argc, char** argv) { // NOLINT
             return EXIT_FAILURE;
         }
         current_time = std::chrono::steady_clock::now();
-        delta_seconds = std::chrono::duration_cast<std::chrono::duration<double>>(current_time - previous_time).count();
+        delta_seconds = std::chrono::duration_cast<std::chrono::duration<double>>(current_time
+                                                                                  - previous_time)
+                            .count();
         previous_time = current_time;
         seconds_since_last_frame += delta_seconds;
 

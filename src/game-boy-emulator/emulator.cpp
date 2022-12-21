@@ -169,6 +169,15 @@ std::shared_ptr<Joypad> Emulator::get_joypad() const {
     return m_joypad;
 }
 
+void Emulator::draw(const Framebuffer<graphics::gb::ColorScreen>& game) {
+    m_draw_function(game);
+}
+
+void Emulator::set_draw_function(
+    std::function<void(const Framebuffer<graphics::gb::ColorScreen>&)> f) {
+    m_draw_function = f;
+}
+
 size_t Emulator::get_cycle_count() {
     return m_cpu->cycle_duration_previous_instruction();
 }

@@ -16,7 +16,8 @@ Window::Window() :
         m_tile_data_image(24 * 8, 16 * 8),
         m_background_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS),
         m_window_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS),
-        m_sprites_image(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT) {
+        m_sprites_image(constants::SCREEN_RES_WIDTH, constants::SCREEN_RES_HEIGHT),
+        m_game_image(constants::SCREEN_RES_WIDTH, constants::SCREEN_RES_HEIGHT) {
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a
     // minority of Windows systems, depending on whether SDL_INIT_GAMECONTROLLER is enabled or
@@ -50,8 +51,7 @@ Window::Window() :
     m_background_image.init_texture(m_sdl_renderer);
     m_window_image.init_texture(m_sdl_renderer);
     m_sprites_image.init_texture(m_sdl_renderer);
-
-    m_surface = SDL_CreateRGBSurface(0, 256, 256, 32, 0, 0, 0, 0);
+    m_game_image.init_texture(m_sdl_renderer);
 }
 
 Window::~Window() {
@@ -111,6 +111,7 @@ void Window::draw_frame(const Emulator& emulator) {
                     emulator.get_gpu()->get_viewport_position());
     draw_window(emulator.get_gpu()->get_window());
     draw_sprites(emulator.get_gpu()->get_sprites());
+    draw_game();
     draw_info(emulator.get_state());
 
     // Rendering
@@ -287,7 +288,19 @@ void Window::draw_window(const Framebuffer<graphics::gb::ColorScreen>& window) {
     ImGui::Image(my_tex_id, ImVec2(window.width(), window.height()));
     ImGui::End();
 }
-void Window::draw_info(const EmulatorState& state)  {
+
+void Window::vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game) {
+    m_game_image.upload_to_texture(game);
+}
+
+void Window::draw_game() {
+    ImGui::Begin("Game");
+    auto my_tex_id = (void*)m_game_image.get_texture();
+    ImGui::Image(my_tex_id, ImVec2(m_game_image.width() * 2, m_game_image.height() * 2));
+    ImGui::End();
+}
+
+void Window::draw_info(const EmulatorState& state) {
     ImGui::Begin("Info");
     auto current_ticks = SDL_GetTicks64();
     auto ms_since_last_frame = current_ticks - m_previous_ticks;

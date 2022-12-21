@@ -99,6 +99,7 @@ public:
     void clear_oam_transfer_request();
     [[nodiscard]] bool is_background_enabled() const;
     [[nodiscard]] bool is_window_enabled() const;
+    [[nodiscard]] bool is_sprites_enabled() const;
     [[nodiscard]] std::array<graphics::gb::ColorGb, 4> get_background_palette() const;
     [[nodiscard]] std::array<graphics::gb::ColorGb, 4> get_obj1_palette() const;
     [[nodiscard]] std::array<graphics::gb::ColorGb, 4> get_obj0_palette() const;

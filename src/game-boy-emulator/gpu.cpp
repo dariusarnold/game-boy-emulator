@@ -128,26 +128,25 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
                            static_cast<int>(PpuMode::HBlank_0));
 
             m_clock_count = m_clock_count % DURATION_PIXEL_TRANSFER;
-            m_registers.set_mode(PpuMode::HBlank_0);
 
             if (m_registers.is_stat_interrupt_enabled(PpuRegisters::StatInterruptSource::HBlank)) {
                 m_emulator->get_interrupt_handler()->request_interrupt(
                     InterruptHandler::InterruptType::LcdStat);
             }
 
+            auto ly_equals_lyc
+                = m_registers.get_register_value(PpuRegisters::Register::LyRegister)
+                  == m_registers.get_register_value(PpuRegisters::Register::LycRegister);
             if (m_registers.is_stat_interrupt_enabled(
-                    PpuRegisters::StatInterruptSource::LycEqualsLy)) {
-                auto ly_equals_lyc
-                    = m_registers.get_register_value(PpuRegisters::Register::LyRegister)
-                      == m_registers.get_register_value(PpuRegisters::Register::LycRegister);
-                if (ly_equals_lyc) {
-                    m_emulator->get_interrupt_handler()->request_interrupt(
-                        InterruptHandler::InterruptType::LcdStat);
-                }
-                m_registers.set_register_bit(
-                    PpuRegisters::Register::StatRegister,
-                    static_cast<int>(PpuRegisters::LcdStatBits::LycEqualsLy), 1);
+                    PpuRegisters::StatInterruptSource::LycEqualsLy)
+                && ly_equals_lyc) {
+                m_emulator->get_interrupt_handler()->request_interrupt(
+                    InterruptHandler::InterruptType::LcdStat);
             }
+            m_registers.set_register_bit(PpuRegisters::Register::StatRegister,
+                                         static_cast<int>(PpuRegisters::LcdStatBits::LycEqualsLy),
+                                         static_cast<int>(ly_equals_lyc));
+            m_registers.set_mode(PpuMode::HBlank_0);
         }
         break;
     case PpuMode::HBlank_0:

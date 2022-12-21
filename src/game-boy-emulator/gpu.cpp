@@ -337,18 +337,18 @@ void Gpu::write_sprites() {
 }
 
 void Gpu::draw_window_line() {
-    unsigned const screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
-    unsigned const tile_y = screen_y / 8;
+    const auto screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
+    const auto tile_y = screen_y / 8;
+    auto palette = m_registers.get_background_palette();
 
     // First update the line in the complete window framebuffer
     for (unsigned tile_x = 0; tile_x < 32; ++tile_x) {
         // Get tile by reading index from tile map and fetching indexed tile from tile data.
         auto tile = get_tile_from_map(TileType::Window, tile_x, tile_y);
-        auto in_tile_y = screen_y % 8;
+        size_t in_tile_y = screen_y % 8;
         // The tile provides an 8 pixel line from 2 bytes
         auto tile_line
             = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[in_tile_y * 2 + 1]);
-        auto palette = m_registers.get_background_palette();
         // Map the colors using the current palette and transfer this tiles line to the buffer
         for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
             auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
@@ -356,6 +356,25 @@ void Gpu::draw_window_line() {
             m_window_framebuffer_screen.set_pixel(screen_x, screen_y,
                                                   graphics::gb::to_screen_color(pixel));
         }
+    }
+
+    // WX actually stores the windows X coordinate + 7
+    const auto wx = m_registers.get_register_value(PpuRegisters::Register::WxRegister) - 7;
+    const auto wy = m_registers.get_register_value(PpuRegisters::Register::WyRegister);
+    // Don't draw anything when window is scrolled out of view port.
+    if (wx >= static_cast<int>(constants::SCREEN_RES_WIDTH) || wy >= constants::SCREEN_RES_HEIGHT) {
+        return;
+    }
+
+    auto wx_unsigned = static_cast<uint8_t>(wx);
+
+    const auto scrolled_y = screen_y + wy % m_window_framebuffer_screen.height();
+    // Then transfer only the scrolled part of the line to the game framebuffer
+    for (unsigned screen_x = 0; screen_x < constants::SCREEN_RES_WIDTH; screen_x++) {
+        auto scrolled_x = (screen_x + wx_unsigned) % m_window_framebuffer_screen.width();
+        auto pixel
+            = m_window_framebuffer_screen.get_pixel(scrolled_x, static_cast<size_t>(scrolled_y));
+        m_game_framebuffer_screen.set_pixel(screen_x, screen_y, pixel);
     }
 }
 

@@ -8,6 +8,7 @@ class SDL_Renderer;
 class SDL_Texture;
 union SDL_Event;
 class Emulator;
+class EmulatorState;
 class Joypad;
 namespace spdlog {
 class logger;
@@ -27,6 +28,9 @@ class Window {
     Image m_sprites_image;
     Image m_game_image;
     bool m_done = false;
+    size_t m_previous_ticks = 0;
+
+    std::array<bool, 8> m_pressed_keys{};
 
     void handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<Joypad> joypad);
 
@@ -41,6 +45,7 @@ public:
     void draw_sprites(const Framebuffer<graphics::gb::ColorScreen>& sprites);
     void draw_window(const Framebuffer<graphics::gb::ColorScreen>& window);
     void draw_game();
+    void draw_info(const EmulatorState& state);
 
     void vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game);
 

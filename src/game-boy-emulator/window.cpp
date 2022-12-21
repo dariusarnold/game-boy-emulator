@@ -111,11 +111,7 @@ void Window::draw_frame(const Emulator& emulator) {
                     emulator.get_gpu()->get_viewport_position());
     draw_window(emulator.get_gpu()->get_window());
     draw_sprites(emulator.get_gpu()->get_sprites());
-
-    ImGui::Begin("State");
-    auto state = emulator.get_state();
-    ImGui::Text(fmt::format("{} instructions elapsed", state.instructions_executed).c_str());
-    ImGui::End();
+    draw_info(emulator.get_state());
 
     // Rendering
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -136,27 +132,35 @@ void Window::handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<
             switch (event.key.keysym.sym) {
             case KEY_UP:
                 joypad->press_key(Joypad::Keys::Up);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Up)] = true;
                 break;
             case KEY_LEFT:
                 joypad->press_key(Joypad::Keys::Left);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Left)] = true;
                 break;
             case KEY_DOWN:
                 joypad->press_key(Joypad::Keys::Down);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Down)] = true;
                 break;
             case KEY_RIGHT:
                 joypad->press_key(Joypad::Keys::Right);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Right)] = true;
                 break;
             case KEY_A:
                 joypad->press_key(Joypad::Keys::A);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::A)] = true;
                 break;
             case KEY_B:
                 joypad->press_key(Joypad::Keys::B);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::B)] = true;
                 break;
             case KEY_START:
                 joypad->press_key(Joypad::Keys::Start);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Start)] = true;
                 break;
             case KEY_SELECT:
                 joypad->press_key(Joypad::Keys::Select);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Select)] = true;
                 break;
             }
         }
@@ -164,27 +168,35 @@ void Window::handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<
             switch (event.key.keysym.sym) {
             case KEY_UP:
                 joypad->release_key(Joypad::Keys::Up);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Up)] = false;
                 break;
             case KEY_LEFT:
                 joypad->release_key(Joypad::Keys::Left);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Left)] = false;
                 break;
             case KEY_DOWN:
                 joypad->release_key(Joypad::Keys::Down);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Down)] = false;
                 break;
             case KEY_RIGHT:
                 joypad->release_key(Joypad::Keys::Right);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Right)] = false;
                 break;
             case KEY_A:
                 joypad->release_key(Joypad::Keys::A);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::A)] = false;
                 break;
             case KEY_B:
                 joypad->release_key(Joypad::Keys::B);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::B)] = false;
                 break;
             case KEY_START:
                 joypad->release_key(Joypad::Keys::Start);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Start)] = false;
                 break;
             case KEY_SELECT:
                 joypad->release_key(Joypad::Keys::Select);
+                m_pressed_keys[static_cast<int>(Joypad::Keys::Select)] = false;
                 break;
             }
         }
@@ -273,5 +285,23 @@ void Window::draw_window(const Framebuffer<graphics::gb::ColorScreen>& window) {
     m_window_image.upload_to_texture(window);
     auto my_tex_id = (void*)m_window_image.get_texture();
     ImGui::Image(my_tex_id, ImVec2(window.width(), window.height()));
+    ImGui::End();
+}
+void Window::draw_info(const EmulatorState& state)  {
+    ImGui::Begin("Info");
+    auto current_ticks = SDL_GetTicks64();
+    auto ms_since_last_frame = current_ticks - m_previous_ticks;
+    auto fps = 0;
+    if (ms_since_last_frame != 0) {
+        fps = 1000 / ms_since_last_frame;
+    }
+    m_previous_ticks = current_ticks;
+    ImGui::Text("FPS: %d", fps);
+    for (int i = 0; i < 8; ++i) {
+        const std::string_view state = m_pressed_keys[i] ? "Down" : "Up";
+        auto name = magic_enum::enum_name(magic_enum::enum_value<Joypad::Keys>(i));
+        ImGui::Text("%s", fmt::format("{}: {}", name, state).c_str());
+    }
+    ImGui::Text(fmt::format("{} instructions elapsed", state.instructions_executed).c_str());
     ImGui::End();
 }

@@ -5,8 +5,8 @@
 TEST_CASE("X/Y index access") {
     Framebuffer<int> i{4, 3};
     auto c = 0xFF00FF00;
-    i.set_pixel(1, 3, c);
-    auto d = i.get_pixel(1, 3);
+    i.set_pixel(1, 2, c);
+    auto d = i.get_pixel(1, 2);
     CHECK(c == d);
 }
 

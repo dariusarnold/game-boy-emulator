@@ -101,5 +101,49 @@ void map_gb_color_to_rgba(It begin, It end) {
 // std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data, Framebuffer& image,
 //                                        size_t image_width_tiles, size_t image_height_tiles);
 
+/**
+ * Get index into a 1D array used to store 2D image by x,y coordinate.
+ * 1D array consists of pixels in row-major order.
+ */
+class TileIndex {
+    size_t m_tile_width;
+    size_t m_tile_height;
+
+public:
+    TileIndex(size_t tile_width_pixels, size_t tile_height_pixels);
+    size_t pixel_index(size_t x, size_t y) const;
+};
+
+/**
+ * Get index into a 1D array used to store 2D image by x,y coordinate.
+ * Treat the image as horizontally mirrored, meaning when requesting a x/y coordinate return the
+ * index required to access the pixel in the mirrored image while assuming storage still stays
+ * linear and in row-major order.
+ */
+class TileIndexMirrorHorizontal {
+    size_t m_tile_width;
+    size_t m_tile_height;
+
+public:
+    TileIndexMirrorHorizontal(size_t tile_width_pixels, size_t tile_height_pixels);
+    size_t pixel_index(size_t x, size_t y) const;
+};
+
+/**
+ * Get index into a 1D array used to store 2D image by x,y coordinate.
+ * Treat the image as verticall mirrored, meaning when requesting a x/y coordinate return the
+ * index required to access the pixel in the mirrored image while assuming storage still stays
+ * linear and in row-major order.
+ */
+class TileIndexMirrorVertical {
+    size_t m_tile_width;
+    size_t m_tile_height;
+
+public:
+    TileIndexMirrorVertical(size_t tile_width_pixels, size_t tile_height_pixels);
+    size_t pixel_index(size_t x, size_t y) const;
+};
+
+
 } // namespace gb
 } // namespace graphics

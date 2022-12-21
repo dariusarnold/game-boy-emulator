@@ -263,6 +263,16 @@ void Gpu::write_scanline() {
     }
 }
 
+namespace {
+bool should_mirror_horizontally(const OamEntry& oam_entry) {
+    return bitmanip::is_bit_set(oam_entry.m_flags, 5);
+}
+
+bool should_mirror_vertically(const OamEntry& oam_entry) {
+    return bitmanip::is_bit_set(oam_entry.m_flags, 6);
+}
+} // namespace
+
 void Gpu::write_sprites() {
     if (!m_registers.is_sprites_enabled()) {
         return;
@@ -280,13 +290,32 @@ void Gpu::write_sprites() {
             continue;
         }
 
+        if (should_mirror_vertically(oam_entry) && should_mirror_horizontally(oam_entry)) {
+            throw NotImplementedError("Mirroring sprite on two axes not implemented");
+        }
+
         auto sprite_data = get_sprite_tile(oam_entry.m_tile_index);
         auto tile = graphics::gb::tile_to_gb_color(sprite_data);
         auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
         auto palette = m_registers.get_obj0_palette();
-        if (palette_bit == 1) {
+        if (palette_bit) {
             palette = m_registers.get_obj1_palette();
         }
+
+        auto calculate_tile_index = [&](size_t x, size_t y) {
+            // TODO support tall sprites
+            const static graphics::gb::TileIndexMirrorHorizontal tih(8, 8);
+            const static graphics::gb::TileIndexMirrorVertical tiv(8, 8);
+            const static graphics::gb::TileIndex ti(8, 8);
+            if (should_mirror_horizontally(oam_entry)) {
+                return tih.pixel_index(x, y);
+            }
+            if (should_mirror_vertically(oam_entry)) {
+                return tiv.pixel_index(x, y);
+            }
+            return ti.pixel_index(x, y);
+        };
+
 
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
             for (unsigned sprite_y = 0; sprite_y < 8; ++sprite_y) {
@@ -297,8 +326,8 @@ void Gpu::write_sprites() {
                     // This pixel of the sprite is hidden
                     continue;
                 }
-                auto mapped_color
-                    = palette[magic_enum::enum_integer(tile[sprite_x + sprite_y * 8])];
+                auto tile_index = calculate_tile_index(sprite_x, sprite_y);
+                auto mapped_color = palette[magic_enum::enum_integer(tile[tile_index])];
                 auto color = graphics::gb::to_screen_color(mapped_color);
                 m_sprites_framebuffer_screen.set_pixel(static_cast<size_t>(x),
                                                        static_cast<size_t>(y), color);

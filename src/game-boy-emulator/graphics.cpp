@@ -53,18 +53,18 @@ constexpr std::array<ColorScreen, 4> get_screen_palette() {
     return palette;
 }
 
- std::array<UnmappedColorGb, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
-     std::array<UnmappedColorGb, 64> out{};
-     for (size_t i = 0; i < 16; i += 2) {
-         // 2 bytes represent one 8 pixel wide row in the tile
-         auto row = graphics::gb::convert_tile_line(tile_data[i], tile_data[i + 1]);
-         for (size_t j = 0; j < row.size(); j++) {
-             auto index = (i / 2) * 8 + j;
-             out[index] = row[j];
-         }
-     }
-     return out;
- }
+std::array<UnmappedColorGb, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {
+    std::array<UnmappedColorGb, 64> out{};
+    for (size_t i = 0; i < 16; i += 2) {
+        // 2 bytes represent one 8 pixel wide row in the tile
+        auto row = graphics::gb::convert_tile_line(tile_data[i], tile_data[i + 1]);
+        for (size_t j = 0; j < row.size(); j++) {
+            auto index = (i / 2) * 8 + j;
+            out[index] = row[j];
+        }
+    }
+    return out;
+}
 
 // std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data, Framebuffer& image,
 //                                        size_t image_width_tiles, size_t image_height_tiles) {
@@ -101,4 +101,35 @@ constexpr std::array<ColorScreen, 4> get_screen_palette() {
 //         image.set_pixel(i, palette[image.get_pixel(i)]);
 //     }
 // }
+
+TileIndex::TileIndex(size_t tile_width_pixels, size_t tile_height_pixels) :
+        m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
+
+size_t graphics::gb::TileIndex::pixel_index(size_t x, size_t y) const {
+    assert(x < m_tile_width && "TileIndex width out of bounds");
+    assert(y < m_tile_height && "TileIndex height out of bounds");
+    return x + y * m_tile_width;
+}
+
+TileIndexMirrorHorizontal::TileIndexMirrorHorizontal(size_t tile_width_pixels,
+                                                     size_t tile_height_pixels) :
+        m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
+
+size_t TileIndexMirrorHorizontal::pixel_index(size_t x, size_t y) const {
+    assert(x < m_tile_width && "TileIndex width out of bounds");
+    assert(y < m_tile_height && "TileIndex height out of bounds");
+    return m_tile_width - 1 - x + y * m_tile_width;
+}
+
+TileIndexMirrorVertical::TileIndexMirrorVertical(size_t tile_width_pixels,
+                                                 size_t tile_height_pixels) :
+        m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
+
+
+size_t TileIndexMirrorVertical::pixel_index(size_t x, size_t y) const {
+    assert(x < m_tile_width && "TileIndex width out of bounds");
+    assert(y < m_tile_height && "TileIndex height out of bounds");
+    return x + (m_tile_height - 1 - y) * m_tile_width;
+}
+
 } // namespace graphics::gb

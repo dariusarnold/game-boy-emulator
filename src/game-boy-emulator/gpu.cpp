@@ -271,6 +271,11 @@ bool should_mirror_horizontally(const OamEntry& oam_entry) {
 bool should_mirror_vertically(const OamEntry& oam_entry) {
     return bitmanip::is_bit_set(oam_entry.m_flags, 6);
 }
+
+bool bg_window_over_sprite(const OamEntry& oam_entry) {
+    // Bit7   OBJ-to-BG Priority (0=OBJ Above BG, 1=OBJ behind BG color 1-3)
+    return bitmanip::is_bit_set(oam_entry.m_flags, 7);
+}
 } // namespace
 
 void Gpu::write_sprites() {
@@ -302,7 +307,7 @@ void Gpu::write_sprites() {
             palette = m_registers.get_obj1_palette();
         }
 
-        auto calculate_tile_index = [&](size_t x, size_t y) {
+        auto calculate_pixel_index = [&](size_t x, size_t y) {
             // TODO support tall sprites
             const static graphics::gb::TileIndexMirrorHorizontal tih(8, 8);
             const static graphics::gb::TileIndexMirrorVertical tiv(8, 8);
@@ -326,11 +331,25 @@ void Gpu::write_sprites() {
                     // This pixel of the sprite is hidden
                     continue;
                 }
-                auto tile_index = calculate_tile_index(sprite_x, sprite_y);
-                auto mapped_color = palette[magic_enum::enum_integer(tile[tile_index])];
-                auto color = graphics::gb::to_screen_color(mapped_color);
+                auto pixel_index = calculate_pixel_index(sprite_x, sprite_y);
+                auto pixel_color = tile[pixel_index];
+                if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
+                    // Color 0 is transparent for sprites, so those pixels are not drawn.
+                    continue;
+                }
+
+                auto gb_color = palette[magic_enum::enum_integer(pixel_color)];
+                auto screen_color = graphics::gb::to_screen_color(gb_color);
+                auto existing_color = m_game_framebuffer_screen.get_pixel(static_cast<size_t>(x),
+                                                                          static_cast<size_t>(y));
+                if (bg_window_over_sprite(oam_entry)
+                    && existing_color != graphics::gb::ColorScreen::White) {
+                    continue;
+                }
                 m_sprites_framebuffer_screen.set_pixel(static_cast<size_t>(x),
-                                                       static_cast<size_t>(y), color);
+                                                       static_cast<size_t>(y), screen_color);
+                m_game_framebuffer_screen.set_pixel(static_cast<size_t>(x),
+                                                    static_cast<size_t>(y), screen_color);
             }
         }
     }

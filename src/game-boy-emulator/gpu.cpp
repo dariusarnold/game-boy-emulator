@@ -264,12 +264,22 @@ void Gpu::write_scanline() {
 }
 
 void Gpu::write_sprites() {
+    if (!m_registers.is_sprites_enabled()) {
+        return;
+    }
+
     m_sprites_framebuffer_screen.reset(graphics::gb::ColorScreen::White);
     if (m_registers.get_sprite_height() == 16) {
         throw LogicError("Tall sprites not supported");
     }
 
     for (const auto& oam_entry : m_oam_ram) {
+        // Skip offscreen sprites
+        if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
+            || oam_entry.m_x_position == 0 || oam_entry.m_x_position >= 168) {
+            continue;
+        }
+
         auto sprite_data = get_sprite_tile(oam_entry.m_tile_index);
         auto tile = graphics::gb::tile_to_gb_color(sprite_data);
         auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
@@ -282,7 +292,8 @@ void Gpu::write_sprites() {
             for (unsigned sprite_y = 0; sprite_y < 8; ++sprite_y) {
                 auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
                 auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
-                if (x < 0 || y < 0) {
+                if (x < 0 || y < 0 || x >= m_sprites_framebuffer_screen.width()
+                    || y >= m_sprites_framebuffer_screen.height()) {
                     // This pixel of the sprite is hidden
                     continue;
                 }

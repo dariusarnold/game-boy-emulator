@@ -78,6 +78,8 @@ public:
     [[nodiscard]] std::shared_ptr<Apu> get_apu() const;
     [[nodiscard]] std::shared_ptr<Joypad> get_joypad() const;
 
+    size_t get_cycle_count();
+
 private:
     EmulatorState m_state;
     EmulatorOptions m_options;

@@ -168,3 +168,7 @@ std::shared_ptr<Apu> Emulator::get_apu() const {
 std::shared_ptr<Joypad> Emulator::get_joypad() const {
     return m_joypad;
 }
+
+size_t Emulator::get_cycle_count() {
+    return m_cpu->cycle_duration_previous_instruction();
+}

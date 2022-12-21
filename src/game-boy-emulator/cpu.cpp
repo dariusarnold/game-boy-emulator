@@ -8,6 +8,7 @@
 
 
 void Cpu::step() {
+    auto start_cycles = m_emulator->get_state().cycles_m;
     previous_instruction = current_instruction;
     current_instruction = fetch_instruction();
     auto fetched = fetch_data(current_instruction);
@@ -126,6 +127,9 @@ void Cpu::step() {
             fmt::format("Instruction type {} not implemented",
                         magic_enum::enum_name(current_instruction.instruction_type)));
     }
+    auto end_cycles = m_emulator->get_state().cycles_m;
+    m_cycles_previous_instruction = end_cycles - start_cycles;
+    m_logger->debug("Took {} M cycles", end_cycles - start_cycles);
     m_emulator->elapse_instruction();
 }
 
@@ -261,12 +265,16 @@ CpuDebugState Cpu::get_debug_state() {
              m_emulator->get_bus()->read_byte(registers.pc + 3)}};
 }
 
-opcodes::Instruction Cpu::get_current_instruction() {
+opcodes::Instruction Cpu::get_current_instruction() const {
     return current_instruction;
 }
 
-opcodes::Instruction Cpu::get_previous_instruction() {
+opcodes::Instruction Cpu::get_previous_instruction() const {
     return previous_instruction;
+}
+
+size_t Cpu::cycle_duration_previous_instruction() const {
+    return m_cycles_previous_instruction;
 }
 
 void Cpu::set_register_value(opcodes::RegisterType register_type, uint16_t value) {

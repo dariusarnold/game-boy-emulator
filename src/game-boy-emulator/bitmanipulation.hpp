@@ -18,6 +18,8 @@ void set(uint8_t& input, uint8_t position);
 // Set bit in input at position to 0
 void unset(uint8_t& input, uint8_t position);
 
+void set_bit_value(uint8_t& input, uint8_t position, uint8_t value);
+
 template <typename T, typename U>
 bool is_bit_set(T input, U position) {
     static_assert(std::is_integral_v<T>);

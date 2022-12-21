@@ -7,7 +7,7 @@ class Emulator;
 
 class Joypad {
     // 0xFF00, 1 in the bits of the lower nibble means button not pressed.
-    uint8_t m_register = 0x0F;
+    uint8_t m_register = 0b00111111;
 
     // The key pad is multiplexed in a 2 x 4 matrix
     enum class BitValues {
@@ -25,34 +25,34 @@ class Joypad {
     };
 
     // Indexed by keys, store if a key is pressed.
+    // Indexed by enum Keys
     std::array<KeyStatus, 8> m_key_states{};
 
     Emulator* m_emulator;
-
-    void update_register();
 
 public:
     explicit Joypad(Emulator* emulator);
 
     enum class Keys {
         // Movement buttons
-        Up = 0,
-        Down = 1,
-        Left = 2,
-        Right = 3,
+        Right = 0,
+        Left = 1,
+        Up = 2,
+        Down = 3,
         // Action buttons
         A = 4,
         B = 5,
-        Start = 6,
-        Select = 7,
+        Select = 6,
+        Start = 7,
     };
 
     void press_key(Keys key);
     void release_key(Keys key);
 
-    [[nodiscard]] uint8_t read_byte() const;
+    [[nodiscard]] uint8_t read_byte();
     void write_byte(uint8_t value);
 
 private:
+    void set_key_state(Joypad::Keys key, KeyStatus status);
     [[nodiscard]] Joypad::KeyStatus get_key_state(Joypad::Keys key) const;
 };

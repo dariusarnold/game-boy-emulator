@@ -153,3 +153,27 @@ TEST_CASE("Swap nibbles") {
     CHECK(bitmanip::swap_nibbles(0xFF) == 0xFF);
     CHECK(bitmanip::swap_nibbles(0x1D) == 0xD1);
 }
+
+TEST_CASE("Set bit testing") {
+    uint8_t in = 0b00000001;
+
+    SECTION("1->1") {
+        bitmanip::set(in, 0, BitValues::Active);
+        CHECK(in == 0b00000001);
+    }
+
+    SECTION("1->0") {
+        bitmanip::set(in, 0, BitValues::Inactive);
+        CHECK(in == 0b00000000);
+    }
+
+    SECTION("0->0") {
+        bitmanip::set(in, 1, BitValues::Inactive);
+        CHECK(in == 0b00000001);
+    }
+
+    SECTION("0->1") {
+        bitmanip::set(in, 1, BitValues::Active);
+        CHECK(in == 0b00000011);
+    }
+}

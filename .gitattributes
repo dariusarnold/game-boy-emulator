@@ -1,3 +1,0 @@
-src/tests/recorded-logs filter=lfs diff=lfs merge=lfs -text
-src/tests/roms filter=lfs diff=lfs merge=lfs -text
-src/tests/recorded-logs/*.txt filter=lfs diff=lfs merge=lfs -text

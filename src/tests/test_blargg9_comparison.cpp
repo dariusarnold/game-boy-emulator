@@ -14,8 +14,8 @@ TEST_CASE("Compare blargg9 state") {
     spdlog::set_level(spdlog::level::err);
     auto expected_output = read_log_file("recorded-logs/blargg9.txt");
     REQUIRE_FALSE(expected_output.empty());
-    auto blargg_rom = load_rom_file(std::filesystem::absolute("roms/09-op r,r.gb"));
-    Emulator emulator{blargg_rom, {.stub_ly = true}};
+    Emulator emulator{{.stub_ly = true}};
+    emulator.load_game(std::filesystem::absolute("roms/09-op r,r.gb"));
     for (auto i = 0; const auto& expected_line : expected_output) {
         auto actual_output = emulator.get_debug_state();
         ++i;

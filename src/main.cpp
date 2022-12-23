@@ -1,6 +1,4 @@
-#include "constants.h"
 #include "emulator.hpp"
-#include "io.hpp"
 #include "window.hpp"
 #include "gpu.hpp"
 
@@ -9,7 +7,6 @@
 
 #include <filesystem>
 #include <optional>
-#include <span>
 #include <cstdlib>
 
 
@@ -28,28 +25,18 @@ int main(int argc, char** argv) { // NOLINT
         return EXIT_FAILURE;
     }
 
-    std::optional<std::array<uint8_t, 256>> boot_rom;
+    std::optional<std::filesystem::path> boot_rom_path;
     if (program.is_used("boot")) {
-        auto boot_rom_path = std::filesystem::absolute(program.get("boot"));
-        boot_rom = load_boot_rom_file(boot_rom_path);
-        if (!boot_rom) {
-            spdlog::error("Failed to load boot rom from {}", boot_rom_path.string());
-            return EXIT_FAILURE;
-        }
+        boot_rom_path = std::filesystem::absolute(program.get("boot"));
     }
     auto rom_path = std::filesystem::absolute(program.get("rom"));
-    auto game_rom = load_rom_file(rom_path);
-    if (game_rom.empty()) {
-        spdlog::error("Failed to load game rom from {}", rom_path.string());
-        return EXIT_FAILURE;
-    }
 
-    Emulator emulator = [&]() {
-        if (boot_rom.has_value()) {
-            return Emulator(boot_rom.value(), game_rom, {false});
-        }
-        return Emulator(game_rom, {false});
-    }();
+    Emulator emulator({false});
+    if (boot_rom_path.has_value()) {
+        emulator.load_boot_game(boot_rom_path.value(), rom_path);
+    } else {
+        emulator.load_game(rom_path);
+    }
 
     Window window(emulator);
     emulator.set_draw_function([&](const auto& buffer) { window.vblank_callback(buffer); });
@@ -60,7 +47,6 @@ int main(int argc, char** argv) { // NOLINT
         if (!sucess) {
             return EXIT_FAILURE;
         }
-
     }
 
     return EXIT_SUCCESS;

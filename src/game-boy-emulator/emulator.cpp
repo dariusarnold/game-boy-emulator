@@ -11,15 +11,12 @@
 #include "apu.hpp"
 #include "interrupthandler.hpp"
 #include "joypad.hpp"
+#include "io.hpp"
 
 #include "spdlog/spdlog.h"
 
-
-Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<uint8_t>& game_rom,
-                   EmulatorOptions options) :
+Emulator::Emulator(EmulatorOptions options) :
         m_options(options),
-        m_cartridge(std::make_shared<Cartridge>(this, game_rom)),
-        m_boot_rom(std::make_shared<BootRom>(this, boot_rom)),
         m_address_bus(std::make_shared<AddressBus>(this)),
         m_ram(std::make_shared<Ram>(this)),
         m_cpu(std::make_shared<Cpu>(this)),
@@ -31,23 +28,39 @@ Emulator::Emulator(const std::array<uint8_t, 256>& boot_rom, const std::vector<u
         m_joypad(std::make_shared<Joypad>(this)),
         m_logger(spdlog::get("")) {}
 
-Emulator::Emulator(const std::vector<uint8_t>& game_rom, EmulatorOptions options) :
-        m_options(options),
-        m_cartridge(std::make_shared<Cartridge>(this, game_rom)),
-        m_address_bus(std::make_shared<AddressBus>(this)),
-        m_ram(std::make_shared<Ram>(this)),
-        m_cpu(std::make_shared<Cpu>(this)),
-        m_apu(std::make_shared<Apu>()),
-        m_gpu(std::make_shared<Gpu>(this)),
-        m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
-        m_timer(std::make_shared<Timer>(this)),
-        m_serial_port(std::make_shared<SerialPort>(this)),
-        m_joypad(std::make_shared<Joypad>(this)),
-        m_logger(spdlog::get("")) {
-    m_state.is_booting = false;
+void Emulator::load_game(const std::filesystem::path& rom_path) {
+    EmulatorIo io;
+    auto rom = io.load_rom_file(rom_path);
+    if (!rom.has_value()) {
+        throw LoadError(fmt::format("Failed to load {}", rom_path.string()));
+    }
+    m_state.rom_file_path = rom_path;
+    m_cartridge = std::make_shared<Cartridge>(this, rom.value());
     m_cpu->set_initial_state();
+    m_state.is_booting = false;
 }
 
+void Emulator::load_boot(const std::filesystem::path& rom_path) {
+    EmulatorIo io;
+    auto boot_rom = io.load_boot_rom_file(rom_path);
+    if (!boot_rom.has_value()) {
+        throw LoadError(fmt::format("Failed to load {}", rom_path.string()));
+    }
+    m_boot_rom = std::make_shared<BootRom>(this, boot_rom.value());
+    m_state.is_booting = true;
+}
+
+void Emulator::load_boot_game(const std::filesystem::path& boot_rom_path,
+                              const std::filesystem::path& game_rom_path) {
+    load_boot(boot_rom_path);
+    EmulatorIo io;
+    auto rom = io.load_rom_file(game_rom_path);
+    if (!rom.has_value()) {
+        throw LoadError(fmt::format("Failed to load {}", game_rom_path.string()));
+    }
+    m_state.rom_file_path = game_rom_path;
+    m_cartridge = std::make_shared<Cartridge>(this, rom.value());
+}
 
 void Emulator::run() {
     while (step()) {

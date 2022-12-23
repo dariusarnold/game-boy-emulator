@@ -14,8 +14,8 @@ TEST_CASE("Compare instr_timing state") {
     spdlog::set_level(spdlog::level::err);
     auto expected_output = read_log_file("recorded-logs/instr-timing-log.txt");
     REQUIRE_FALSE(expected_output.empty());
-    auto game_rom = load_rom_file(std::filesystem::absolute("roms/instr_timing.gb"));
-    Emulator emulator{game_rom, {true}};
+    Emulator emulator{{true}};
+    emulator.load_game(std::filesystem::absolute("roms/instr_timing.gb"));
     for (auto i = 0; const auto& expected_line : expected_output) {
         auto actual_output = emulator.get_debug_state();
         ++i;

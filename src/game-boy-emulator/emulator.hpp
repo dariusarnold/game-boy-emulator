@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 #include <functional>
+#include <filesystem>
 
 namespace opcodes {
 struct Instruction;
@@ -38,6 +39,8 @@ struct EmulatorState {
     // Currently running boot rom
     bool is_booting = true;
     bool halted = false;
+    // Path to game rom file
+    std::optional<std::filesystem::path> rom_file_path;
 };
 
 /**
@@ -45,11 +48,15 @@ struct EmulatorState {
  */
 class Emulator {
 public:
-    // Actually run boot rom to initialize emulator and hand off control to game after booting.
-    Emulator(const std::array<uint8_t, constants::BOOT_ROM_SIZE>& boot_rom,
-             const std::vector<uint8_t>& game_rom, EmulatorOptions options);
+    Emulator(EmulatorOptions options);
+    // Only load boot rom file.
+    void load_boot(const std::filesystem::path& rom_path);
     // Don't run boot rom and use initial values for registers/flags/memory.
-    explicit Emulator(const std::vector<uint8_t>& game_rom, EmulatorOptions options);
+    void load_game(const std::filesystem::path& rom_path);
+    // Actually run boot rom to initialize emulator and hand off control to game after booting.
+    void load_boot_game(const std::filesystem::path& boot_rom_path,
+                         const std::filesystem::path& game_rom_path);
+
     void run();
     bool step();
 

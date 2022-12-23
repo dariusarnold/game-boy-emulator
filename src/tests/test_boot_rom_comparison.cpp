@@ -18,7 +18,6 @@ TEST_CASE("Compare boot sequence") {
     auto expected_output = read_log_file("recorded-logs/BootromLog.txt");
     REQUIRE_FALSE(expected_output.empty());
     auto boot_rom_path = std::filesystem::absolute("roms/dmg_boot.gb");
-    auto boot_rom = load_boot_rom_file(boot_rom_path);
     std::vector<uint8_t> cartridge(1024, 0);
     // clang-format off
     const std::vector<uint8_t> cartridge_header{0x00, 0xC3, 0x1, 0x50 /* entry point */,
@@ -43,8 +42,8 @@ TEST_CASE("Compare boot sequence") {
     for (auto i = 0; i < cartridge_header.size(); ++i) {
         cartridge[i + 0x100] = cartridge_header[i];
     }
-    REQUIRE(boot_rom);
-    Emulator emulator{boot_rom.value(), cartridge, {.stub_ly = true}};
+    Emulator emulator{{.stub_ly = true}};
+    emulator.load_boot(boot_rom_path);
     for (auto i = 0; const auto& expected_line : expected_output) {
         auto actual_output = emulator.get_debug_state();
         ++i;

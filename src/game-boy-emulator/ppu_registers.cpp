@@ -124,7 +124,7 @@ bool PpuRegisters::is_window_enabled() const {
     return bitmanip::is_bit_set(lcdc, static_cast<int>(LcdcBits::WindowEnable));
 }
 
-std::array<graphics::gb::ColorGb, 4> PpuRegisters::get_background_palette() const {
+std::array<graphics::gb::ColorGb, 4> PpuRegisters::get_background_window_palette() const {
     auto bgp = get(Register::BgpRegister);
     return get_palette(bgp);
 }

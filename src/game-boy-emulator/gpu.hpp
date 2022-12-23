@@ -40,6 +40,7 @@ class Gpu {
     void draw_window_line();
     void draw_background_line();
     void draw_background_debug();
+    void draw_window_debug();
 
     // Framebuffers for the background. Use one in gameboy pixel format to allow easier reuse in
     // the rendering loop and one in screen pixel format to use with SDL/Dear ImGui.

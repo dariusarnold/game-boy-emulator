@@ -132,4 +132,13 @@ size_t TileIndexMirrorVertical::pixel_index(size_t x, size_t y) const {
     return x + (m_tile_height - 1 - y) * m_tile_width;
 }
 
+TileIndexMirrorBothAxes::TileIndexMirrorBothAxes(size_t tile_width_pixels,
+                                                               size_t tile_height_pixels) :
+        m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
+
+size_t TileIndexMirrorBothAxes::pixel_index(size_t x, size_t y) const {
+    return m_tile_height * m_tile_width - (x + y * m_tile_width) - 1;
+
+}
+
 } // namespace graphics::gb

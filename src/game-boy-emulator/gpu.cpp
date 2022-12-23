@@ -295,10 +295,6 @@ void Gpu::write_sprites() {
             continue;
         }
 
-        if (should_mirror_vertically(oam_entry) && should_mirror_horizontally(oam_entry)) {
-            throw NotImplementedError("Mirroring sprite on two axes not implemented");
-        }
-
         auto sprite_data = get_sprite_tile(oam_entry.m_tile_index);
         auto tile = graphics::gb::tile_to_gb_color(sprite_data);
         auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
@@ -308,10 +304,13 @@ void Gpu::write_sprites() {
         }
 
         auto calculate_pixel_index = [&](size_t x, size_t y) {
-            // TODO support tall sprites
+            const static graphics::gb::TileIndexMirrorBothAxes tim(8, 8);
             const static graphics::gb::TileIndexMirrorHorizontal tih(8, 8);
             const static graphics::gb::TileIndexMirrorVertical tiv(8, 8);
             const static graphics::gb::TileIndex ti(8, 8);
+            if (should_mirror_horizontally(oam_entry) && should_mirror_vertically(oam_entry)) {
+                return tim.pixel_index(x, y);
+            }
             if (should_mirror_horizontally(oam_entry)) {
                 return tih.pixel_index(x, y);
             }
@@ -348,8 +347,8 @@ void Gpu::write_sprites() {
                 }
                 m_sprites_framebuffer_screen.set_pixel(static_cast<size_t>(x),
                                                        static_cast<size_t>(y), screen_color);
-                m_game_framebuffer_screen.set_pixel(static_cast<size_t>(x),
-                                                    static_cast<size_t>(y), screen_color);
+                m_game_framebuffer_screen.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y),
+                                                    screen_color);
             }
         }
     }

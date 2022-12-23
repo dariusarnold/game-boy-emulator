@@ -144,6 +144,15 @@ public:
     size_t pixel_index(size_t x, size_t y) const;
 };
 
+class TileIndexMirrorBothAxes {
+    size_t m_tile_width;
+    size_t m_tile_height;
+
+public:
+    TileIndexMirrorBothAxes(size_t tile_width_pixels, size_t tile_height_pixels);
+    size_t pixel_index(size_t x, size_t y) const;
+};
+
 
 } // namespace gb
 } // namespace graphics

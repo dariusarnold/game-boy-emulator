@@ -153,6 +153,29 @@ TEST_CASE("Vertically mirrored tile index") {
     CHECK(tiv.pixel_index(3, 2) == 3);
 }
 
+TEST_CASE("Vertically and horizontally mirrored tile index") {
+    using namespace graphics::gb;
+
+    TileIndexMirrorBothAxes tiv{4, 3};
+
+    /**
+     * 00 01 02 03
+     * 04 05 06 07
+     * 08 09 10 11
+     * would be mirrored to
+     * 11 10 09 08
+     * 07 06 05 04
+     * 03 02 01 00
+     *
+     */
+
+    CHECK(tiv.pixel_index(0, 0) == 11);
+    CHECK(tiv.pixel_index(2, 0) == 9);
+    CHECK(tiv.pixel_index(0, 1) == 7);
+    CHECK(tiv.pixel_index(1, 1) == 6);
+    CHECK(tiv.pixel_index(3, 2) == 0);
+}
+
 TEST_CASE("Using mirrored TileIndex to access Framebuffer") {
     Framebuffer<int> fb(2, 2);
     // Fill with
@@ -186,5 +209,13 @@ TEST_CASE("Using mirrored TileIndex to access Framebuffer") {
         CHECK(fb.get_pixel(tiv.pixel_index(1, 0)) == 4);
         CHECK(fb.get_pixel(tiv.pixel_index(0, 1)) == 1);
         CHECK(fb.get_pixel(tiv.pixel_index(1, 1)) == 2);
+    }
+
+    SECTION("Mirrored on both axes") {
+        TileIndexMirrorBothAxes tim(2, 2);
+        CHECK(fb.get_pixel(tim.pixel_index(0, 0)) == 4);
+        CHECK(fb.get_pixel(tim.pixel_index(1, 0)) == 3);
+        CHECK(fb.get_pixel(tim.pixel_index(0, 1)) == 2);
+        CHECK(fb.get_pixel(tim.pixel_index(1, 1)) == 1);
     }
 }

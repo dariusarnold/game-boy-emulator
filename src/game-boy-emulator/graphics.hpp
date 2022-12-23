@@ -107,7 +107,7 @@ void map_gb_color_to_rgba(It begin, It end) {
  */
 class TileIndex {
     size_t m_tile_width;
-    size_t m_tile_height;
+    [[maybe_unused]] size_t m_tile_height;
 
 public:
     TileIndex(size_t tile_width_pixels, size_t tile_height_pixels);
@@ -122,7 +122,7 @@ public:
  */
 class TileIndexMirrorHorizontal {
     size_t m_tile_width;
-    size_t m_tile_height;
+    [[maybe_unused]] size_t m_tile_height;
 
 public:
     TileIndexMirrorHorizontal(size_t tile_width_pixels, size_t tile_height_pixels);

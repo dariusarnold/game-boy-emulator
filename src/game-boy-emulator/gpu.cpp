@@ -320,7 +320,6 @@ void Gpu::write_sprites() {
             return ti.pixel_index(x, y);
         };
 
-
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
             for (unsigned sprite_y = 0; sprite_y < 8; ++sprite_y) {
                 auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;

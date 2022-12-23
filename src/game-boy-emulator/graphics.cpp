@@ -106,8 +106,6 @@ TileIndex::TileIndex(size_t tile_width_pixels, size_t tile_height_pixels) :
         m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
 
 size_t graphics::gb::TileIndex::pixel_index(size_t x, size_t y) const {
-    assert(x < m_tile_width && "TileIndex width out of bounds");
-    assert(y < m_tile_height && "TileIndex height out of bounds");
     return x + y * m_tile_width;
 }
 
@@ -116,8 +114,6 @@ TileIndexMirrorHorizontal::TileIndexMirrorHorizontal(size_t tile_width_pixels,
         m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
 
 size_t TileIndexMirrorHorizontal::pixel_index(size_t x, size_t y) const {
-    assert(x < m_tile_width && "TileIndex width out of bounds");
-    assert(y < m_tile_height && "TileIndex height out of bounds");
     return m_tile_width - 1 - x + y * m_tile_width;
 }
 
@@ -127,8 +123,6 @@ TileIndexMirrorVertical::TileIndexMirrorVertical(size_t tile_width_pixels,
 
 
 size_t TileIndexMirrorVertical::pixel_index(size_t x, size_t y) const {
-    assert(x < m_tile_width && "TileIndex width out of bounds");
-    assert(y < m_tile_height && "TileIndex height out of bounds");
     return x + (m_tile_height - 1 - y) * m_tile_width;
 }
 

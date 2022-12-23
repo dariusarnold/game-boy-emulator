@@ -186,6 +186,9 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
             if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 154) {
                 write_sprites();
 
+                // Also render the debug framebuffer. The normal background rendering only renders
+                // 144 lines.
+                draw_background_debug();
                 m_emulator->draw(m_game_framebuffer_screen);
                 m_game_framebuffer_screen.reset();
 
@@ -397,37 +400,29 @@ void Gpu::draw_window_line() {
 
 void Gpu::draw_background_line() {
     unsigned const screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
-    // Tile index
-    unsigned const tile_y = screen_y / 8;
-    // Pixel offset in tile
-    auto in_tile_y = screen_y % 8;
     auto palette = m_registers.get_background_palette();
-
-    // First update the line in the complete background framebuffer
-    for (unsigned tile_x = 0; tile_x < 32; ++tile_x) {
-        // Get tile by reading index from tile map and fetching indexed tile from tile data.
-        auto tile = get_tile_from_map(TileType::Background, tile_x, tile_y);
-        // The tile provides an 8 pixel line from 2 bytes
-        auto tile_line
-            = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[in_tile_y * 2 + 1]);
-        // Map the colors using the current palette and transfer this tiles line to the buffer
-        for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
-            auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
-            auto screen_x = tile_x * 8 + tile_line_x;
-            m_background_framebuffer_screen.set_pixel(screen_x, screen_y,
-                                                      graphics::gb::to_screen_color(pixel));
-        }
-    }
-
-    // Then transfer only the scrolled part of the line to the game framebuffer
     auto scx = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
     auto scy = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
 
-    for (unsigned screen_x = 0; screen_x < constants::SCREEN_RES_WIDTH; screen_x++) {
-        auto scrolled_x = (screen_x + scx) % m_background_framebuffer_screen.width();
-        auto scrolled_y = (screen_y + scy) % m_background_framebuffer_screen.height();
-        auto pixel = m_background_framebuffer_screen.get_pixel(scrolled_x, scrolled_y);
-        m_game_framebuffer_screen.set_pixel(screen_x, screen_y, pixel);
+    for (unsigned screen_x = 0; screen_x < constants::SCREEN_RES_WIDTH; ++screen_x) {
+        // Index of pixel in full background map
+        auto bg_x = (screen_x + scx) % constants::BACKGROUND_SIZE_PIXELS;
+        auto bg_y = (screen_y + scy) % constants::BACKGROUND_SIZE_PIXELS;
+        // Index of tile in tile map
+        auto tile_index_x = bg_x / constants::PIXELS_PER_TILE;
+        auto tile_index_y = bg_y / constants::PIXELS_PER_TILE;
+        // Index of the pixel in the tile
+        auto tile_pixel_x = bg_x % constants::PIXELS_PER_TILE;
+        auto tile_pixel_y = bg_y % constants::PIXELS_PER_TILE;
+
+        auto tile = get_tile_from_map(TileType::Background, tile_index_x, tile_index_y);
+        // The tile provides an 8 pixel line from 2 bytes
+        auto tile_line
+            = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[tile_pixel_y * 2 + 1]);
+        auto color_index = tile_line[tile_pixel_x];
+        auto color_gb = palette[magic_enum::enum_integer(color_index)];
+        auto screen_color = graphics::gb::to_screen_color(color_gb);
+        m_game_framebuffer_screen.set_pixel(screen_x, screen_y, screen_color);
     }
 }
 
@@ -444,4 +439,29 @@ const Framebuffer<graphics::gb::ColorScreen>& Gpu::get_sprites() {
 std::span<uint8_t, 16> Gpu::get_sprite_tile(uint8_t tile_index) {
     return std::span<uint8_t, 16>{m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE,
                                   constants::BYTES_PER_TILE};
+}
+
+void Gpu::draw_background_debug() {
+    auto palette = m_registers.get_background_palette();
+    for (unsigned screen_y = 0; screen_y < constants::BACKGROUND_SIZE_PIXELS; ++screen_y) {
+        // Tile index
+        unsigned const tile_y = screen_y / 8;
+        // Pixel offset in tile
+        auto in_tile_y = screen_y % 8;
+        // First update the line in the complete background framebuffer
+        for (unsigned tile_x = 0; tile_x < 32; ++tile_x) {
+            // Get tile by reading index from tile map and fetching indexed tile from tile data.
+            auto tile = get_tile_from_map(TileType::Background, tile_x, tile_y);
+            // The tile provides an 8 pixel line from 2 bytes
+            auto tile_line
+                = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[in_tile_y * 2 + 1]);
+            // Map the colors using the current palette and transfer this tiles line to the buffer
+            for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
+                auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
+                auto screen_x = tile_x * 8 + tile_line_x;
+                m_background_framebuffer_screen.set_pixel(screen_x, screen_y,
+                                                          graphics::gb::to_screen_color(pixel));
+            }
+        }
+    }
 }

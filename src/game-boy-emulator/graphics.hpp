@@ -58,6 +58,7 @@ enum class ColorScreen : uint32_t {
     LightGray = 0xff0fac8b,
     DarkGray = 0xff306230,
     Black = 0xff0f380f,
+    Highlight = 0x00ffff,
 };
 
 ColorScreen to_screen_color(ColorGb color_gb);

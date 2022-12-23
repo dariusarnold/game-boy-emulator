@@ -46,7 +46,7 @@ public:
 };
 
 template <typename PixelType>
-void draw_rectangle_border(Framebuffer<PixelType>& img, size_t top_left_x, size_t top_left_y,
-                           size_t rect_width, size_t rect_height, PixelType rect_color);
+void draw_rectangle_border(Framebuffer<PixelType>& img, int top_left_x, int top_left_y,
+                           int rect_width, int rect_height, PixelType rect_color);
 
 #include "framebuffer.tpp"

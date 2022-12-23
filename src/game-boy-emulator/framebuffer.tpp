@@ -102,14 +102,14 @@ PixelType Framebuffer<PixelType>::get_pixel_wraparound(int x, int y) const {
  * @param rect_color
  */
 template <typename PixelType>
-void draw_rectangle_border(Framebuffer<PixelType>& img, size_t top_left_x, size_t top_left_y,
-                           size_t rect_width, size_t rect_height, PixelType rect_color) {
-    for (size_t x = top_left_x; x < top_left_x + rect_width; ++x) {
-        img.set_pixel(x, top_left_y, rect_color);
-        img.set_pixel(x, top_left_y + rect_height - 1, rect_color);
+void draw_rectangle_border(Framebuffer<PixelType>& img, int top_left_x, int top_left_y,
+                           int rect_width, int rect_height, PixelType rect_color) {
+    for (auto x = top_left_x; x < top_left_x + rect_width; ++x) {
+        img.set_pixel_wraparound(x, top_left_y, rect_color);
+        img.set_pixel_wraparound(x, top_left_y + rect_height - 1, rect_color);
     }
-    for (size_t y = top_left_y; y < top_left_y + rect_height; ++y) {
-        img.set_pixel(top_left_x, y, rect_color);
-        img.set_pixel(top_left_x + rect_width - 1, y, rect_color);
+    for (auto y = top_left_y; y < top_left_y + rect_height; ++y) {
+        img.set_pixel_wraparound(top_left_x, y, rect_color);
+        img.set_pixel_wraparound(top_left_x + rect_width - 1, y, rect_color);
     }
 }

@@ -464,4 +464,9 @@ void Gpu::draw_background_debug() {
             }
         }
     }
+    auto scx = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
+    auto scy = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
+
+    draw_rectangle_border(m_background_framebuffer_screen, scx, scy, constants::SCREEN_RES_WIDTH,
+                          constants::SCREEN_RES_HEIGHT, graphics::gb::ColorScreen::Highlight);
 }

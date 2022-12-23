@@ -4,19 +4,24 @@ class Emulator;
 namespace spdlog {
 class logger;
 }
+class MemoryMappedFile;
 #include "mbc.hpp"
 #include <memory>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
 
+
 class Cartridge {
 public:
     Cartridge(Emulator* emulator, std::vector<uint8_t> rom);
+    ~Cartridge();
 
     [[nodiscard]] uint8_t read_byte(uint16_t address) const;
     void write_byte(uint16_t address, uint8_t value);
 
+    // Write memory mapped ram contents to disk.
+    void sync();
 private:
     // Memory bank controllers (MBCs) are used to expand the available address space by bank
     // switching.
@@ -55,12 +60,12 @@ private:
     get_cartridge_type(const std::vector<uint8_t>& rom);
 
     struct RomInfo {
-        int size_bytes = 0;
-        int num_banks = 0;
+        size_t size_bytes = 0;
+        size_t num_banks = 0;
     };
     struct RamInfo {
-        int size_bytes = 0;
-        int num_banks = 0;
+        size_t size_bytes = 0;
+        size_t num_banks = 0;
     };
 
     [[nodiscard]] RomInfo get_rom_size_info(const std::vector<uint8_t>& rom) const;
@@ -70,4 +75,5 @@ private:
     std::shared_ptr<spdlog::logger> m_logger;
     CartridgeType m_cartridge_type;
     std::unique_ptr<Mbc> m_mbc;
+    std::unique_ptr<MemoryMappedFile> m_ram_file;
 };

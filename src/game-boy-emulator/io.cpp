@@ -45,3 +45,8 @@ std::optional<std::vector<uint8_t>> EmulatorIo::load_rom_file(const std::filesys
 }
 
 EmulatorIo::EmulatorIo() : m_logger(spdlog::get("")) {}
+
+void EmulatorIo::create_file(const std::filesystem::path& path, size_t filesize_bytes) {
+    std::ofstream file(path.string());
+    std::fill_n(std::ostream_iterator<char>(file), filesize_bytes, 0);
+}

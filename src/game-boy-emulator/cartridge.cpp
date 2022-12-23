@@ -1,5 +1,6 @@
 #include "cartridge.hpp"
 
+#include "memorymappedfile.hpp"
 #include "emulator.hpp"
 #include "memorymap.hpp"
 #include "exceptions.hpp"
@@ -8,6 +9,7 @@
 #include "mbc.hpp"
 #include "mbc1.hpp"
 #include "mbc3.hpp"
+#include "io.hpp"
 
 #include "fmt/format.h"
 #include "magic_enum.hpp"
@@ -29,28 +31,36 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
     }
     auto ram_size_info = get_ram_size_info(rom);
 
+    // Memory map cartridge RAM as a file to emulate the battery backed RAM.
+    auto ram_file_path = m_emulator->get_state().rom_file_path.value();
+    auto ram_file_name = ram_file_path.filename().string().append(".ram");
+    ram_file_path = ram_file_path.replace_filename(ram_file_name);
+    m_ram_file = std::make_unique<MemoryMappedFile>(ram_file_path, ram_size_info.size_bytes);
+    m_logger->info("Opening {} as cartridge RAM file", ram_file_path.string());
+    auto ram = m_ram_file->get_data();
+
     // Initialize after size check to avoid potential out-of-bounds access.
     m_cartridge_type = get_cartridge_type(rom);
     m_logger->error("Detected MBC type {}, RAM {} bytes, {} banks",
-                   magic_enum::enum_name(m_cartridge_type), ram_size_info.size_bytes,
-                   ram_size_info.num_banks);
+                    magic_enum::enum_name(m_cartridge_type), ram_size_info.size_bytes,
+                    ram_size_info.num_banks);
     switch (m_cartridge_type) {
     case CartridgeType::ROM_ONLY:
         if (rom.size() != memmap::CartridgeRomSize) {
             throw LogicError("Invalid ROM size");
         }
-        m_mbc = std::make_unique<NoMbc>(std::move(rom), ram_size_info.size_bytes);
+        m_mbc = std::make_unique<NoMbc>(std::move(rom), ram);
         break;
     case CartridgeType::MBC1:
     case CartridgeType::MBC1_RAM:
     case CartridgeType::MBC1_RAM_BATTERY:
-        m_mbc = std::make_unique<Mbc1>(std::move(rom), ram_size_info.size_bytes);
+        m_mbc = std::make_unique<Mbc1>(std::move(rom), ram);
         break;
     case CartridgeType::MBC3:
     case CartridgeType::MBC3_RAM:
     case CartridgeType::MBC3_RAM_BATTERY:
     case CartridgeType::MBC3_TIMER_RAM_BATTERY:
-        m_mbc = std::make_unique<Mbc3>(std::move(rom), ram_size_info.size_bytes);
+        m_mbc = std::make_unique<Mbc3>(std::move(rom), ram);
         break;
     default:
         throw NotImplementedError(fmt::format("Cartridge type {} not implemented",
@@ -79,7 +89,7 @@ Cartridge::RomInfo Cartridge::get_rom_size_info(const std::vector<uint8_t>& rom)
     if (val > 0x8) {
         throw LogicError("Invalid value for ROM size");
     }
-    return {(32 * 1024) * (1 << val), 1 << val};
+    return {static_cast<size_t>((32 * 1024) * (1 << val)), static_cast<size_t>(1 << val)};
 }
 
 Cartridge::RamInfo Cartridge::get_ram_size_info(const std::vector<uint8_t>& rom) const {
@@ -99,3 +109,10 @@ Cartridge::RamInfo Cartridge::get_ram_size_info(const std::vector<uint8_t>& rom)
         throw LogicError("Invalid value for RAM size");
     }
 }
+
+void Cartridge::sync() {
+    m_ram_file->sync();
+}
+
+// We need a destructor for the outer class to be defined where the MemoryMappedFile is complete.
+Cartridge::~Cartridge() = default;

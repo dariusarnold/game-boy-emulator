@@ -5,6 +5,7 @@ imgui/1.88
 magic_enum/0.8.1
 spdlog/1.11.0
 argparse/2.9
+boost/1.80.0
 
 [options]
 

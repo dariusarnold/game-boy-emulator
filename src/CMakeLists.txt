@@ -51,6 +51,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/nombc.hpp
         game-boy-emulator/framebuffer.tpp
         game-boy-emulator/framebuffer.hpp
+        game-boy-emulator/memorymappedfile.cpp
+        game-boy-emulator/memorymappedfile.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC
@@ -63,6 +65,7 @@ target_link_libraries(game_boy_emulator_library PUBLIC
         magic_enum::magic_enum
         spdlog::spdlog
         fmt::fmt
+        Boost::Boost
         )
 
 add_executable(game_boy_emulator

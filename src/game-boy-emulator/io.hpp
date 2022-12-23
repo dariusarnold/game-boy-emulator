@@ -22,4 +22,6 @@ public:
     load_boot_rom_file(const std::filesystem::path& path);
 
     std::optional<std::vector<uint8_t>> load_rom_file(const std::filesystem::path& path);
+
+    static void create_file(const std::filesystem::path& path, size_t filesize_bytes);
 };

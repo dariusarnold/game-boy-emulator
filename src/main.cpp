@@ -1,6 +1,6 @@
 #include "emulator.hpp"
 #include "window.hpp"
-#include "gpu.hpp"
+#include "ppu.hpp"
 
 #include "spdlog/spdlog.h"
 #include "argparse/argparse.hpp"

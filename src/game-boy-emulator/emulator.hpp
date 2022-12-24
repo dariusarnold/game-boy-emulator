@@ -18,7 +18,7 @@ class Ram;
 class Mmu;
 class Cpu;
 class Apu;
-class Gpu;
+class Ppu;
 class AddressBus;
 class BootRom;
 class Cartridge;
@@ -79,7 +79,7 @@ public:
     [[nodiscard]] std::shared_ptr<AddressBus> get_bus() const;
     [[nodiscard]] std::shared_ptr<Ram> get_ram() const;
     [[nodiscard]] std::shared_ptr<BootRom> get_boot_rom() const;
-    [[nodiscard]] std::shared_ptr<Gpu> get_gpu() const;
+    [[nodiscard]] std::shared_ptr<Ppu> get_ppu() const;
     [[nodiscard]] std::shared_ptr<Cpu> get_cpu() const;
     [[nodiscard]] std::shared_ptr<Cartridge> get_cartridge() const;
     [[nodiscard]] std::shared_ptr<InterruptHandler> get_interrupt_handler() const;
@@ -102,7 +102,7 @@ private:
     std::shared_ptr<Ram> m_ram;
     std::shared_ptr<Cpu> m_cpu;
     std::shared_ptr<Apu> m_apu;
-    std::shared_ptr<Gpu> m_gpu;
+    std::shared_ptr<Ppu> m_ppu;
     std::shared_ptr<InterruptHandler> m_interrupt_handler;
     std::shared_ptr<Timer> m_timer;
     std::shared_ptr<SerialPort> m_serial_port;

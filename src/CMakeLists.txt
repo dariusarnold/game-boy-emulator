@@ -10,8 +10,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/io.hpp
         game-boy-emulator/emulator.cpp
         game-boy-emulator/emulator.hpp
-        game-boy-emulator/gpu.cpp
-        game-boy-emulator/gpu.hpp
+        game-boy-emulator/ppu.cpp
+        game-boy-emulator/ppu.hpp
         game-boy-emulator/graphics.cpp
         game-boy-emulator/graphics.hpp
         game-boy-emulator/interrupthandler.cpp

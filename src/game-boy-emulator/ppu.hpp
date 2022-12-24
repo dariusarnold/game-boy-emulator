@@ -22,7 +22,7 @@ struct OamEntry {
 static_assert(sizeof(OamEntry) == 4 && "Padding in OamEntry detected");
 static_assert(alignof(OamEntry) == 1 && "Invalid alignment of OamEntry detected");
 
-class Gpu {
+class Ppu {
     // 0x8000-0x97FFF
     std::array<uint8_t, memmap::TileDataSize> m_tile_data{};
     // 0x9800-0x9FFF
@@ -64,7 +64,7 @@ class Gpu {
     std::span<uint8_t, constants::BYTES_PER_TILE> get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_y);
 
 public:
-    explicit Gpu(Emulator* emulator);
+    explicit Ppu(Emulator* emulator);
 
     uint8_t read_byte(uint16_t address);
 

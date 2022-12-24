@@ -1,7 +1,7 @@
 #include "window.hpp"
 #include "graphics.hpp"
 #include "emulator.hpp"
-#include "gpu.hpp"
+#include "ppu.hpp"
 #include "constants.h"
 #include "joypad.hpp"
 
@@ -106,12 +106,12 @@ void Window::draw_frame() {
 
     auto& io = ImGui::GetIO();
 
-    draw_tile_data_viewer(m_emulator.get_gpu()->get_vram_tile_data());
+    draw_tile_data_viewer(m_emulator.get_ppu()->get_vram_tile_data());
 
-    draw_background(m_emulator.get_gpu()->get_background(),
-                    m_emulator.get_gpu()->get_viewport_position());
-    draw_window(m_emulator.get_gpu()->get_window());
-    draw_sprites(m_emulator.get_gpu()->get_sprites());
+    draw_background(m_emulator.get_ppu()->get_background(),
+                    m_emulator.get_ppu()->get_viewport_position());
+    draw_window(m_emulator.get_ppu()->get_window());
+    draw_sprites(m_emulator.get_ppu()->get_sprites());
     draw_game();
     draw_info(m_emulator.get_state());
 

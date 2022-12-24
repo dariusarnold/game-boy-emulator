@@ -4,7 +4,7 @@
 #include "cartridge.hpp"
 #include "cpu.hpp"
 #include "exceptions.hpp"
-#include "gpu.hpp"
+#include "ppu.hpp"
 #include "ram.hpp"
 #include "timer.hpp"
 #include "serial_port.hpp"
@@ -21,7 +21,7 @@ Emulator::Emulator(EmulatorOptions options) :
         m_ram(std::make_shared<Ram>(this)),
         m_cpu(std::make_shared<Cpu>(this)),
         m_apu(std::make_shared<Apu>()),
-        m_gpu(std::make_shared<Gpu>(this)),
+        m_ppu(std::make_shared<Ppu>(this)),
         m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
         m_timer(std::make_shared<Timer>(this)),
         m_serial_port(std::make_shared<SerialPort>(this)),
@@ -90,11 +90,11 @@ void Emulator::signal_boot_ended() {
 void Emulator::elapse_cycle() {
     m_state.cycles_m += 1;
     m_timer->cycle_elapsed_callback(m_state.cycles_m);
-    m_gpu->cycle_elapsed_callback(m_state.cycles_m);
+    m_ppu->cycle_elapsed_callback(m_state.cycles_m);
 }
 
-std::shared_ptr<Gpu> Emulator::get_gpu() const {
-    return m_gpu;
+std::shared_ptr<Ppu> Emulator::get_ppu() const {
+    return m_ppu;
 }
 
 std::string Emulator::get_cpu_debug_state() const {

@@ -1,4 +1,4 @@
-#include "gpu.hpp"
+#include "ppu.hpp"
 #include "exceptions.hpp"
 #include "memorymap.hpp"
 #include "emulator.hpp"
@@ -13,7 +13,7 @@
 
 #include <span>
 
-Gpu::Gpu(Emulator* emulator) :
+Ppu::Ppu(Emulator* emulator) :
         m_registers(emulator->get_options().stub_ly),
         m_logger(spdlog::get("")),
         m_emulator(emulator),
@@ -27,10 +27,10 @@ Gpu::Gpu(Emulator* emulator) :
         m_game_framebuffer_screen(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT,
                                   graphics::gb::ColorScreen::White) {}
 
-uint8_t Gpu::read_byte(uint16_t address) {
+uint8_t Ppu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::TileData)) {
         if (m_registers.is_ppu_enabled() && m_registers.get_mode() == PpuMode::PixelTransfer_3) {
-            m_logger->error("GPU: VRAM read at {:04X} during pixel transfer", address);
+            m_logger->error("PPU: VRAM read at {:04X} during pixel transfer", address);
         }
         return m_tile_data[address - memmap::VRamBegin];
     }
@@ -38,7 +38,7 @@ uint8_t Gpu::read_byte(uint16_t address) {
         const auto mode = m_registers.get_mode();
         if (m_registers.is_ppu_enabled()
             && (mode == PpuMode::OamScan_2 || mode == PpuMode::PixelTransfer_3)) {
-            m_logger->error("GPU: OAM read at {:04X} during mode {}", address,
+            m_logger->error("PPU: OAM read at {:04X} during mode {}", address,
                             magic_enum::enum_name(mode));
         }
         return reinterpret_cast<uint8_t*>(m_oam_ram.data())[address - memmap::OamRamBegin];
@@ -50,13 +50,13 @@ uint8_t Gpu::read_byte(uint16_t address) {
         return m_tile_maps[address - memmap::TileMapsBegin];
     }
 
-    throw LogicError(fmt::format("GPU can't read from {:04X}", address));
+    throw LogicError(fmt::format("PPU can't read from {:04X}", address));
 }
 
-void Gpu::write_byte(uint16_t address, uint8_t value) {
+void Ppu::write_byte(uint16_t address, uint8_t value) {
     if (memmap::is_in(address, memmap::TileData)) {
         if (m_registers.is_ppu_enabled() && m_registers.get_mode() == PpuMode::PixelTransfer_3) {
-            m_logger->error("GPU: VRAM write at {:04X} during pixel transfer", address);
+            m_logger->error("PPU: VRAM write at {:04X} during pixel transfer", address);
         }
         m_tile_data[address - memmap::VRamBegin] = value;
     } else if (memmap::is_in(address, memmap::PpuIoRegisters)) {
@@ -65,21 +65,21 @@ void Gpu::write_byte(uint16_t address, uint8_t value) {
         if (m_registers.is_ppu_enabled()
             && (m_registers.get_mode() == PpuMode::OamScan_2
                 || m_registers.get_mode() == PpuMode::PixelTransfer_3)) {
-            m_logger->error("GPU: Oam write at {:04X} during mode {}", address,
+            m_logger->error("PPU: Oam write at {:04X} during mode {}", address,
                             magic_enum::enum_name(m_registers.get_mode()));
         }
         reinterpret_cast<uint8_t*>(m_oam_ram.data())[address - memmap::OamRamBegin] = value;
     } else if (memmap::is_in(address, memmap::TileMaps)) {
         if (m_registers.is_ppu_enabled() && m_registers.get_mode() == PpuMode::PixelTransfer_3) {
-            m_logger->error("GPU: VRAM write at {:04X} during pixel transfer", address);
+            m_logger->error("PPU: VRAM write at {:04X} during pixel transfer", address);
         }
         m_tile_maps[address - memmap::TileMapsBegin] = value;
     } else {
-        m_logger->error("GPU: unhandled write to {:04X}", address);
+        m_logger->error("PPU: unhandled write to {:04X}", address);
     }
 }
 
-std::span<uint8_t, memmap::TileDataSize> Gpu::get_vram_tile_data() {
+std::span<uint8_t, memmap::TileDataSize> Ppu::get_vram_tile_data() {
     return {m_tile_data};
 }
 
@@ -92,7 +92,7 @@ const int DURATION_SCANLINE = DURATION_OAM_SEARCH + DURATION_PIXEL_TRANSFER + DU
 // const int DURATION_V_BLANK = 10 * (20 + 43 + 51);
 } // namespace
 
-void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
+void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
     if (m_registers.was_oam_transfer_requested()) {
         m_registers.clear_oam_transfer_request();
         auto high_byte_address
@@ -111,7 +111,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
     switch (mode) {
     case PpuMode::OamScan_2:
         if (m_clock_count >= DURATION_OAM_SEARCH) {
-            m_logger->debug("GPU2: cycle {}, LY {}, mode {}->{}", m_clock_count,
+            m_logger->debug("PPU2: cycle {}, LY {}, mode {}->{}", m_clock_count,
                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                            static_cast<int>(m_registers.get_mode()),
                            static_cast<int>(PpuMode::PixelTransfer_3));
@@ -122,7 +122,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
         break;
     case PpuMode::PixelTransfer_3:
         if (m_clock_count >= DURATION_PIXEL_TRANSFER) {
-            m_logger->debug("GPU3: cycle {}, LY {}, mode {}->{}", m_clock_count,
+            m_logger->debug("PPU3: cycle {}, LY {}, mode {}->{}", m_clock_count,
                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                            static_cast<int>(m_registers.get_mode()),
                            static_cast<int>(PpuMode::HBlank_0));
@@ -169,7 +169,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
                 m_registers.set_mode(new_mode);
             }
 
-            m_logger->debug("GPU0: cycle {}, LY {}, mode {}->{}", m_clock_count,
+            m_logger->debug("PPU0: cycle {}, LY {}, mode {}->{}", m_clock_count,
                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                            static_cast<int>(m_registers.get_mode()), static_cast<int>(new_mode));
         }
@@ -178,7 +178,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
         if (m_clock_count >= DURATION_SCANLINE) {
             // Vblank duration is 10 scanlines
             m_registers.increment_register(PpuRegisters::Register::LyRegister);
-            m_logger->debug("GPU1: cycle {}, LY {}, mode {}", m_clock_count,
+            m_logger->debug("PPU1: cycle {}, LY {}, mode {}", m_clock_count,
                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                            static_cast<int>(m_registers.get_mode()));
             m_clock_count = m_clock_count % DURATION_SCANLINE;
@@ -194,7 +194,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
                 m_game_framebuffer_screen.reset();
 
                 m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
-                m_logger->debug("GPU1: cycle {}, LY {}, mode {}->{}", m_clock_count,
+                m_logger->debug("PPU1: cycle {}, LY {}, mode {}->{}", m_clock_count,
                                m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                                static_cast<int>(m_registers.get_mode()),
                                static_cast<int>(PpuMode::OamScan_2));
@@ -205,7 +205,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
     }
 }
 
-std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) {
+std::span<uint8_t, constants::BYTES_PER_TILE> Ppu::get_tile(uint8_t tile_index) {
     // Unsigned when bit 4 is set
     if (m_registers.get_bg_win_address_mode() == PpuRegisters::BgWinAddressMode::Unsigned) {
         // In unsigned indexing, the sprites are in order in memory, starting at 0x8000
@@ -229,7 +229,7 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) 
 }
 
 std::span<uint8_t, constants::BYTES_PER_TILE>
-Gpu::get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_y) {
+Ppu::get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_y) {
     unsigned address_offset = 0;
     switch (tile_type) {
     case TileType::Background:
@@ -248,15 +248,15 @@ Gpu::get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_
     return get_tile(tile_index);
 }
 
-const Framebuffer<graphics::gb::ColorScreen>& Gpu::get_background() {
+const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_background() {
     return m_background_framebuffer_screen;
 }
 
-const Framebuffer<graphics::gb::ColorScreen>& Gpu::get_window() {
+const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_window() {
     return m_window_framebuffer_screen;
 }
 
-void Gpu::write_scanline() {
+void Ppu::write_scanline() {
     if (!m_registers.is_ppu_enabled()) {
         return;
     }
@@ -283,7 +283,7 @@ bool bg_window_over_sprite(const OamEntry& oam_entry) {
 }
 } // namespace
 
-void Gpu::write_sprites() {
+void Ppu::write_sprites() {
     if (!m_registers.is_sprites_enabled()) {
         return;
     }
@@ -358,7 +358,7 @@ void Gpu::write_sprites() {
     }
 }
 
-void Gpu::draw_window_line() {
+void Ppu::draw_window_line() {
     const auto screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
     auto palette = m_registers.get_background_window_palette();
 
@@ -390,7 +390,7 @@ void Gpu::draw_window_line() {
     }
 }
 
-void Gpu::draw_background_line() {
+void Ppu::draw_background_line() {
     unsigned const screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
     auto palette = m_registers.get_background_window_palette();
     auto scx = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
@@ -418,22 +418,22 @@ void Gpu::draw_background_line() {
     }
 }
 
-std::pair<uint8_t, uint8_t> Gpu::get_viewport_position() const {
+std::pair<uint8_t, uint8_t> Ppu::get_viewport_position() const {
     auto x = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
     auto y = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
     return {x, y};
 }
 
-const Framebuffer<graphics::gb::ColorScreen>& Gpu::get_sprites() {
+const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_sprites() {
     return m_sprites_framebuffer_screen;
 }
 
-std::span<uint8_t, 16> Gpu::get_sprite_tile(uint8_t tile_index) {
+std::span<uint8_t, 16> Ppu::get_sprite_tile(uint8_t tile_index) {
     return std::span<uint8_t, 16>{m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE,
                                   constants::BYTES_PER_TILE};
 }
 
-void Gpu::draw_background_debug() {
+void Ppu::draw_background_debug() {
     auto palette = m_registers.get_background_window_palette();
     for (unsigned screen_y = 0; screen_y < constants::BACKGROUND_SIZE_PIXELS; ++screen_y) {
         // Tile index
@@ -463,7 +463,7 @@ void Gpu::draw_background_debug() {
                           constants::SCREEN_RES_HEIGHT, graphics::gb::ColorScreen::Highlight);
 }
 
-void Gpu::draw_window_debug() {
+void Ppu::draw_window_debug() {
     auto palette = m_registers.get_background_window_palette();
 
     for (unsigned screen_y = 0; screen_y < constants::BACKGROUND_SIZE_PIXELS; ++screen_y) {

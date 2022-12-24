@@ -4,7 +4,7 @@
 #include "cartridge.hpp"
 #include "emulator.hpp"
 #include "exceptions.hpp"
-#include "gpu.hpp"
+#include "ppu.hpp"
 #include "memorymap.hpp"
 #include "ram.hpp"
 #include "timer.hpp"
@@ -30,7 +30,7 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
         return m_emulator->get_ram()->read_byte(address);
     }
     if (memmap::is_in(address, memmap::VRam) || memmap::is_in(address, memmap::PpuIoRegisters)) {
-        return m_emulator->get_gpu()->read_byte(address);
+        return m_emulator->get_ppu()->read_byte(address);
     }
     if (memmap::is_in(address, memmap::SerialPort)) {
         return m_emulator->get_serial_port()->read_byte(address);
@@ -59,7 +59,7 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         m_emulator->get_ram()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::VRam) || memmap::is_in(address, memmap::OamRam)
                || memmap::is_in(address, memmap::PpuIoRegisters)) {
-        m_emulator->get_gpu()->write_byte(address, value);
+        m_emulator->get_ppu()->write_byte(address, value);
     } else if (memmap::is_in(address, memmap::CartridgeRom)
                || memmap::is_in(address, memmap::CartridgeRam)) {
         m_emulator->get_cartridge()->write_byte(address, value);

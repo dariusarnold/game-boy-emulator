@@ -3,7 +3,7 @@
 #include "cpu.hpp"
 #include "io.hpp"
 #include "emulator.hpp"
-#include "gpu.hpp"
+#include "ppu.hpp"
 #include "serial_port.hpp"
 
 #include "test_helpers.hpp"

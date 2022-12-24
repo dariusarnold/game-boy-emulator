@@ -362,26 +362,25 @@ void Gpu::draw_window_line() {
     const auto screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
     auto palette = m_registers.get_background_window_palette();
 
-    const auto wx = static_cast<uint8_t>(
-        m_registers.get_register_value(PpuRegisters::Register::WxRegister) - 7);
+    const auto wx = m_registers.get_register_value(PpuRegisters::Register::WxRegister);
     const auto wy = m_registers.get_register_value(PpuRegisters::Register::WyRegister);
+    unsigned const scrolled_y = screen_y - wy;
 
     // Don't draw anything when window is scrolled out of view port.
-    if (wx >= static_cast<int>(constants::SCREEN_RES_WIDTH) || wy >= constants::SCREEN_RES_HEIGHT) {
+    if (scrolled_y >= constants::SCREEN_RES_HEIGHT) {
         return;
     }
 
     for (unsigned screen_x = 0; screen_x < constants::SCREEN_RES_WIDTH; ++screen_x) {
         // Coordinate of top left pixel of full window buffer
-        auto window_x = (screen_x + wx) % constants::BACKGROUND_SIZE_PIXELS;
-        auto window_y = (screen_y + wy) % constants::BACKGROUND_SIZE_PIXELS;
+        auto scrolled_x = screen_x + wx - 7;
         // Index of tile in map
-        auto tile_map_x = window_x / constants::PIXELS_PER_TILE;
-        auto tile_map_y = window_y / constants::PIXELS_PER_TILE;
+        auto tile_map_x = scrolled_x / constants::PIXELS_PER_TILE;
+        auto tile_map_y = scrolled_y / constants::PIXELS_PER_TILE;
         auto tile = get_tile_from_map(TileType::Window, tile_map_x, tile_map_y);
         // Index of the pixel in the tile
-        auto tile_pixel_x = window_x % constants::PIXELS_PER_TILE;
-        auto tile_pixel_y = window_y % constants::PIXELS_PER_TILE;
+        auto tile_pixel_x = scrolled_x % constants::PIXELS_PER_TILE;
+        auto tile_pixel_y = scrolled_y % constants::PIXELS_PER_TILE;
         auto tile_line
             = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[tile_pixel_y * 2 + 1]);
         auto color_index = tile_line[tile_pixel_x];

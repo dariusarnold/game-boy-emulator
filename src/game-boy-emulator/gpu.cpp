@@ -98,7 +98,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
         auto high_byte_address
             = m_registers.get_register_value(PpuRegisters::Register::DmaTransfer);
         auto start_address = bitmanip::word_from_bytes(high_byte_address, 0);
-        m_logger->info("OAM DMA transfer from {:04X}", start_address);
+        m_logger->debug("OAM DMA transfer from {:04X}", start_address);
         for (int i = 0; i < memmap::OamRamSize; ++i) {
             auto x = m_emulator->get_bus()->read_byte(start_address + i);
             reinterpret_cast<uint8_t*>(m_oam_ram.data())[i] = x;
@@ -111,7 +111,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
     switch (mode) {
     case PpuMode::OamScan_2:
         if (m_clock_count >= DURATION_OAM_SEARCH) {
-            m_logger->info("GPU: cycle {}, LY {}, mode {}->{}", m_clock_count,
+            m_logger->debug("GPU2: cycle {}, LY {}, mode {}->{}", m_clock_count,
                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                            static_cast<int>(m_registers.get_mode()),
                            static_cast<int>(PpuMode::PixelTransfer_3));
@@ -122,7 +122,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
         break;
     case PpuMode::PixelTransfer_3:
         if (m_clock_count >= DURATION_PIXEL_TRANSFER) {
-            m_logger->info("GPU: cycle {}, LY {}, mode {}->{}", m_clock_count,
+            m_logger->debug("GPU3: cycle {}, LY {}, mode {}->{}", m_clock_count,
                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                            static_cast<int>(m_registers.get_mode()),
                            static_cast<int>(PpuMode::HBlank_0));
@@ -169,7 +169,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
                 m_registers.set_mode(new_mode);
             }
 
-            m_logger->info("GPU: cycle {}, LY {}, mode {}->{}", m_clock_count,
+            m_logger->debug("GPU0: cycle {}, LY {}, mode {}->{}", m_clock_count,
                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                            static_cast<int>(m_registers.get_mode()), static_cast<int>(new_mode));
         }
@@ -178,7 +178,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
         if (m_clock_count >= DURATION_SCANLINE) {
             // Vblank duration is 10 scanlines
             m_registers.increment_register(PpuRegisters::Register::LyRegister);
-            m_logger->info("GPU: cycle {}, LY {}, mode {}", m_clock_count,
+            m_logger->debug("GPU1: cycle {}, LY {}, mode {}", m_clock_count,
                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                            static_cast<int>(m_registers.get_mode()));
             m_clock_count = m_clock_count % DURATION_SCANLINE;
@@ -194,7 +194,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
                 m_game_framebuffer_screen.reset();
 
                 m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
-                m_logger->info("GPU: cycle {}, LY {}, mode {}->{}", m_clock_count,
+                m_logger->debug("GPU1: cycle {}, LY {}, mode {}->{}", m_clock_count,
                                m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                                static_cast<int>(m_registers.get_mode()),
                                static_cast<int>(PpuMode::OamScan_2));
@@ -206,6 +206,7 @@ void Gpu::cycle_elapsed_callback(size_t cycles_m_num) {
 }
 
 std::span<uint8_t, constants::BYTES_PER_TILE> Gpu::get_tile(uint8_t tile_index) {
+    // Unsigned when bit 4 is set
     if (m_registers.get_bg_win_address_mode() == PpuRegisters::BgWinAddressMode::Unsigned) {
         // In unsigned indexing, the sprites are in order in memory, starting at 0x8000
         const size_t index_begin = tile_index * constants::BYTES_PER_TILE;

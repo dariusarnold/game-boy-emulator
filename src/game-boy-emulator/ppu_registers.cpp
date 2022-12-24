@@ -13,6 +13,9 @@ void PpuRegisters::set_register_value(PpuRegisters::Register r, uint8_t value) {
     if (r == Register::DmaTransfer) {
         m_oam_transfer_requested = true;
     }
+    if (r == Register::LyRegister) {
+        value = 0;
+    }
     get(r) = value;
 }
 

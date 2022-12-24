@@ -16,6 +16,12 @@ void PpuRegisters::set_register_value(PpuRegisters::Register r, uint8_t value) {
     if (r == Register::LyRegister) {
         value = 0;
     }
+    if (r == Register::StatRegister) {
+        // The lower three bits are read only
+        auto mask = 0b11111000;
+        auto old = get(r);
+        value = (old & ~mask) | (value & mask);
+    }
     get(r) = value;
 }
 

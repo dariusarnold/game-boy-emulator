@@ -31,19 +31,23 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
     }
     auto ram_size_info = get_ram_size_info(rom);
 
-    // Memory map cartridge RAM as a file to emulate the battery backed RAM.
-    auto ram_file_path = m_emulator->get_state().rom_file_path.value();
-    auto ram_file_name = ram_file_path.filename().string().append(".ram");
-    ram_file_path = ram_file_path.replace_filename(ram_file_name);
-    m_ram_file = std::make_unique<MemoryMappedFile>(ram_file_path, ram_size_info.size_bytes);
-    m_logger->info("Opening {} as cartridge RAM file", ram_file_path.string());
-    auto ram = m_ram_file->get_data();
+    std::span<uint8_t> ram;
+    if (ram_size_info.size_bytes != 0) {
+        // Memory map cartridge RAM as a file to emulate the battery backed RAM.
+        auto ram_file_path = m_emulator->get_state().rom_file_path.value();
+        auto ram_file_name = ram_file_path.filename().string().append(".ram");
+        ram_file_path = ram_file_path.replace_filename(ram_file_name);
+        m_ram_file = std::make_unique<MemoryMappedFile>(ram_file_path, ram_size_info.size_bytes);
+        m_logger->info("Opening {} as cartridge RAM file", ram_file_path.string());
+        ram = m_ram_file->get_data();
+    }
 
+    auto rom_size = get_rom_size_info(rom);
     // Initialize after size check to avoid potential out-of-bounds access.
     m_cartridge_type = get_cartridge_type(rom);
-    m_logger->error("Detected MBC type {}, RAM {} bytes, {} banks",
-                    magic_enum::enum_name(m_cartridge_type), ram_size_info.size_bytes,
-                    ram_size_info.num_banks);
+    m_logger->info("Detected MBC type {}, ROM {} bytes, {} banks, RAM {} bytes, {} banks",
+                   magic_enum::enum_name(m_cartridge_type), rom_size.size_bytes, rom_size.num_banks,
+                   ram_size_info.size_bytes, ram_size_info.num_banks);
     switch (m_cartridge_type) {
     case CartridgeType::ROM_ONLY:
         if (rom.size() != memmap::CartridgeRomSize) {
@@ -111,7 +115,9 @@ Cartridge::RamInfo Cartridge::get_ram_size_info(const std::vector<uint8_t>& rom)
 }
 
 void Cartridge::sync() {
-    m_ram_file->sync();
+    if (m_ram_file) {
+        m_ram_file->sync();
+    }
 }
 
 // We need a destructor for the outer class to be defined where the MemoryMappedFile is complete.

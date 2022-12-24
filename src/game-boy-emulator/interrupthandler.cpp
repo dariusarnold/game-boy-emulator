@@ -20,7 +20,7 @@ void InterruptHandler::set_global_interrupt_enabled(bool enabled) {
     }
     if (enabled != m_global_interrupt_enabled_status) {
         m_global_enabled_instruction_countdown = 1;
-        m_logger->info("Schedule global interrupt enable change to {}", enabled);
+        m_logger->debug("Schedule global interrupt enable change to {}", enabled);
     }
 }
 
@@ -29,14 +29,14 @@ void InterruptHandler::callback_instruction_elapsed() {
         m_global_enabled_instruction_countdown--;
     } else if (m_global_enabled_instruction_countdown == 0) {
         m_global_interrupt_enabled_status = !m_global_interrupt_enabled_status;
-        m_logger->info("Global interrupt enabled {}", m_global_interrupt_enabled_status);
+        m_logger->debug("Global interrupt enabled {}", m_global_interrupt_enabled_status);
         // Set negative to avoid retriggering on the next instruction
         m_global_enabled_instruction_countdown = -1;
     }
 }
 
 void InterruptHandler::write_interrupt_enable(uint8_t val) {
-    m_logger->info("Write interrupt enable VBlank {}, LCD STAT {}, Timer {}, Serial {}, Joypad {}",
+    m_logger->debug("Write interrupt enable VBlank {}, LCD STAT {}, Timer {}, Serial {}, Joypad {}",
                    bitmanip::is_bit_set(val, 0), bitmanip::is_bit_set(val, 1),
                    bitmanip::is_bit_set(val, 2), bitmanip::is_bit_set(val, 3),
                    bitmanip::is_bit_set(val, 4));
@@ -44,7 +44,7 @@ void InterruptHandler::write_interrupt_enable(uint8_t val) {
 }
 
 void InterruptHandler::write_interrupt_flag(uint8_t val) {
-    m_logger->info("Write interrupt flag VBlank {}, LCD STAT {}, Timer {}, Serial {}, Joypad {}",
+    m_logger->debug("Write interrupt flag VBlank {}, LCD STAT {}, Timer {}, Serial {}, Joypad {}",
                    bitmanip::is_bit_set(val, 0), bitmanip::is_bit_set(val, 1),
                    bitmanip::is_bit_set(val, 2), bitmanip::is_bit_set(val, 3),
                    bitmanip::is_bit_set(val, 4));

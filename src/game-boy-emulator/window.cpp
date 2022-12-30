@@ -298,7 +298,7 @@ void Window::vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game)
 void Window::draw_game() {
     ImGui::Begin("Game");
     auto my_tex_id = (void*)m_game_image.get_texture();
-    ImGui::Image(my_tex_id, ImVec2(m_game_image.width() * 2, m_game_image.height() * 2));
+    ImGui::Image(my_tex_id, ImVec2(m_game_image.width() * 3, m_game_image.height() * 3));
     ImGui::End();
 }
 

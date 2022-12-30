@@ -9,6 +9,7 @@
 #include "mbc.hpp"
 #include "mbc1.hpp"
 #include "mbc3.hpp"
+#include "mbc5.hpp"
 #include "io.hpp"
 
 #include "fmt/format.h"
@@ -65,6 +66,13 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
     case CartridgeType::MBC3_RAM_BATTERY:
     case CartridgeType::MBC3_TIMER_RAM_BATTERY:
         m_mbc = std::make_unique<Mbc3>(std::move(rom), ram);
+        break;
+    case CartridgeType::MBC5:
+    case CartridgeType::MBC5_RAM:
+    case CartridgeType::MBC5_RAM_BATTERY:
+    case CartridgeType::MBC5_RUMBLE_RAM_BATTERY:
+    case CartridgeType::MBC5_RUMBLE:
+        m_mbc = std::make_unique<Mbc5>(std::move(rom), ram);
         break;
     default:
         throw NotImplementedError(fmt::format("Cartridge type {} not implemented",

@@ -1,3 +1,4 @@
+#include <numeric>
 #include "window.hpp"
 #include "graphics.hpp"
 #include "emulator.hpp"
@@ -23,7 +24,8 @@ Window::Window(Emulator& emulator) :
         m_tiledata_block1(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
                           constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE),
         m_tiledata_block2(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
-                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE) {
+                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE),
+        m_fps_history(5 * 60, 5 * 60, 0) {
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a
     // minority of Windows systems, depending on whether SDL_INIT_GAMECONTROLLER is enabled or
@@ -265,8 +267,13 @@ void Window::draw_info(const EmulatorState& state) {
     if (ms_since_last_frame != 0) {
         fps = 1000 / ms_since_last_frame;
     }
+    m_fps_history.push_back(fps);
+    // ImGui requires continuous storage of the data to be plotted.
+    m_fps_history.linearize();
+    auto avg_fps = std::accumulate(m_fps_history.end() - 5, m_fps_history.end(), 0) / 5;
+    ImGui::PlotLines("FPS", &m_fps_history[0], m_fps_history.size(), 0,
+                     fmt::format("{} FPS", avg_fps).c_str(), 0, 120, ImVec2{500, 100});
     m_previous_ticks = current_ticks;
-    ImGui::Text("FPS: %d", fps);
     for (int i = 0; i < 8; ++i) {
         const std::string_view state = m_pressed_keys[i] ? "Down" : "Up";
         auto name = magic_enum::enum_name(magic_enum::enum_value<Joypad::Keys>(i));

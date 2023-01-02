@@ -13,6 +13,7 @@ class Joypad;
 namespace spdlog {
 class logger;
 }
+#include "boost/circular_buffer.hpp"
 #include <span>
 #include <cstdint>
 #include <vector>
@@ -34,6 +35,7 @@ class Window {
     size_t m_previous_ticks = 0;
 
     std::array<bool, 8> m_pressed_keys{};
+    boost::circular_buffer<float> m_fps_history;
 
     void handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<Joypad> joypad);
 

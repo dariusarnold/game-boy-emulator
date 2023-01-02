@@ -41,6 +41,7 @@ class Ppu {
     void draw_background_line();
     void draw_background_debug();
     void draw_window_debug();
+    void draw_vram_debug();
 
     // Framebuffers for the background. Use one in gameboy pixel format to allow easier reuse in
     // the rendering loop and one in screen pixel format to use with SDL/Dear ImGui.
@@ -52,7 +53,12 @@ class Ppu {
 
     Framebuffer<graphics::gb::ColorScreen> m_game_framebuffer_screen;
 
+    Framebuffer<graphics::gb::ColorScreen> m_tiledata_block0;
+    Framebuffer<graphics::gb::ColorScreen> m_tiledata_block1;
+    Framebuffer<graphics::gb::ColorScreen> m_tiledata_block2;
+
     std::span<uint8_t, 16> get_sprite_tile(uint8_t tile_index);
+    std::span<uint8_t, 16> get_tile(unsigned block, unsigned index_in_block);
 
     enum class TileType {
         Background,
@@ -77,6 +83,7 @@ public:
     const Framebuffer<graphics::gb::ColorScreen>& get_background();
     const Framebuffer<graphics::gb::ColorScreen>& get_sprites();
     const Framebuffer<graphics::gb::ColorScreen>& get_window();
+    const std::array<const Framebuffer<graphics::gb::ColorScreen>*, 3> get_tiledata();
 
     [[nodiscard]] std::pair<uint8_t, uint8_t> get_viewport_position() const;
 };

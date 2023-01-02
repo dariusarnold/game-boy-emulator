@@ -23,11 +23,13 @@ class Window {
     std::shared_ptr<spdlog::logger> m_logger;
     SDL_Window* m_sdl_window = nullptr;
     SDL_Renderer* m_sdl_renderer = nullptr;
-    Image m_tile_data_image;
     Image m_background_image;
     Image m_window_image;
     Image m_sprites_image;
     Image m_game_image;
+    Image m_tiledata_block0;
+    Image m_tiledata_block1;
+    Image m_tiledata_block2;
     bool m_done = false;
     size_t m_previous_ticks = 0;
 
@@ -40,13 +42,13 @@ public:
     ~Window();
 
     void draw_frame();
-    void draw_tile_data_viewer(std::span<uint8_t, memmap::TileDataSize> vram);
     void draw_background(const Framebuffer<graphics::gb::ColorScreen>& background,
                          std::pair<uint8_t, uint8_t> viewport_position);
     void draw_sprites(const Framebuffer<graphics::gb::ColorScreen>& sprites);
     void draw_window(const Framebuffer<graphics::gb::ColorScreen>& window);
     void draw_game();
     void draw_info(const EmulatorState& state);
+    void draw_vram();
 
     void vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game);
 

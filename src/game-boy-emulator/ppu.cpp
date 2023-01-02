@@ -25,7 +25,14 @@ Ppu::Ppu(Emulator* emulator) :
                                     constants::BACKGROUND_SIZE_PIXELS,
                                     graphics::gb::ColorScreen::White),
         m_game_framebuffer_screen(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT,
-                                  graphics::gb::ColorScreen::White) {}
+                                  graphics::gb::ColorScreen::White),
+        // 16*8 sprites, each 8x8 pixels
+        m_tiledata_block0(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE),
+        m_tiledata_block1(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE),
+        m_tiledata_block2(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE) {}
 
 uint8_t Ppu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::TileData)) {
@@ -190,6 +197,7 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
                 // 144 lines.
                 draw_background_debug();
                 draw_window_debug();
+                draw_vram_debug();
                 m_emulator->draw(m_game_framebuffer_screen);
                 m_game_framebuffer_screen.reset();
 
@@ -489,4 +497,43 @@ void Ppu::draw_window_debug() {
     auto wy = m_registers.get_register_value(PpuRegisters::Register::WyRegister);
     draw_rectangle_border(m_window_framebuffer_screen, wx, wy, constants::SCREEN_RES_WIDTH,
                           constants::SCREEN_RES_HEIGHT, graphics::gb::ColorScreen::Highlight);
+}
+
+
+void Ppu::draw_vram_debug() {
+    // Iterate over the three tile data blocks
+    std::array<Framebuffer<graphics::gb::ColorScreen>*, 3> buffers{
+        &m_tiledata_block0, &m_tiledata_block1, &m_tiledata_block2};
+    for (unsigned block = 0; block < 3; ++block) {
+        for (unsigned tile_x = 0; tile_x < 16; ++tile_x) {
+            for (unsigned tile_y = 0; tile_y < 8; ++tile_y) {
+                auto tile_index = tile_x + tile_y * 16;
+                auto tile = get_tile(block, tile_index);
+                auto tile_color = graphics::gb::tile_to_gb_color(tile);
+                // Transfer the tile to the framebuffer.
+                // The framebuffer is 16x8 tiles or 128x64 pixels
+                for (unsigned in_tile_x = 0; in_tile_x < 8; ++in_tile_x) {
+                    for (unsigned in_tile_y = 0; in_tile_y < 8; ++in_tile_y) {
+                        auto in_tile_index = in_tile_y * 8 + in_tile_x;
+                        auto color = tile_color[in_tile_index];
+                        auto x = tile_x * 8 + in_tile_x;
+                        auto y = tile_y * 8 + in_tile_y;
+                        auto screen_color = graphics::gb::to_screen_color(
+                            static_cast<graphics::gb::ColorGb>(color));
+                        buffers[block]->set_pixel(x, y, screen_color);
+                    }
+                }
+            }
+        }
+    }
+}
+
+const std::array<const Framebuffer<graphics::gb::ColorScreen>*, 3> Ppu::get_tiledata() {
+    return {&m_tiledata_block0, &m_tiledata_block1, &m_tiledata_block2};
+}
+
+std::span<uint8_t, 16> Ppu::get_tile(unsigned int block, unsigned int index_in_block) {
+    auto start = index_in_block * 16 + block * 128 * 16;
+    auto end = start + 16;
+    return std::span<uint8_t, 16>{m_tile_data.data() + start, m_tile_data.data() + end};
 }

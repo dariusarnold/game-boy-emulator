@@ -84,6 +84,10 @@ constexpr SDL_Keycode KEY_A = SDLK_j;
 constexpr SDL_Keycode KEY_B = SDLK_k;
 constexpr SDL_Keycode KEY_START = SDLK_n;
 constexpr SDL_Keycode KEY_SELECT = SDLK_l;
+constexpr SDL_KeyCode KEY_HOLD_FAST_FORWARD = SDLK_SPACE;
+constexpr SDL_KeyCode KEY_TOGGLE_FAST_FORWARD = SDLK_f;
+constexpr SDL_KeyCode KEY_FAST_FORWARD_INCREASE = SDLK_q;
+constexpr SDL_KeyCode KEY_FAST_FORWARD_DECREASE = SDLK_e;
 
 void toggle(bool& b) {
     b = !b;
@@ -92,27 +96,6 @@ void toggle(bool& b) {
 } // namespace
 
 void Window::draw_frame() {
-    // Poll and handle events (inputs, window resize, etc.)
-    // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui
-    // wants to use your inputs.
-    // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main
-    // application.
-    // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main
-    // application. Generally you may always pass all inputs to dear imgui, and hide them from
-    // your application based on those two flags.
-    SDL_Event event;
-    while (SDL_PollEvent(&event) == 1) {
-        ImGui_ImplSDL2_ProcessEvent(&event);
-        if (event.type == SDL_QUIT) {
-            m_done = true;
-        }
-        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE
-            && event.window.windowID == SDL_GetWindowID(m_sdl_window)) {
-            m_done = true;
-        }
-        handle_user_keyboard_input(event, m_emulator.get_joypad());
-    }
-
     // Start the Dear ImGui frame
     ImGui_ImplSDLRenderer_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -188,6 +171,19 @@ void Window::handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<
                 joypad->press_key(Joypad::Keys::Select);
                 m_pressed_keys[static_cast<int>(Joypad::Keys::Select)] = true;
                 break;
+            case KEY_HOLD_FAST_FORWARD:
+            case KEY_TOGGLE_FAST_FORWARD:
+                toggle(m_emulator.get_options().fast_forward);
+                break;
+            case KEY_FAST_FORWARD_INCREASE:
+                m_emulator.get_options().game_speed++;
+                m_emulator.get_options().fast_forward = true;
+                break;
+            case KEY_FAST_FORWARD_DECREASE:
+                if (m_emulator.get_options().game_speed > 1) {
+                    m_emulator.get_options().game_speed--;
+                }
+                m_emulator.get_options().fast_forward = m_emulator.get_options().game_speed > 1;j
             }
         }
         if (event.type == SDL_KEYUP) {
@@ -223,6 +219,9 @@ void Window::handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<
             case KEY_SELECT:
                 joypad->release_key(Joypad::Keys::Select);
                 m_pressed_keys[static_cast<int>(Joypad::Keys::Select)] = false;
+                break;
+            case KEY_HOLD_FAST_FORWARD:
+                toggle(m_emulator.get_options().fast_forward);
                 break;
             }
         }
@@ -261,8 +260,38 @@ void Window::draw_window(const Framebuffer<graphics::gb::ColorScreen>& window) {
 }
 
 void Window::vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game) {
-    m_game_image.upload_to_texture(game);
-    draw_frame();
+    // Poll and handle events (inputs, window resize, etc.)
+    // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui
+    // wants to use your inputs.
+    // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main
+    // application.
+    // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main
+    // application. Generally you may always pass all inputs to dear imgui, and hide them from
+    // your application based on those two flags.
+    SDL_Event event;
+    while (SDL_PollEvent(&event) == 1) {
+        ImGui_ImplSDL2_ProcessEvent(&event);
+        if (event.type == SDL_QUIT) {
+            m_done = true;
+        }
+        if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE
+            && event.window.windowID == SDL_GetWindowID(m_sdl_window)) {
+            m_done = true;
+        }
+        handle_user_keyboard_input(event, m_emulator.get_joypad());
+    }
+
+    const auto& state = m_emulator.get_state();
+    const auto& options = m_emulator.get_options();
+    if (options.fast_forward) {
+        if (state.frame_count % options.game_speed == 0) {
+            m_game_image.upload_to_texture(game);
+            draw_frame();
+        }
+    } else {
+        m_game_image.upload_to_texture(game);
+        draw_frame();
+    }
 }
 
 void Window::draw_game() {
@@ -294,6 +323,7 @@ void Window::draw_info(const EmulatorState& state) {
         ImGui::Text("%s", fmt::format("{}: {}", name, state).c_str());
     }
     ImGui::Text("%s", fmt::format("{} instructions elapsed", state.instructions_executed).c_str());
+    ImGui::Text("Speed %d", options.game_speed);
     ImGui::End();
 }
 
@@ -337,6 +367,23 @@ void Window::draw_menubar() {
             }
             if (ImGui::MenuItem("Toggle debug tile viewer")) {
                 toggle(options.draw_debug_tiles);
+            }
+            if (ImGui::RadioButton("Speed 1", &options.game_speed, 1)) {
+                options.fast_forward = false;
+                options.game_speed = 1;
+                ImGui::CloseCurrentPopup();
+            }
+            if (ImGui::RadioButton("Speed 2", &options.game_speed, 2)) {
+                options.fast_forward = true;
+                ImGui::CloseCurrentPopup();
+            }
+            if (ImGui::RadioButton("Speed 3", &options.game_speed, 3)) {
+                options.fast_forward = true;
+                ImGui::CloseCurrentPopup();
+            }
+            if (ImGui::RadioButton("Speed 4", &options.game_speed, 4)) {
+                options.fast_forward = true;
+                ImGui::CloseCurrentPopup();
             }
             ImGui::EndMenu();
         }

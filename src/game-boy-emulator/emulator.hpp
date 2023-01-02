@@ -36,6 +36,8 @@ struct EmulatorState {
     size_t cycles_m = 0;
     // Number of instructions since execution start
     size_t instructions_executed = 0;
+    // Number of frames rendered
+    size_t frame_count = 0;
     // Currently running boot rom
     bool is_booting = true;
     bool halted = false;

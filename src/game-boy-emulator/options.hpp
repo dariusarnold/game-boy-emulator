@@ -9,4 +9,6 @@ struct EmulatorOptions {
     bool draw_debug_window = true;
     bool draw_debug_sprites = true;
     bool draw_debug_tiles = true;
+    bool fast_forward = false;
+    int game_speed = 1;
 };

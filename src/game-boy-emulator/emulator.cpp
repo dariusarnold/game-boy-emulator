@@ -189,6 +189,7 @@ std::shared_ptr<Joypad> Emulator::get_joypad() const {
 void Emulator::draw(const Framebuffer<graphics::gb::ColorScreen>& game) {
     m_cartridge->sync();
     m_draw_function(game);
+    m_state.frame_count++;
 }
 
 void Emulator::set_draw_function(

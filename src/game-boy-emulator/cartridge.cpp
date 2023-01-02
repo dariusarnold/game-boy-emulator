@@ -110,7 +110,7 @@ Cartridge::RamInfo Cartridge::get_ram_size_info(const std::vector<uint8_t>& rom)
     case 0:
         return {0, 0};
     case 2:
-        return {8 * 104, 1};
+        return {8 * 1024, 1};
     case 3:
         return {32 * 1024, 4};
     case 4:

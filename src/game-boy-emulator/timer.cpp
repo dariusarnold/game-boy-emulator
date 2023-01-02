@@ -53,7 +53,7 @@ void Timer::cycle_elapsed_callback(size_t cycle_num) {
             m_timer_counter += 1;
         }
     }
-    m_logger->info("TIMA {:02X}", m_timer_counter);
+    m_logger->debug("TIMA {:02X}", m_timer_counter);
 }
 
 namespace {

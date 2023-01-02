@@ -36,7 +36,9 @@ class Ppu {
     int m_clock_count = 0;
 
     void write_scanline();
-    void write_sprites();
+    void write_sprites(Framebuffer<graphics::gb::ColorScreen>& framebuffer);
+    void draw_sprites();
+    void draw_sprites_debug();
     void draw_window_line();
     void draw_background_line();
     void draw_background_debug();

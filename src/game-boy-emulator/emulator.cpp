@@ -170,6 +170,10 @@ const EmulatorOptions& Emulator::get_options() const {
     return m_options;
 }
 
+EmulatorOptions& Emulator::get_options() {
+    return m_options;
+}
+
 const EmulatorState& Emulator::get_state() const {
     return m_state;
 }

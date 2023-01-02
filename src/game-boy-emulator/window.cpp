@@ -84,6 +84,11 @@ constexpr SDL_Keycode KEY_A = SDLK_j;
 constexpr SDL_Keycode KEY_B = SDLK_k;
 constexpr SDL_Keycode KEY_START = SDLK_n;
 constexpr SDL_Keycode KEY_SELECT = SDLK_l;
+
+void toggle(bool& b) {
+    b = !b;
+}
+
 } // namespace
 
 void Window::draw_frame() {
@@ -113,13 +118,26 @@ void Window::draw_frame() {
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    draw_background(m_emulator.get_ppu()->get_background(),
-                    m_emulator.get_ppu()->get_viewport_position());
-    draw_window(m_emulator.get_ppu()->get_window());
-    draw_sprites(m_emulator.get_ppu()->get_sprites());
+    draw_menubar();
+
+    auto& options = m_emulator.get_options();
+    if (options.draw_debug_background) {
+        draw_background(m_emulator.get_ppu()->get_background());
+    }
+    if (options.draw_debug_window) {
+        draw_window(m_emulator.get_ppu()->get_window());
+    }
+    if (options.draw_debug_sprites) {
+        draw_sprites(m_emulator.get_ppu()->get_sprites());
+    }
+    if (options.draw_info_window) {
+        draw_info(m_emulator.get_state());
+    }
+    if (options.draw_debug_tiles) {
+        draw_vram();
+    }
+
     draw_game();
-    draw_info(m_emulator.get_state());
-    draw_vram();
 
     // Rendering
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -215,32 +233,27 @@ bool Window::is_done() const {
     return m_done;
 }
 
-void Window::draw_background(const Framebuffer<graphics::gb::ColorScreen>& background,
-                             std::pair<uint8_t, uint8_t> viewport_position) {
-    //    const auto [img_width_pixels, img_height_pixels]
-    //        = graphics::gb::tile_data_to_image(background, m_background_image, 32, 32);
-    //    graphics::gb::map_gb_color_to_rgba(m_background_image);
-    //    draw_rectangle_border(m_background_image, viewport_position.first,
-    //    viewport_position.second,
-    //                          constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT, 0xd31d1d);
+void Window::draw_background(const Framebuffer<graphics::gb::ColorScreen>& background) {
     m_background_image.upload_to_texture(background);
-
-    ImGui::Begin("Background");
+    auto& options = m_emulator.get_options();
+    ImGui::Begin("Background", &options.draw_debug_background, ImGuiWindowFlags_NoResize);
     auto my_tex_id = (void*)m_background_image.get_texture();
     ImGui::Image(my_tex_id, ImVec2(background.width(), background.height()));
     ImGui::End();
 }
 
 void Window::draw_sprites(const Framebuffer<graphics::gb::ColorScreen>& sprites) {
-    ImGui::Begin("Sprites");
     m_sprites_image.upload_to_texture(sprites);
+    auto& options = m_emulator.get_options();
+    ImGui::Begin("Sprites", &options.draw_debug_sprites, ImGuiWindowFlags_NoResize);
     auto my_tex_id = (void*)m_sprites_image.get_texture();
     ImGui::Image(my_tex_id, ImVec2(sprites.width(), sprites.height()));
     ImGui::End();
 }
 
 void Window::draw_window(const Framebuffer<graphics::gb::ColorScreen>& window) {
-    ImGui::Begin("Window");
+    auto& options = m_emulator.get_options();
+    ImGui::Begin("Window", &options.draw_debug_window, ImGuiWindowFlags_NoResize);
     m_window_image.upload_to_texture(window);
     auto my_tex_id = (void*)m_window_image.get_texture();
     ImGui::Image(my_tex_id, ImVec2(window.width(), window.height()));
@@ -253,14 +266,15 @@ void Window::vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game)
 }
 
 void Window::draw_game() {
-    ImGui::Begin("Game");
+    ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoResize);
     auto my_tex_id = (void*)m_game_image.get_texture();
     ImGui::Image(my_tex_id, ImVec2(m_game_image.width() * 3, m_game_image.height() * 3));
     ImGui::End();
 }
 
 void Window::draw_info(const EmulatorState& state) {
-    ImGui::Begin("Info");
+    auto& options = m_emulator.get_options();
+    ImGui::Begin("Info", &options.draw_info_window, ImGuiWindowFlags_NoResize);
     auto current_ticks = SDL_GetTicks64();
     auto ms_since_last_frame = current_ticks - m_previous_ticks;
     auto fps = 0;
@@ -288,20 +302,44 @@ void Window::draw_vram() {
     m_tiledata_block0.upload_to_texture(*buffers[0]);
     m_tiledata_block1.upload_to_texture(*buffers[1]);
     m_tiledata_block2.upload_to_texture(*buffers[2]);
-    ImGui::Begin("Tile block 0");
+    auto& options = m_emulator.get_options();
+    ImGui::Begin("Tile block 0,1,2", &options.draw_debug_tiles, ImGuiWindowFlags_NoResize);
     auto my_tex_id = (void*)m_tiledata_block0.get_texture();
     const auto scale = 2;
     ImGui::Image(my_tex_id,
                  ImVec2(m_tiledata_block0.width() * scale, m_tiledata_block0.height() * scale));
-    ImGui::End();
-    ImGui::Begin("Tile block 1");
+    ImGui::SameLine();
     my_tex_id = (void*)m_tiledata_block1.get_texture();
     ImGui::Image(my_tex_id,
                  ImVec2(m_tiledata_block1.width() * scale, m_tiledata_block1.height() * scale));
-    ImGui::End();
-    ImGui::Begin("Tile block 2");
     my_tex_id = (void*)m_tiledata_block2.get_texture();
+    ImGui::SameLine();
     ImGui::Image(my_tex_id,
                  ImVec2(m_tiledata_block2.width() * scale, m_tiledata_block2.height() * scale));
     ImGui::End();
+}
+
+void Window::draw_menubar() {
+    auto& options = m_emulator.get_options();
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("Settings")) {
+            if (ImGui::MenuItem("Toggle info window")) {
+                toggle(options.draw_info_window);
+            }
+            if (ImGui::MenuItem("Toggle debug background")) {
+                toggle(options.draw_debug_background);
+            }
+            if (ImGui::MenuItem("Toggle debug window")) {
+                toggle(options.draw_debug_window);
+            }
+            if (ImGui::MenuItem("Toggle debug sprites")) {
+                toggle(options.draw_debug_sprites);
+            }
+            if (ImGui::MenuItem("Toggle debug tile viewer")) {
+                toggle(options.draw_debug_tiles);
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
 }

@@ -74,6 +74,7 @@ public:
     [[nodiscard]] opcodes::Instruction get_previous_instruction() const;
 
     [[nodiscard]] const EmulatorOptions& get_options() const;
+    [[nodiscard]] EmulatorOptions& get_options();
     [[nodiscard]] const EmulatorState& get_state() const;
 
     [[nodiscard]] std::shared_ptr<AddressBus> get_bus() const;

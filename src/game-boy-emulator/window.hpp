@@ -44,13 +44,13 @@ public:
     ~Window();
 
     void draw_frame();
-    void draw_background(const Framebuffer<graphics::gb::ColorScreen>& background,
-                         std::pair<uint8_t, uint8_t> viewport_position);
+    void draw_background(const Framebuffer<graphics::gb::ColorScreen>& background);
     void draw_sprites(const Framebuffer<graphics::gb::ColorScreen>& sprites);
     void draw_window(const Framebuffer<graphics::gb::ColorScreen>& window);
     void draw_game();
     void draw_info(const EmulatorState& state);
     void draw_vram();
+    void draw_menubar();
 
     void vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game);
 

@@ -191,13 +191,23 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
             m_clock_count = m_clock_count % DURATION_SCANLINE;
 
             if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 154) {
-                write_sprites();
+                draw_sprites();
 
                 // Also render the debug framebuffer. The normal background rendering only renders
                 // 144 lines.
-                draw_background_debug();
-                draw_window_debug();
-                draw_vram_debug();
+                auto options = m_emulator->get_options();
+                if (options.draw_debug_background) {
+                    draw_background_debug();
+                }
+                if (options.draw_debug_window) {
+                    draw_window_debug();
+                }
+                if (options.draw_debug_tiles) {
+                    draw_vram_debug();
+                }
+                if (options.draw_debug_sprites) {
+                    draw_sprites_debug();
+                }
                 m_emulator->draw(m_game_framebuffer_screen);
                 m_game_framebuffer_screen.reset();
 
@@ -291,12 +301,19 @@ bool bg_window_over_sprite(const OamEntry& oam_entry) {
 }
 } // namespace
 
-void Ppu::write_sprites() {
+void Ppu::draw_sprites() {
     if (!m_registers.is_sprites_enabled()) {
         return;
     }
+    write_sprites(m_game_framebuffer_screen);
+}
 
+void Ppu::draw_sprites_debug() {
     m_sprites_framebuffer_screen.reset(graphics::gb::ColorScreen::White);
+    write_sprites(m_sprites_framebuffer_screen);
+}
+
+void Ppu::write_sprites(Framebuffer<graphics::gb::ColorScreen>& framebuffer) {
     if (m_registers.get_sprite_height() == 16) {
         throw LogicError("Tall sprites not supported");
     }
@@ -337,8 +354,8 @@ void Ppu::write_sprites() {
             for (unsigned sprite_y = 0; sprite_y < 8; ++sprite_y) {
                 auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
                 auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
-                if (x < 0 || y < 0 || x >= static_cast<int>(m_sprites_framebuffer_screen.width())
-                    || y >= static_cast<int>(m_sprites_framebuffer_screen.height())) {
+                if (x < 0 || y < 0 || x >= static_cast<int>(framebuffer.width())
+                    || y >= static_cast<int>(framebuffer.height())) {
                     // This pixel of the sprite is hidden
                     continue;
                 }
@@ -357,10 +374,7 @@ void Ppu::write_sprites() {
                     && existing_color != graphics::gb::ColorScreen::White) {
                     continue;
                 }
-                m_sprites_framebuffer_screen.set_pixel(static_cast<size_t>(x),
-                                                       static_cast<size_t>(y), screen_color);
-                m_game_framebuffer_screen.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y),
-                                                    screen_color);
+                framebuffer.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y), screen_color);
             }
         }
     }

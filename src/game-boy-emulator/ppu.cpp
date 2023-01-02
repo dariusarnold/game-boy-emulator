@@ -119,9 +119,9 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
     case PpuMode::OamScan_2:
         if (m_clock_count >= DURATION_OAM_SEARCH) {
             m_logger->debug("PPU2: cycle {}, LY {}, mode {}->{}", m_clock_count,
-                           m_registers.get_register_value(PpuRegisters::Register::LyRegister),
-                           static_cast<int>(m_registers.get_mode()),
-                           static_cast<int>(PpuMode::PixelTransfer_3));
+                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
+                            static_cast<int>(m_registers.get_mode()),
+                            static_cast<int>(PpuMode::PixelTransfer_3));
 
             m_clock_count = m_clock_count % DURATION_OAM_SEARCH;
             m_registers.set_mode(PpuMode::PixelTransfer_3);
@@ -130,9 +130,9 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
     case PpuMode::PixelTransfer_3:
         if (m_clock_count >= DURATION_PIXEL_TRANSFER) {
             m_logger->debug("PPU3: cycle {}, LY {}, mode {}->{}", m_clock_count,
-                           m_registers.get_register_value(PpuRegisters::Register::LyRegister),
-                           static_cast<int>(m_registers.get_mode()),
-                           static_cast<int>(PpuMode::HBlank_0));
+                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
+                            static_cast<int>(m_registers.get_mode()),
+                            static_cast<int>(PpuMode::HBlank_0));
 
             m_clock_count = m_clock_count % DURATION_PIXEL_TRANSFER;
 
@@ -177,8 +177,8 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
             }
 
             m_logger->debug("PPU0: cycle {}, LY {}, mode {}->{}", m_clock_count,
-                           m_registers.get_register_value(PpuRegisters::Register::LyRegister),
-                           static_cast<int>(m_registers.get_mode()), static_cast<int>(new_mode));
+                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
+                            static_cast<int>(m_registers.get_mode()), static_cast<int>(new_mode));
         }
         break;
     case PpuMode::VBlank_1:
@@ -186,8 +186,8 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
             // Vblank duration is 10 scanlines
             m_registers.increment_register(PpuRegisters::Register::LyRegister);
             m_logger->debug("PPU1: cycle {}, LY {}, mode {}", m_clock_count,
-                           m_registers.get_register_value(PpuRegisters::Register::LyRegister),
-                           static_cast<int>(m_registers.get_mode()));
+                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
+                            static_cast<int>(m_registers.get_mode()));
             m_clock_count = m_clock_count % DURATION_SCANLINE;
 
             if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 154) {
@@ -203,9 +203,9 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
 
                 m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
                 m_logger->debug("PPU1: cycle {}, LY {}, mode {}->{}", m_clock_count,
-                               m_registers.get_register_value(PpuRegisters::Register::LyRegister),
-                               static_cast<int>(m_registers.get_mode()),
-                               static_cast<int>(PpuMode::OamScan_2));
+                                m_registers.get_register_value(PpuRegisters::Register::LyRegister),
+                                static_cast<int>(m_registers.get_mode()),
+                                static_cast<int>(PpuMode::OamScan_2));
                 m_registers.set_mode(PpuMode::OamScan_2);
             }
         }

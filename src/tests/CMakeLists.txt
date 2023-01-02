@@ -20,6 +20,7 @@ add_executable(game_boy_emulator_tests
         test_framebuffer.cpp
         test_instruction_timing.cpp
         test_joypad.cpp
+        test_mem_timing.cpp
         )
 
 target_link_libraries(game_boy_emulator_tests PRIVATE

@@ -1,26 +1,22 @@
 #include "catch2/catch.hpp"
 
 #include "cpu.hpp"
-#include "io.hpp"
 #include "emulator.hpp"
 #include "ppu.hpp"
+#include "serial_port.hpp"
 
-#include "test_helpers.hpp"
 #include "spdlog/spdlog.h"
 
 #include <filesystem>
 
 TEST_CASE("Compare blargg9 state") {
     spdlog::set_level(spdlog::level::err);
-    auto expected_output = read_log_file("recorded-logs/blargg9.txt");
-    REQUIRE_FALSE(expected_output.empty());
     Emulator emulator{{.stub_ly = true}};
     emulator.load_game(std::filesystem::absolute("roms/09-op r,r.gb"));
-    for (auto i = 0; const auto& expected_line : expected_output) {
-        auto actual_output = emulator.get_debug_state();
-        ++i;
-        INFO("Line " << i << " " << static_cast<double>(i) / expected_output.size() * 100 << " %");
-        REQUIRE(actual_output == expected_line);
+    for (auto i = 0; i <= 4420382; ++i) {
         REQUIRE(emulator.step());
     }
+    auto serial_content = emulator.get_serial_port()->get_buffer();
+    INFO("Serial buffer " << serial_content);
+    REQUIRE(serial_content.find("Passed") != std::string::npos);
 }

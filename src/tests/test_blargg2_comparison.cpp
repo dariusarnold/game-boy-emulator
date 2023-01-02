@@ -13,15 +13,9 @@
 
 TEST_CASE("Compare blargg2 state") {
     spdlog::set_level(spdlog::level::err);
-    auto expected_output = read_log_file("recorded-logs/blargg2.txt");
-    REQUIRE_FALSE(expected_output.empty());
     Emulator emulator{{.stub_ly = true}};
     emulator.load_game(std::filesystem::absolute("roms/02-interrupts.gb"));
-    for (auto i = 0; const auto& expected_line : expected_output) {
-        auto actual_output = emulator.get_debug_state();
-        ++i;
-        INFO("Line " << i << " " << static_cast<double>(i) / expected_output.size() * 100 << " %");
-        // REQUIRE(actual_output == expected_line);
+    for (auto i = 0; i <= 161503; ++i) {
         REQUIRE(emulator.step());
     }
     auto serial_content = emulator.get_serial_port()->get_buffer();

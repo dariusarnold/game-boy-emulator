@@ -45,16 +45,12 @@ class Ppu {
     void draw_window_debug();
     void draw_vram_debug();
 
-    // Framebuffers for the background. Use one in gameboy pixel format to allow easier reuse in
-    // the rendering loop and one in screen pixel format to use with SDL/Dear ImGui.
-    Framebuffer<graphics::gb::ColorScreen> m_background_framebuffer_screen;
-
-    Framebuffer<graphics::gb::ColorScreen> m_sprites_framebuffer_screen;
-
-    Framebuffer<graphics::gb::ColorScreen> m_window_framebuffer_screen;
-
-    Framebuffer<graphics::gb::ColorScreen> m_game_framebuffer_screen;
-
+    // Framebuffer for the game
+    Framebuffer<graphics::gb::ColorScreen> m_game_framebuffer;
+    // Framebuffers for debug elements
+    Framebuffer<graphics::gb::ColorScreen> m_background_framebuffer;
+    Framebuffer<graphics::gb::ColorScreen> m_sprites_framebuffer;
+    Framebuffer<graphics::gb::ColorScreen> m_window_framebuffer;
     Framebuffer<graphics::gb::ColorScreen> m_tiledata_block0;
     Framebuffer<graphics::gb::ColorScreen> m_tiledata_block1;
     Framebuffer<graphics::gb::ColorScreen> m_tiledata_block2;
@@ -82,6 +78,7 @@ public:
 
     std::span<uint8_t, memmap::TileDataSize> get_vram_tile_data();
 
+    const Framebuffer<graphics::gb::ColorScreen>& get_game();
     const Framebuffer<graphics::gb::ColorScreen>& get_background();
     const Framebuffer<graphics::gb::ColorScreen>& get_sprites();
     const Framebuffer<graphics::gb::ColorScreen>& get_window();

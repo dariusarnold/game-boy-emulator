@@ -11,6 +11,8 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
 #include "SDL.h"
+#include "nfd.hpp"
+#include "nfd.h"
 
 Window::Window(Emulator& emulator) :
         m_emulator(emulator),
@@ -42,6 +44,12 @@ Window::Window(Emulator& emulator) :
     m_sdl_renderer = SDL_CreateRenderer(m_sdl_window, -1,
                                         SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 
+    // Initialize nativefiledialog-extended
+    if (NFD::Init() != NFD_OKAY) {
+        spdlog::error("Failed to initialize native filedialog");
+        std::exit(EXIT_FAILURE);
+    }
+
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -68,6 +76,8 @@ Window::~Window() {
     ImGui_ImplSDLRenderer_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
+
+    NFD::Quit();
 
     SDL_DestroyRenderer(m_sdl_renderer);
     SDL_DestroyWindow(m_sdl_window);
@@ -105,13 +115,13 @@ void Window::draw_frame() {
 
     auto& options = m_emulator.get_options();
     if (options.draw_debug_background) {
-        draw_background(m_emulator.get_ppu()->get_background());
+        draw_background();
     }
     if (options.draw_debug_window) {
-        draw_window(m_emulator.get_ppu()->get_window());
+        draw_window();
     }
     if (options.draw_debug_sprites) {
-        draw_sprites(m_emulator.get_ppu()->get_sprites());
+        draw_sprites();
     }
     if (options.draw_info_window) {
         draw_info(m_emulator.get_state());
@@ -183,7 +193,7 @@ void Window::handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<
                 if (m_emulator.get_options().game_speed > 1) {
                     m_emulator.get_options().game_speed--;
                 }
-                m_emulator.get_options().fast_forward = m_emulator.get_options().game_speed > 1;j
+                m_emulator.get_options().fast_forward = m_emulator.get_options().game_speed > 1;
             }
         }
         if (event.type == SDL_KEYUP) {
@@ -232,7 +242,8 @@ bool Window::is_done() const {
     return m_done;
 }
 
-void Window::draw_background(const Framebuffer<graphics::gb::ColorScreen>& background) {
+void Window::draw_background() {
+    const auto& background = m_emulator.get_ppu()->get_background();
     m_background_image.upload_to_texture(background);
     auto& options = m_emulator.get_options();
     ImGui::Begin("Background", &options.draw_debug_background, ImGuiWindowFlags_NoResize);
@@ -241,7 +252,8 @@ void Window::draw_background(const Framebuffer<graphics::gb::ColorScreen>& backg
     ImGui::End();
 }
 
-void Window::draw_sprites(const Framebuffer<graphics::gb::ColorScreen>& sprites) {
+void Window::draw_sprites() {
+    const auto& sprites = m_emulator.get_ppu()->get_sprites();
     m_sprites_image.upload_to_texture(sprites);
     auto& options = m_emulator.get_options();
     ImGui::Begin("Sprites", &options.draw_debug_sprites, ImGuiWindowFlags_NoResize);
@@ -250,7 +262,8 @@ void Window::draw_sprites(const Framebuffer<graphics::gb::ColorScreen>& sprites)
     ImGui::End();
 }
 
-void Window::draw_window(const Framebuffer<graphics::gb::ColorScreen>& window) {
+void Window::draw_window() {
+    const auto& window = m_emulator.get_ppu()->get_window();
     auto& options = m_emulator.get_options();
     ImGui::Begin("Window", &options.draw_debug_window, ImGuiWindowFlags_NoResize);
     m_window_image.upload_to_texture(window);
@@ -259,7 +272,7 @@ void Window::draw_window(const Framebuffer<graphics::gb::ColorScreen>& window) {
     ImGui::End();
 }
 
-void Window::vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game) {
+void Window::vblank_callback() {
     // Poll and handle events (inputs, window resize, etc.)
     // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui
     // wants to use your inputs.
@@ -283,6 +296,7 @@ void Window::vblank_callback(const Framebuffer<graphics::gb::ColorScreen>& game)
 
     const auto& state = m_emulator.get_state();
     const auto& options = m_emulator.get_options();
+    const auto& game = m_emulator.get_ppu()->get_game();
     if (options.fast_forward) {
         if (state.frame_count % options.game_speed == 0) {
             m_game_image.upload_to_texture(game);
@@ -349,9 +363,21 @@ void Window::draw_vram() {
     ImGui::End();
 }
 
+
 void Window::draw_menubar() {
     auto& options = m_emulator.get_options();
     if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("Load game")) {
+                NFD::UniquePath out_path;
+                nfdresult_t const result = NFD::OpenDialog(out_path);
+                if (result == NFD_OKAY) {
+                    std::filesystem::path const p{out_path.get()};
+                    m_emulator.get_state().new_rom_file_path = p;
+                }
+            }
+            ImGui::EndMenu();
+        }
         if (ImGui::BeginMenu("Settings")) {
             if (ImGui::MenuItem("Toggle info window")) {
                 toggle(options.draw_info_window);

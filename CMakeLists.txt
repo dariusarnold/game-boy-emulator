@@ -19,6 +19,14 @@ find_package(spdlog REQUIRED)
 find_package(argparse REQUIRED)
 find_package(Boost REQUIRED)
 
+include(FetchContent)
+
+FetchContent_Declare(nativefiledialog-extended
+        GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
+        GIT_TAG v1.0.1
+        )
+FetchContent_MakeAvailable(nativefiledialog-extended)
+
 # Enable clang-format integration by creating clang-format CMake targets
 # Add a custom CMake Modules directory
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules

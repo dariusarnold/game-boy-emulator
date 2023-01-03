@@ -17,15 +17,14 @@ Ppu::Ppu(Emulator* emulator) :
         m_registers(emulator->get_options().stub_ly),
         m_logger(spdlog::get("")),
         m_emulator(emulator),
-        m_background_framebuffer_screen(constants::BACKGROUND_SIZE_PIXELS,
-                                        constants::BACKGROUND_SIZE_PIXELS,
-                                        graphics::gb::ColorScreen::White),
-        m_sprites_framebuffer_screen(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT),
-        m_window_framebuffer_screen(constants::BACKGROUND_SIZE_PIXELS,
-                                    constants::BACKGROUND_SIZE_PIXELS,
-                                    graphics::gb::ColorScreen::White),
-        m_game_framebuffer_screen(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT,
-                                  graphics::gb::ColorScreen::White),
+        m_game_framebuffer(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT,
+                           graphics::gb::ColorScreen::White),
+        m_background_framebuffer(constants::BACKGROUND_SIZE_PIXELS,
+                                 constants::BACKGROUND_SIZE_PIXELS,
+                                 graphics::gb::ColorScreen::White),
+        m_sprites_framebuffer(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT),
+        m_window_framebuffer(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS,
+                             graphics::gb::ColorScreen::White),
         // 16*8 sprites, each 8x8 pixels
         m_tiledata_block0(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
                           constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE),
@@ -208,8 +207,8 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
                 if (options.draw_debug_sprites) {
                     draw_sprites_debug();
                 }
-                m_emulator->draw(m_game_framebuffer_screen);
-                m_game_framebuffer_screen.reset();
+                m_emulator->draw();
+                m_game_framebuffer.reset();
 
                 m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
                 m_logger->debug("PPU1: cycle {}, LY {}, mode {}->{}", m_clock_count,
@@ -267,11 +266,11 @@ Ppu::get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_
 }
 
 const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_background() {
-    return m_background_framebuffer_screen;
+    return m_background_framebuffer;
 }
 
 const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_window() {
-    return m_window_framebuffer_screen;
+    return m_window_framebuffer;
 }
 
 void Ppu::write_scanline() {
@@ -305,12 +304,12 @@ void Ppu::draw_sprites() {
     if (!m_registers.is_sprites_enabled()) {
         return;
     }
-    write_sprites(m_game_framebuffer_screen);
+    write_sprites(m_game_framebuffer);
 }
 
 void Ppu::draw_sprites_debug() {
-    m_sprites_framebuffer_screen.reset(graphics::gb::ColorScreen::White);
-    write_sprites(m_sprites_framebuffer_screen);
+    m_sprites_framebuffer.reset(graphics::gb::ColorScreen::White);
+    write_sprites(m_sprites_framebuffer);
 }
 
 void Ppu::write_sprites(Framebuffer<graphics::gb::ColorScreen>& framebuffer) {
@@ -368,8 +367,8 @@ void Ppu::write_sprites(Framebuffer<graphics::gb::ColorScreen>& framebuffer) {
 
                 auto gb_color = palette[magic_enum::enum_integer(pixel_color)];
                 auto screen_color = graphics::gb::to_screen_color(gb_color);
-                auto existing_color = m_game_framebuffer_screen.get_pixel(static_cast<size_t>(x),
-                                                                          static_cast<size_t>(y));
+                auto existing_color
+                    = m_game_framebuffer.get_pixel(static_cast<size_t>(x), static_cast<size_t>(y));
                 if (bg_window_over_sprite(oam_entry)
                     && existing_color != graphics::gb::ColorScreen::White) {
                     continue;
@@ -408,7 +407,7 @@ void Ppu::draw_window_line() {
         auto color_index = tile_line[tile_pixel_x];
         auto color = palette[static_cast<size_t>(color_index)];
         auto screencolor = graphics::gb::to_screen_color(color);
-        m_game_framebuffer_screen.set_pixel(screen_x, screen_y, screencolor);
+        m_game_framebuffer.set_pixel(screen_x, screen_y, screencolor);
     }
 }
 
@@ -436,7 +435,7 @@ void Ppu::draw_background_line() {
         auto color_index = tile_line[tile_pixel_x];
         auto color_gb = palette[magic_enum::enum_integer(color_index)];
         auto screen_color = graphics::gb::to_screen_color(color_gb);
-        m_game_framebuffer_screen.set_pixel(screen_x, screen_y, screen_color);
+        m_game_framebuffer.set_pixel(screen_x, screen_y, screen_color);
     }
 }
 
@@ -447,7 +446,7 @@ std::pair<uint8_t, uint8_t> Ppu::get_viewport_position() const {
 }
 
 const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_sprites() {
-    return m_sprites_framebuffer_screen;
+    return m_sprites_framebuffer;
 }
 
 std::span<uint8_t, 16> Ppu::get_sprite_tile(uint8_t tile_index) {
@@ -473,15 +472,15 @@ void Ppu::draw_background_debug() {
             for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
                 auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
                 auto screen_x = tile_x * 8 + tile_line_x;
-                m_background_framebuffer_screen.set_pixel(screen_x, screen_y,
-                                                          graphics::gb::to_screen_color(pixel));
+                m_background_framebuffer.set_pixel(screen_x, screen_y,
+                                                   graphics::gb::to_screen_color(pixel));
             }
         }
     }
     auto scx = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
     auto scy = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
 
-    draw_rectangle_border(m_background_framebuffer_screen, scx, scy, constants::SCREEN_RES_WIDTH,
+    draw_rectangle_border(m_background_framebuffer, scx, scy, constants::SCREEN_RES_WIDTH,
                           constants::SCREEN_RES_HEIGHT, graphics::gb::ColorScreen::Highlight);
 }
 
@@ -501,15 +500,15 @@ void Ppu::draw_window_debug() {
             for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
                 auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
                 auto screen_x = tile_x * 8 + tile_line_x;
-                m_window_framebuffer_screen.set_pixel(screen_x, screen_y,
-                                                      graphics::gb::to_screen_color(pixel));
+                m_window_framebuffer.set_pixel(screen_x, screen_y,
+                                               graphics::gb::to_screen_color(pixel));
             }
         }
     }
 
     auto wx = m_registers.get_register_value(PpuRegisters::Register::WxRegister) - 7;
     auto wy = m_registers.get_register_value(PpuRegisters::Register::WyRegister);
-    draw_rectangle_border(m_window_framebuffer_screen, wx, wy, constants::SCREEN_RES_WIDTH,
+    draw_rectangle_border(m_window_framebuffer, wx, wy, constants::SCREEN_RES_WIDTH,
                           constants::SCREEN_RES_HEIGHT, graphics::gb::ColorScreen::Highlight);
 }
 
@@ -550,4 +549,8 @@ std::span<uint8_t, 16> Ppu::get_tile(unsigned int block, unsigned int index_in_b
     auto start = index_in_block * 16 + block * 128 * 16;
     auto end = start + 16;
     return std::span<uint8_t, 16>{m_tile_data.data() + start, m_tile_data.data() + end};
+}
+
+const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_game() {
+    return m_game_framebuffer;
 }

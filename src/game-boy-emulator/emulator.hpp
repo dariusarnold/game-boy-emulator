@@ -43,6 +43,8 @@ struct EmulatorState {
     bool halted = false;
     // Path to game rom file
     std::optional<std::filesystem::path> rom_file_path;
+    // When changing the game the new path is stored here before the new game is loaded.
+    std::optional<std::filesystem::path> new_rom_file_path;
 };
 
 /**
@@ -78,6 +80,7 @@ public:
     [[nodiscard]] const EmulatorOptions& get_options() const;
     [[nodiscard]] EmulatorOptions& get_options();
     [[nodiscard]] const EmulatorState& get_state() const;
+    EmulatorState& get_state();
 
     [[nodiscard]] std::shared_ptr<AddressBus> get_bus() const;
     [[nodiscard]] std::shared_ptr<Ram> get_ram() const;
@@ -91,8 +94,8 @@ public:
     [[nodiscard]] std::shared_ptr<Apu> get_apu() const;
     [[nodiscard]] std::shared_ptr<Joypad> get_joypad() const;
 
-    void draw(const Framebuffer<graphics::gb::ColorScreen>& game);
-    void set_draw_function(std::function<void(const Framebuffer<graphics::gb::ColorScreen>& )> f);
+    void draw();
+    void set_draw_function(std::function<void()> f);
 
     size_t get_cycle_count();
 
@@ -112,5 +115,5 @@ private:
     std::shared_ptr<Joypad> m_joypad;
     std::shared_ptr<spdlog::logger> m_logger;
 
-    std::function<void(const Framebuffer<graphics::gb::ColorScreen>&)> m_draw_function;
+    std::function<void()> m_draw_function;
 };

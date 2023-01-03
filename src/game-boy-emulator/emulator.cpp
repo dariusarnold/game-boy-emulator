@@ -1,4 +1,6 @@
 #include "emulator.hpp"
+
+#include <utility>
 #include "addressbus.hpp"
 #include "bootrom.hpp"
 #include "cartridge.hpp"
@@ -178,6 +180,10 @@ const EmulatorState& Emulator::get_state() const {
     return m_state;
 }
 
+EmulatorState& Emulator::get_state() {
+    return m_state;
+}
+
 std::shared_ptr<Apu> Emulator::get_apu() const {
     return m_apu;
 }
@@ -186,15 +192,14 @@ std::shared_ptr<Joypad> Emulator::get_joypad() const {
     return m_joypad;
 }
 
-void Emulator::draw(const Framebuffer<graphics::gb::ColorScreen>& game) {
+void Emulator::draw() {
     m_cartridge->sync();
-    m_draw_function(game);
+    m_draw_function();
     m_state.frame_count++;
 }
 
-void Emulator::set_draw_function(
-    std::function<void(const Framebuffer<graphics::gb::ColorScreen>&)> f) {
-    m_draw_function = f;
+void Emulator::set_draw_function(std::function<void()> f) {
+    m_draw_function = std::move(f);
 }
 
 size_t Emulator::get_cycle_count() {

@@ -9,11 +9,11 @@
  * y axes: vertical (corresponds to height)
  * origin top left
  */
-template <typename PixelType>
+template <typename PixelType, size_t Width, size_t Height>
 class Framebuffer {
 
-    size_t m_width;
-    size_t m_height;
+    size_t m_width = Width;
+    size_t m_height = Height;
     std::vector<PixelType> m_buffer;
 
     // Get the index a pixel would have in a 1D representation of the image data
@@ -22,7 +22,7 @@ class Framebuffer {
 public:
     using pixel_type_t = PixelType;
 
-    Framebuffer(size_t width, size_t height, PixelType fill = {});
+    Framebuffer(PixelType fill = {});
 
     [[nodiscard]] PixelType get_pixel(size_t x, size_t y) const;
     [[nodiscard]] PixelType get_pixel(size_t pixel_index) const;
@@ -45,8 +45,8 @@ public:
     void reset(PixelType fill = {});
 };
 
-template <typename PixelType>
-void draw_rectangle_border(Framebuffer<PixelType>& img, int top_left_x, int top_left_y,
+template <typename PixelType, size_t Width, size_t Height>
+void draw_rectangle_border(Framebuffer<PixelType, Width, Height>& img, int top_left_x, int top_left_y,
                            int rect_width, int rect_height, PixelType rect_color);
 
 #include "framebuffer.tpp"

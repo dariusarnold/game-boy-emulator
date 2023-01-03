@@ -1,63 +1,63 @@
-#include "framebuffer.hpp"
 #include <cstring>
 #include <cstdlib>
 
-template <typename PixelType>
-Framebuffer<PixelType>::Framebuffer(size_t width, size_t height, PixelType fill) :
-        m_width(width), m_height(height), m_buffer(width * height, fill) {}
+template <typename PixelType, size_t Width, size_t Height>
+Framebuffer<PixelType, Width, Height>::Framebuffer(PixelType fill) :
+        m_buffer(Width * Height, fill) {}
 
-template <typename PixelType>
-size_t Framebuffer<PixelType>::pixel_index(size_t x, size_t y) const {
+template <typename PixelType, size_t Width, size_t Height>
+size_t Framebuffer<PixelType, Width, Height>::pixel_index(size_t x, size_t y) const {
     return x + y * m_width;
 }
 
-template <typename PixelType>
-PixelType Framebuffer<PixelType>::get_pixel(size_t x, size_t y) const {
+template <typename PixelType, size_t Width, size_t Height>
+PixelType Framebuffer<PixelType, Width, Height>::get_pixel(size_t x, size_t y) const {
     return m_buffer[pixel_index(x, y)];
 }
 
-template <typename PixelType>
-void Framebuffer<PixelType>::set_pixel(size_t x, size_t y, PixelType color) {
-    m_buffer[pixel_index(x, y)] = color;
+template <typename PixelType, size_t Width, size_t Height>
+void Framebuffer<PixelType, Width, Height>::set_pixel(size_t x, size_t y, PixelType color) {
+    auto i = pixel_index(x, y);
+    m_buffer[i] = color;
 }
 
-template <typename PixelType>
-size_t Framebuffer<PixelType>::width() const {
+template <typename PixelType, size_t Width, size_t Height>
+size_t Framebuffer<PixelType, Width, Height>::width() const {
     return m_width;
 }
 
-template <typename PixelType>
-size_t Framebuffer<PixelType>::height() const {
+template <typename PixelType, size_t Width, size_t Height>
+size_t Framebuffer<PixelType, Width, Height>::height() const {
     return m_height;
 }
 
-template <typename PixelType>
-size_t Framebuffer<PixelType>::size() const {
+template <typename PixelType, size_t Width, size_t Height>
+size_t Framebuffer<PixelType, Width, Height>::size() const {
     return m_buffer.size();
 }
 
-template <typename PixelType>
-void Framebuffer<PixelType>::set_pixel(size_t pixel_index, PixelType color) {
+template <typename PixelType, size_t Width, size_t Height>
+void Framebuffer<PixelType, Width, Height>::set_pixel(size_t pixel_index, PixelType color) {
     m_buffer[pixel_index] = color;
 }
 
-template <typename PixelType>
-PixelType Framebuffer<PixelType>::get_pixel(size_t pixel_index) const {
+template <typename PixelType, size_t Width, size_t Height>
+PixelType Framebuffer<PixelType, Width, Height>::get_pixel(size_t pixel_index) const {
     return m_buffer[pixel_index];
 }
 
-template <typename PixelType>
-void Framebuffer<PixelType>::copy_into(void* ptr) const {
+template <typename PixelType, size_t Width, size_t Height>
+void Framebuffer<PixelType, Width, Height>::copy_into(void* ptr) const {
     std::memcpy(ptr, m_buffer.data(), sizeof(PixelType) * m_buffer.size());
 }
 
-template <typename PixelType>
-void Framebuffer<PixelType>::reset(PixelType fill) {
+template <typename PixelType, size_t Width, size_t Height>
+void Framebuffer<PixelType, Width, Height>::reset(PixelType fill) {
     m_buffer.assign(size(), fill);
 }
 
-template <typename PixelType>
-void Framebuffer<PixelType>::set_pixel_wraparound(int x, int y, PixelType color) {
+template <typename PixelType, size_t Width, size_t Height>
+void Framebuffer<PixelType, Width, Height>::set_pixel_wraparound(int x, int y, PixelType color) {
 
     auto x_unsigned = [&] {
         if (x < 0) {
@@ -74,8 +74,8 @@ void Framebuffer<PixelType>::set_pixel_wraparound(int x, int y, PixelType color)
     set_pixel(static_cast<size_t>(x_unsigned), static_cast<size_t>(y_unsigned), color);
 }
 
-template <typename PixelType>
-PixelType Framebuffer<PixelType>::get_pixel_wraparound(int x, int y) const {
+template <typename PixelType, size_t Width, size_t Height>
+PixelType Framebuffer<PixelType, Width, Height>::get_pixel_wraparound(int x, int y) const {
 
     auto x_unsigned = [&] {
         if (x < 0) {
@@ -101,8 +101,8 @@ PixelType Framebuffer<PixelType>::get_pixel_wraparound(int x, int y) const {
  * @param rect_height
  * @param rect_color
  */
-template <typename PixelType>
-void draw_rectangle_border(Framebuffer<PixelType>& img, int top_left_x, int top_left_y,
+template <typename PixelType, size_t Width, size_t Height>
+void draw_rectangle_border(Framebuffer<PixelType, Width, Height>& img, int top_left_x, int top_left_y,
                            int rect_width, int rect_height, PixelType rect_color) {
     for (auto x = top_left_x; x < top_left_x + rect_width; ++x) {
         img.set_pixel_wraparound(x, top_left_y, rect_color);

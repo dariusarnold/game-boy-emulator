@@ -17,21 +17,15 @@ Ppu::Ppu(Emulator* emulator) :
         m_registers(emulator->get_options().stub_ly),
         m_logger(spdlog::get("")),
         m_emulator(emulator),
-        m_game_framebuffer(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT,
-                           graphics::gb::ColorScreen::White),
-        m_background_framebuffer(constants::BACKGROUND_SIZE_PIXELS,
-                                 constants::BACKGROUND_SIZE_PIXELS,
-                                 graphics::gb::ColorScreen::White),
-        m_sprites_framebuffer(constants::VIEWPORT_WIDTH, constants::VIEWPORT_HEIGHT),
-        m_window_framebuffer(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS,
-                             graphics::gb::ColorScreen::White),
+        m_game_framebuffer(graphics::gb::ColorScreen::White),
+        m_background_framebuffer(graphics::gb::ColorScreen::White),
+        m_sprites_framebuffer(),
+        m_window_framebuffer(graphics::gb::ColorScreen::White),
         // 16*8 sprites, each 8x8 pixels
-        m_tiledata_block0(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
-                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE),
-        m_tiledata_block1(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
-                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE),
-        m_tiledata_block2(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
-                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE) {}
+        m_tiledata_block0(),
+        m_tiledata_block1(),
+        m_tiledata_block2() {}
+
 
 uint8_t Ppu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::TileData)) {
@@ -265,14 +259,6 @@ Ppu::get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_
     return get_tile(tile_index);
 }
 
-const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_background() {
-    return m_background_framebuffer;
-}
-
-const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_window() {
-    return m_window_framebuffer;
-}
-
 void Ppu::write_scanline() {
     if (!m_registers.is_ppu_enabled()) {
         return;
@@ -312,7 +298,8 @@ void Ppu::draw_sprites_debug() {
     write_sprites(m_sprites_framebuffer);
 }
 
-void Ppu::write_sprites(Framebuffer<graphics::gb::ColorScreen>& framebuffer) {
+void Ppu::write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
+                                    constants::SCREEN_RES_HEIGHT>& framebuffer) {
     if (m_registers.get_sprite_height() == 16) {
         throw LogicError("Tall sprites not supported");
     }
@@ -445,10 +432,6 @@ std::pair<uint8_t, uint8_t> Ppu::get_viewport_position() const {
     return {x, y};
 }
 
-const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_sprites() {
-    return m_sprites_framebuffer;
-}
-
 std::span<uint8_t, 16> Ppu::get_sprite_tile(uint8_t tile_index) {
     return std::span<uint8_t, 16>{m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE,
                                   constants::BYTES_PER_TILE};
@@ -515,8 +498,11 @@ void Ppu::draw_window_debug() {
 
 void Ppu::draw_vram_debug() {
     // Iterate over the three tile data blocks
-    std::array<Framebuffer<graphics::gb::ColorScreen>*, 3> buffers{
-        &m_tiledata_block0, &m_tiledata_block1, &m_tiledata_block2};
+    std::array<Framebuffer<graphics::gb::ColorScreen,
+                           constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                           constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>*,
+               3>
+        buffers{&m_tiledata_block0, &m_tiledata_block1, &m_tiledata_block2};
     for (unsigned block = 0; block < 3; ++block) {
         for (unsigned tile_x = 0; tile_x < 16; ++tile_x) {
             for (unsigned tile_y = 0; tile_y < 8; ++tile_y) {
@@ -541,7 +527,11 @@ void Ppu::draw_vram_debug() {
     }
 }
 
-const std::array<const Framebuffer<graphics::gb::ColorScreen>*, 3> Ppu::get_tiledata() {
+const std::array<const Framebuffer<graphics::gb::ColorScreen,
+                                   constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                                   constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>*,
+                 3>
+Ppu::get_tiledata() {
     return {&m_tiledata_block0, &m_tiledata_block1, &m_tiledata_block2};
 }
 
@@ -549,8 +539,4 @@ std::span<uint8_t, 16> Ppu::get_tile(unsigned int block, unsigned int index_in_b
     auto start = index_in_block * 16 + block * 128 * 16;
     auto end = start + 16;
     return std::span<uint8_t, 16>{m_tile_data.data() + start, m_tile_data.data() + end};
-}
-
-const Framebuffer<graphics::gb::ColorScreen>& Ppu::get_game() {
-    return m_game_framebuffer;
 }

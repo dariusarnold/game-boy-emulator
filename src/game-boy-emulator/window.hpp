@@ -3,6 +3,7 @@
 #include "memorymap.hpp"
 #include "image.hpp"
 #include "graphics.hpp"
+#include "constants.h"
 class SDL_Window;
 class SDL_Renderer;
 class SDL_Texture;
@@ -24,13 +25,19 @@ class Window {
     std::shared_ptr<spdlog::logger> m_logger;
     SDL_Window* m_sdl_window = nullptr;
     SDL_Renderer* m_sdl_renderer = nullptr;
-    Image m_background_image;
-    Image m_window_image;
-    Image m_sprites_image;
-    Image m_game_image;
-    Image m_tiledata_block0;
-    Image m_tiledata_block1;
-    Image m_tiledata_block2;
+    Image<constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS> m_background_image;
+    Image<constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS> m_window_image;
+    Image<constants::SCREEN_RES_WIDTH, constants::SCREEN_RES_HEIGHT> m_sprites_image;
+    Image<constants::SCREEN_RES_WIDTH, constants::SCREEN_RES_HEIGHT> m_game_image;
+    Image<constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>
+        m_tiledata_block0;
+    Image<constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>
+        m_tiledata_block1;
+    Image<constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>
+        m_tiledata_block2;
     bool m_done = false;
     size_t m_previous_ticks = 0;
 

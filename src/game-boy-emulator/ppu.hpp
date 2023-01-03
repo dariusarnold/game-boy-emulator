@@ -36,7 +36,8 @@ class Ppu {
     int m_clock_count = 0;
 
     void write_scanline();
-    void write_sprites(Framebuffer<graphics::gb::ColorScreen>& framebuffer);
+    void write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
+                                   constants::SCREEN_RES_HEIGHT>& framebuffer);
     void draw_sprites();
     void draw_sprites_debug();
     void draw_window_line();
@@ -46,26 +47,41 @@ class Ppu {
     void draw_vram_debug();
 
     // Framebuffer for the game
-    Framebuffer<graphics::gb::ColorScreen> m_game_framebuffer;
+    Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
+                constants::SCREEN_RES_HEIGHT>
+        m_game_framebuffer;
     // Framebuffers for debug elements
-    Framebuffer<graphics::gb::ColorScreen> m_background_framebuffer;
-    Framebuffer<graphics::gb::ColorScreen> m_sprites_framebuffer;
-    Framebuffer<graphics::gb::ColorScreen> m_window_framebuffer;
-    Framebuffer<graphics::gb::ColorScreen> m_tiledata_block0;
-    Framebuffer<graphics::gb::ColorScreen> m_tiledata_block1;
-    Framebuffer<graphics::gb::ColorScreen> m_tiledata_block2;
+    Framebuffer<graphics::gb::ColorScreen, constants::BACKGROUND_SIZE_PIXELS,
+                constants::BACKGROUND_SIZE_PIXELS>
+        m_background_framebuffer;
+    Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
+                constants::SCREEN_RES_HEIGHT>
+        m_sprites_framebuffer;
+    Framebuffer<graphics::gb::ColorScreen, constants::BACKGROUND_SIZE_PIXELS,
+                constants::BACKGROUND_SIZE_PIXELS>
+        m_window_framebuffer;
+    Framebuffer<graphics::gb::ColorScreen,
+                constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>
+        m_tiledata_block0;
+    Framebuffer<graphics::gb::ColorScreen,
+                constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>
+        m_tiledata_block1;
+    Framebuffer<graphics::gb::ColorScreen,
+                constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>
+        m_tiledata_block2;
 
     std::span<uint8_t, 16> get_sprite_tile(uint8_t tile_index);
     std::span<uint8_t, 16> get_tile(unsigned block, unsigned index_in_block);
 
-    enum class TileType {
-        Background,
-        Window
-    };
+    enum class TileType { Background, Window };
     // Get one background or window tile from vram using the tile index.
     std::span<uint8_t, constants::BYTES_PER_TILE> get_tile(uint8_t tile_index);
     // Get one background or window tile from vram using tile coordinates (of 32x32)
-    std::span<uint8_t, constants::BYTES_PER_TILE> get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_y);
+    std::span<uint8_t, constants::BYTES_PER_TILE>
+    get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_y);
 
 public:
     explicit Ppu(Emulator* emulator);
@@ -78,11 +94,24 @@ public:
 
     std::span<uint8_t, memmap::TileDataSize> get_vram_tile_data();
 
-    const Framebuffer<graphics::gb::ColorScreen>& get_game();
-    const Framebuffer<graphics::gb::ColorScreen>& get_background();
-    const Framebuffer<graphics::gb::ColorScreen>& get_sprites();
-    const Framebuffer<graphics::gb::ColorScreen>& get_window();
-    const std::array<const Framebuffer<graphics::gb::ColorScreen>*, 3> get_tiledata();
+    const auto& get_game() {
+        return m_game_framebuffer;
+    }
+    const auto& get_background() {
+        return m_background_framebuffer;
+    }
+    const auto& get_sprites() {
+        return m_sprites_framebuffer;
+    }
+    const auto& get_window() {
+        return m_window_framebuffer;
+    }
+    const std::array<
+        const Framebuffer<graphics::gb::ColorScreen,
+                          constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>*,
+        3>
+    get_tiledata();
 
     [[nodiscard]] std::pair<uint8_t, uint8_t> get_viewport_position() const;
 };

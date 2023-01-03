@@ -17,16 +17,13 @@
 Window::Window(Emulator& emulator) :
         m_emulator(emulator),
         m_logger(spdlog::get("")),
-        m_background_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS),
-        m_window_image(constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS),
-        m_sprites_image(constants::SCREEN_RES_WIDTH, constants::SCREEN_RES_HEIGHT),
-        m_game_image(constants::SCREEN_RES_WIDTH, constants::SCREEN_RES_HEIGHT),
-        m_tiledata_block0(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
-                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE),
-        m_tiledata_block1(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
-                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE),
-        m_tiledata_block2(constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
-                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE),
+        m_background_image(),
+        m_window_image(),
+        m_sprites_image(),
+        m_game_image(),
+        m_tiledata_block0(),
+        m_tiledata_block1(),
+        m_tiledata_block2(),
         m_fps_history(5 * 60, 5 * 60, 0) {
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a

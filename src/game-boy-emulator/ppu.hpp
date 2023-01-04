@@ -86,6 +86,11 @@ class Ppu {
 
     void start_oam_dma_transfer();
 
+    void do_mode2_oam_scan();
+    void do_mode3_pixel_transfer();
+    void do_mode0_hblank();
+    void do_mode1_vblank();
+
 public:
     explicit Ppu(Emulator* emulator);
 

@@ -97,109 +97,135 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
     m_clock_count++;
     switch (mode) {
     case PpuMode::OamScan_2:
-        if (m_clock_count >= DURATION_OAM_SEARCH) {
-            m_logger->debug("PPU2: cycle {}, LY {}, mode {}->{}", m_clock_count,
-                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
-                            static_cast<int>(m_registers.get_mode()),
-                            static_cast<int>(PpuMode::PixelTransfer_3));
-
-            m_clock_count = m_clock_count % DURATION_OAM_SEARCH;
-            m_registers.set_mode(PpuMode::PixelTransfer_3);
-        }
+        do_mode2_oam_scan();
         break;
     case PpuMode::PixelTransfer_3:
-        if (m_clock_count >= DURATION_PIXEL_TRANSFER) {
-            m_logger->debug("PPU3: cycle {}, LY {}, mode {}->{}", m_clock_count,
-                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
-                            static_cast<int>(m_registers.get_mode()),
-                            static_cast<int>(PpuMode::HBlank_0));
-
-            m_clock_count = m_clock_count % DURATION_PIXEL_TRANSFER;
-
-            if (m_registers.is_stat_interrupt_enabled(PpuRegisters::StatInterruptSource::HBlank)) {
-                m_emulator->get_interrupt_handler()->request_interrupt(
-                    InterruptHandler::InterruptType::LcdStat);
-            }
-
-            auto ly_equals_lyc
-                = m_registers.get_register_value(PpuRegisters::Register::LyRegister)
-                  == m_registers.get_register_value(PpuRegisters::Register::LycRegister);
-            if (m_registers.is_stat_interrupt_enabled(
-                    PpuRegisters::StatInterruptSource::LycEqualsLy)
-                && ly_equals_lyc) {
-                m_emulator->get_interrupt_handler()->request_interrupt(
-                    InterruptHandler::InterruptType::LcdStat);
-            }
-            m_registers.set_register_bit(PpuRegisters::Register::StatRegister,
-                                         static_cast<int>(PpuRegisters::LcdStatBits::LycEqualsLy),
-                                         static_cast<int>(ly_equals_lyc));
-            m_registers.set_mode(PpuMode::HBlank_0);
-        }
+        do_mode3_pixel_transfer();
         break;
     case PpuMode::HBlank_0:
-        if (m_clock_count >= DURATION_H_BLANK) {
-
-            write_scanline();
-            m_registers.increment_register(PpuRegisters::Register::LyRegister);
-
-            m_clock_count = m_clock_count % DURATION_H_BLANK;
-
-            PpuMode new_mode{};
-            // If we are on the last visible line we enter the vblank mode
-            if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 144) {
-                new_mode = PpuMode::VBlank_1;
-                m_registers.set_mode(new_mode);
-                m_emulator->get_interrupt_handler()->request_interrupt(
-                    InterruptHandler::InterruptType::VBlank);
-            } else {
-                new_mode = PpuMode::OamScan_2;
-                m_registers.set_mode(new_mode);
-            }
-
-            m_logger->debug("PPU0: cycle {}, LY {}, mode {}->{}", m_clock_count,
-                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
-                            static_cast<int>(m_registers.get_mode()), static_cast<int>(new_mode));
-        }
+        do_mode0_hblank();
         break;
     case PpuMode::VBlank_1:
-        if (m_clock_count >= DURATION_SCANLINE) {
-            // Vblank duration is 10 scanlines
-            m_registers.increment_register(PpuRegisters::Register::LyRegister);
-            m_logger->debug("PPU1: cycle {}, LY {}, mode {}", m_clock_count,
-                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
-                            static_cast<int>(m_registers.get_mode()));
-            m_clock_count = m_clock_count % DURATION_SCANLINE;
-
-            if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 154) {
-                draw_sprites();
-
-                // Also render the debug framebuffer. The normal background rendering only renders
-                // 144 lines.
-                auto options = m_emulator->get_options();
-                if (options.draw_debug_background) {
-                    draw_background_debug();
-                }
-                if (options.draw_debug_window) {
-                    draw_window_debug();
-                }
-                if (options.draw_debug_tiles) {
-                    draw_vram_debug();
-                }
-                if (options.draw_debug_sprites) {
-                    draw_sprites_debug();
-                }
-                m_emulator->draw();
-                m_game_framebuffer.reset();
-
-                m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
-                m_logger->debug("PPU1: cycle {}, LY {}, mode {}->{}", m_clock_count,
-                                m_registers.get_register_value(PpuRegisters::Register::LyRegister),
-                                static_cast<int>(m_registers.get_mode()),
-                                static_cast<int>(PpuMode::OamScan_2));
-                m_registers.set_mode(PpuMode::OamScan_2);
-            }
-        }
+        do_mode1_vblank();
         break;
+    }
+}
+
+void Ppu::do_mode2_oam_scan() {
+    if (m_clock_count >= DURATION_OAM_SEARCH) {
+        m_logger->debug("PPU2: cycle {}, LY {}, mode {}->{}", m_clock_count,
+                        m_registers.get_register_value(PpuRegisters::Register::LyRegister),
+                        static_cast<int>(m_registers.get_mode()),
+                        static_cast<int>(PpuMode::PixelTransfer_3));
+
+        m_clock_count = m_clock_count % DURATION_OAM_SEARCH;
+        m_registers.set_mode(PpuMode::PixelTransfer_3);
+    }
+}
+
+void Ppu::do_mode3_pixel_transfer() {
+    if (m_clock_count >= DURATION_PIXEL_TRANSFER) {
+        m_logger->debug("PPU3: cycle {}, LY {}, mode {}->{}", m_clock_count,
+                        m_registers.get_register_value(PpuRegisters::Register::LyRegister),
+                        static_cast<int>(m_registers.get_mode()),
+                        static_cast<int>(PpuMode::HBlank_0));
+
+        m_clock_count = m_clock_count % DURATION_PIXEL_TRANSFER;
+
+        if (m_registers.is_stat_interrupt_enabled(PpuRegisters::StatInterruptSource::HBlank)) {
+            m_emulator->get_interrupt_handler()->request_interrupt(
+                InterruptHandler::InterruptType::LcdStat);
+        }
+
+        auto ly_equals_lyc
+            = m_registers.get_register_value(PpuRegisters::Register::LyRegister)
+              == m_registers.get_register_value(PpuRegisters::Register::LycRegister);
+        if (m_registers.is_stat_interrupt_enabled(
+                PpuRegisters::StatInterruptSource::LycEqualsLy)
+            && ly_equals_lyc) {
+            m_emulator->get_interrupt_handler()->request_interrupt(
+                InterruptHandler::InterruptType::LcdStat);
+        }
+        m_registers.set_register_bit(PpuRegisters::Register::StatRegister,
+                                     static_cast<int>(PpuRegisters::LcdStatBits::LycEqualsLy),
+                                     static_cast<int>(ly_equals_lyc));
+        m_registers.set_mode(PpuMode::HBlank_0);
+    }
+}
+
+void Ppu::do_mode0_hblank() {
+    if (m_clock_count >= DURATION_H_BLANK) {
+
+        write_scanline();
+        m_registers.increment_register(PpuRegisters::Register::LyRegister);
+
+        m_clock_count = m_clock_count % DURATION_H_BLANK;
+
+        PpuMode new_mode{};
+        // If we are on the last visible line we enter the vblank mode
+        if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 144) {
+            new_mode = PpuMode::VBlank_1;
+            m_registers.set_mode(new_mode);
+            m_emulator->get_interrupt_handler()->request_interrupt(
+                InterruptHandler::InterruptType::VBlank);
+        } else {
+            new_mode = PpuMode::OamScan_2;
+            m_registers.set_mode(new_mode);
+        }
+
+        m_logger->debug("PPU0: cycle {}, LY {}, mode {}->{}", m_clock_count,
+                        m_registers.get_register_value(PpuRegisters::Register::LyRegister),
+                        static_cast<int>(m_registers.get_mode()), static_cast<int>(new_mode));
+    }
+}
+
+void Ppu::do_mode1_vblank() {
+    if (m_clock_count >= DURATION_SCANLINE) {
+        // Vblank duration is 10 scanlines
+        m_registers.increment_register(PpuRegisters::Register::LyRegister);
+        auto ly_equals_lyc = m_registers.get_register_value(PpuRegisters::Register::LyRegister)
+                             == m_registers.get_register_value(PpuRegisters::Register::LycRegister);
+        if (m_registers.is_stat_interrupt_enabled(PpuRegisters::StatInterruptSource::LycEqualsLy)
+            && ly_equals_lyc) {
+            m_emulator->get_interrupt_handler()->request_interrupt(
+                InterruptHandler::InterruptType::LcdStat);
+        }
+        m_registers.set_register_bit(PpuRegisters::Register::StatRegister,
+                                     static_cast<int>(PpuRegisters::LcdStatBits::LycEqualsLy),
+                                     static_cast<int>(ly_equals_lyc));
+        m_logger->debug("PPU1: cycle {}, LY {}, mode {}", m_clock_count,
+                        m_registers.get_register_value(PpuRegisters::Register::LyRegister),
+                        static_cast<int>(m_registers.get_mode()));
+        m_clock_count = m_clock_count % DURATION_SCANLINE;
+
+        if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 154) {
+            draw_sprites();
+
+            // Also render the debug framebuffer. The normal background rendering only renders
+            // 144 lines.
+            auto options = m_emulator->get_options();
+            if (options.draw_debug_background) {
+                draw_background_debug();
+            }
+            if (options.draw_debug_window) {
+                draw_window_debug();
+            }
+            if (options.draw_debug_tiles) {
+                draw_vram_debug();
+            }
+            if (options.draw_debug_sprites) {
+                draw_sprites_debug();
+            }
+            m_emulator->draw();
+            m_game_framebuffer.reset();
+
+            m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
+            m_logger->debug("PPU1: cycle {}, LY {}, mode {}->{}", m_clock_count,
+                            m_registers.get_register_value(PpuRegisters::Register::LyRegister),
+                            static_cast<int>(m_registers.get_mode()),
+                            static_cast<int>(PpuMode::OamScan_2));
+            m_registers.set_mode(PpuMode::OamScan_2);
+        }
     }
 }
 

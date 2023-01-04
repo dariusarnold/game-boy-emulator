@@ -62,6 +62,7 @@ class Ppu {
                 constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>
         m_tiledata_block2;
     OamDmaTransfer m_oam_dma_transfer;
+    uint8_t m_stat_interrupt_line = 0;
 
     void write_scanline();
     void write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
@@ -83,6 +84,8 @@ class Ppu {
     // Get one background or window tile from vram using tile coordinates (of 32x32)
     std::span<uint8_t, constants::BYTES_PER_TILE>
     get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_y);
+
+    void set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource position, uint8_t value);
 
     void start_oam_dma_transfer();
 

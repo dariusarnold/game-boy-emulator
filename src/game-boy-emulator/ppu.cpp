@@ -109,6 +109,15 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
         do_mode1_vblank();
         break;
     }
+
+    // Update LYC coincidence flag in LCDSTAT register.
+    auto ly_equals_lyc = m_registers.get_register_value(PpuRegisters::Register::LyRegister)
+                         == m_registers.get_register_value(PpuRegisters::Register::LycRegister);
+    m_registers.set_register_bit(PpuRegisters::Register::StatRegister,
+                                 static_cast<int>(PpuRegisters::LcdStatBits::LycEqualsLy),
+                                 static_cast<int>(ly_equals_lyc));
+    set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::LycEqualsLy,
+                                static_cast<uint8_t>(ly_equals_lyc));
 }
 
 void Ppu::do_mode2_oam_scan() {
@@ -119,6 +128,7 @@ void Ppu::do_mode2_oam_scan() {
                         static_cast<int>(PpuMode::PixelTransfer_3));
 
         m_clock_count = m_clock_count % DURATION_OAM_SEARCH;
+        set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::Oam, 0);
         m_registers.set_mode(PpuMode::PixelTransfer_3);
     }
 }
@@ -137,25 +147,14 @@ void Ppu::do_mode3_pixel_transfer() {
                 InterruptHandler::InterruptType::LcdStat);
         }
 
-        auto ly_equals_lyc
-            = m_registers.get_register_value(PpuRegisters::Register::LyRegister)
-              == m_registers.get_register_value(PpuRegisters::Register::LycRegister);
-        if (m_registers.is_stat_interrupt_enabled(
-                PpuRegisters::StatInterruptSource::LycEqualsLy)
-            && ly_equals_lyc) {
-            m_emulator->get_interrupt_handler()->request_interrupt(
-                InterruptHandler::InterruptType::LcdStat);
-        }
-        m_registers.set_register_bit(PpuRegisters::Register::StatRegister,
-                                     static_cast<int>(PpuRegisters::LcdStatBits::LycEqualsLy),
-                                     static_cast<int>(ly_equals_lyc));
         m_registers.set_mode(PpuMode::HBlank_0);
+        set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::HBlank, 1);
     }
 }
 
 void Ppu::do_mode0_hblank() {
     if (m_clock_count >= DURATION_H_BLANK) {
-
+        set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::HBlank, 0);
         write_scanline();
         m_registers.increment_register(PpuRegisters::Register::LyRegister);
 
@@ -168,7 +167,9 @@ void Ppu::do_mode0_hblank() {
             m_registers.set_mode(new_mode);
             m_emulator->get_interrupt_handler()->request_interrupt(
                 InterruptHandler::InterruptType::VBlank);
+            set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::VBlank, 1);
         } else {
+            set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::Oam, 1);
             new_mode = PpuMode::OamScan_2;
             m_registers.set_mode(new_mode);
         }
@@ -183,24 +184,14 @@ void Ppu::do_mode1_vblank() {
     if (m_clock_count >= DURATION_SCANLINE) {
         // Vblank duration is 10 scanlines
         m_registers.increment_register(PpuRegisters::Register::LyRegister);
-        auto ly_equals_lyc = m_registers.get_register_value(PpuRegisters::Register::LyRegister)
-                             == m_registers.get_register_value(PpuRegisters::Register::LycRegister);
-        if (m_registers.is_stat_interrupt_enabled(PpuRegisters::StatInterruptSource::LycEqualsLy)
-            && ly_equals_lyc) {
-            m_emulator->get_interrupt_handler()->request_interrupt(
-                InterruptHandler::InterruptType::LcdStat);
-        }
-        m_registers.set_register_bit(PpuRegisters::Register::StatRegister,
-                                     static_cast<int>(PpuRegisters::LcdStatBits::LycEqualsLy),
-                                     static_cast<int>(ly_equals_lyc));
         m_logger->debug("PPU1: cycle {}, LY {}, mode {}", m_clock_count,
                         m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                         static_cast<int>(m_registers.get_mode()));
         m_clock_count = m_clock_count % DURATION_SCANLINE;
 
         if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 154) {
+            // TODO The drawing should be done when entering VBlank, not when leaving it
             draw_sprites();
-
             // Also render the debug framebuffer. The normal background rendering only renders
             // 144 lines.
             auto options = m_emulator->get_options();
@@ -218,15 +209,31 @@ void Ppu::do_mode1_vblank() {
             }
             m_emulator->draw();
             m_game_framebuffer.reset();
-
             m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
             m_logger->debug("PPU1: cycle {}, LY {}, mode {}->{}", m_clock_count,
                             m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                             static_cast<int>(m_registers.get_mode()),
                             static_cast<int>(PpuMode::OamScan_2));
             m_registers.set_mode(PpuMode::OamScan_2);
+            set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::VBlank, 0);
+            set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::Oam, 1);
         }
     }
+}
+
+void Ppu::set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource position, uint8_t value) {
+    if (!m_registers.is_stat_interrupt_enabled(position)) {
+        // Don't change the value when the STAT interrupt source is disabled
+        return;
+    }
+    // The STAT interrupt sources (mode 0-2 and LYC=LY) have their state logically ORed into a
+    // shared interrupt line if their enable bit is on. A STAT interrupt will be triggered by a
+    // rising edge.
+    if (m_stat_interrupt_line == 0 && value == 1) {
+        m_emulator->get_interrupt_handler()->request_interrupt(
+            InterruptHandler::InterruptType::LcdStat);
+    }
+    bitmanip::set_bit(m_stat_interrupt_line, static_cast<uint8_t>(position), value);
 }
 
 std::span<uint8_t, constants::BYTES_PER_TILE> Ppu::get_tile(uint8_t tile_index) {

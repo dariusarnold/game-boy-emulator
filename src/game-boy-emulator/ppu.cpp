@@ -24,7 +24,10 @@ Ppu::Ppu(Emulator* emulator) :
         // 16*8 sprites, each 8x8 pixels
         m_tiledata_block0(),
         m_tiledata_block1(),
-        m_tiledata_block2() {}
+        m_tiledata_block2(),
+        m_oam_dma_transfer(emulator->get_bus(), std::span<uint8_t, constants::OAM_DMA_NUM_BYTES>{
+                                                    reinterpret_cast<uint8_t*>(m_oam_ram.data()),
+                                                    constants::OAM_DMA_NUM_BYTES}) {}
 
 
 uint8_t Ppu::read_byte(uint16_t address) {
@@ -94,16 +97,9 @@ const int DURATION_SCANLINE = DURATION_OAM_SEARCH + DURATION_PIXEL_TRANSFER + DU
 
 void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
     if (m_registers.was_oam_transfer_requested()) {
-        m_registers.clear_oam_transfer_request();
-        auto high_byte_address
-            = m_registers.get_register_value(PpuRegisters::Register::DmaTransfer);
-        auto start_address = bitmanip::word_from_bytes(high_byte_address, 0);
-        m_logger->debug("OAM DMA transfer from {:04X}", start_address);
-        for (int i = 0; i < memmap::OamRamSize; ++i) {
-            auto x = m_emulator->get_bus()->read_byte(start_address + i);
-            reinterpret_cast<uint8_t*>(m_oam_ram.data())[i] = x;
-        }
+        start_oam_dma_transfer();
     }
+    m_oam_dma_transfer.callback_cycle();
 
     (void)cycles_m_num;
     auto mode = m_registers.get_mode();
@@ -539,4 +535,12 @@ std::span<uint8_t, 16> Ppu::get_tile(unsigned int block, unsigned int index_in_b
     auto start = index_in_block * 16 + block * 128 * 16;
     auto end = start + 16;
     return std::span<uint8_t, 16>{m_tile_data.data() + start, m_tile_data.data() + end};
+}
+
+void Ppu::start_oam_dma_transfer() {
+    m_registers.clear_oam_transfer_request();
+    auto high_byte_address = m_registers.get_register_value(PpuRegisters::Register::DmaTransfer);
+    auto start_address = m_oam_dma_transfer.get_dma_start_address(high_byte_address);
+    m_oam_dma_transfer.start_transfer(start_address);
+    m_logger->debug("OAM DMA transfer from {:04X}", start_address);
 }

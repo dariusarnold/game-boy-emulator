@@ -4,6 +4,7 @@
 #include "ppu_registers.hpp"
 #include "constants.h"
 #include "framebuffer.hpp"
+#include "dmatransfer.hpp"
 class Emulator;
 namespace spdlog {
 class logger;
@@ -34,18 +35,6 @@ class Ppu {
     std::shared_ptr<spdlog::logger> m_logger;
     Emulator* m_emulator;
     int m_clock_count = 0;
-
-    void write_scanline();
-    void write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
-                                   constants::SCREEN_RES_HEIGHT>& framebuffer);
-    void draw_sprites();
-    void draw_sprites_debug();
-    void draw_window_line();
-    void draw_background_line();
-    void draw_background_debug();
-    void draw_window_debug();
-    void draw_vram_debug();
-
     // Framebuffer for the game
     Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
                 constants::SCREEN_RES_HEIGHT>
@@ -72,6 +61,18 @@ class Ppu {
                 constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
                 constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>
         m_tiledata_block2;
+    OamDmaTransfer m_oam_dma_transfer;
+
+    void write_scanline();
+    void write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
+                                   constants::SCREEN_RES_HEIGHT>& framebuffer);
+    void draw_sprites();
+    void draw_sprites_debug();
+    void draw_window_line();
+    void draw_background_line();
+    void draw_background_debug();
+    void draw_window_debug();
+    void draw_vram_debug();
 
     std::span<uint8_t, 16> get_sprite_tile(uint8_t tile_index);
     std::span<uint8_t, 16> get_tile(unsigned block, unsigned index_in_block);
@@ -82,6 +83,8 @@ class Ppu {
     // Get one background or window tile from vram using tile coordinates (of 32x32)
     std::span<uint8_t, constants::BYTES_PER_TILE>
     get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_y);
+
+    void start_oam_dma_transfer();
 
 public:
     explicit Ppu(Emulator* emulator);

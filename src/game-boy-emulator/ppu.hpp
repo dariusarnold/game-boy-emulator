@@ -67,10 +67,10 @@ class Ppu {
     void write_scanline();
     void write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
                                    constants::SCREEN_RES_HEIGHT>& framebuffer);
-    void draw_sprites();
-    void draw_sprites_debug();
     void draw_window_line();
     void draw_background_line();
+    void draw_sprites_line();
+    void draw_sprites_debug();
     void draw_background_debug();
     void draw_window_debug();
     void draw_vram_debug();
@@ -93,6 +93,9 @@ class Ppu {
     void do_mode3_pixel_transfer();
     void do_mode0_hblank();
     void do_mode1_vblank();
+
+    // Get up to 10 sprites visible in this line
+    std::vector<OamEntry> get_visible_sprites(uint8_t screen_y) const;
 
 public:
     explicit Ppu(Emulator* emulator);

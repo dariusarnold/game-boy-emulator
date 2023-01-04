@@ -165,6 +165,21 @@ void Ppu::do_mode0_hblank() {
         if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 144) {
             new_mode = PpuMode::VBlank_1;
             m_registers.set_mode(new_mode);
+            auto options = m_emulator->get_options();
+            if (options.draw_debug_background) {
+                draw_background_debug();
+            }
+            if (options.draw_debug_window) {
+                draw_window_debug();
+            }
+            if (options.draw_debug_tiles) {
+                draw_vram_debug();
+            }
+            if (options.draw_debug_sprites) {
+                draw_sprites_debug();
+            }
+            m_emulator->draw();
+            m_game_framebuffer.reset();
             m_emulator->get_interrupt_handler()->request_interrupt(
                 InterruptHandler::InterruptType::VBlank);
             set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::VBlank, 1);
@@ -190,25 +205,6 @@ void Ppu::do_mode1_vblank() {
         m_clock_count = m_clock_count % DURATION_SCANLINE;
 
         if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 154) {
-            // TODO The drawing should be done when entering VBlank, not when leaving it
-            draw_sprites();
-            // Also render the debug framebuffer. The normal background rendering only renders
-            // 144 lines.
-            auto options = m_emulator->get_options();
-            if (options.draw_debug_background) {
-                draw_background_debug();
-            }
-            if (options.draw_debug_window) {
-                draw_window_debug();
-            }
-            if (options.draw_debug_tiles) {
-                draw_vram_debug();
-            }
-            if (options.draw_debug_sprites) {
-                draw_sprites_debug();
-            }
-            m_emulator->draw();
-            m_game_framebuffer.reset();
             m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
             m_logger->debug("PPU1: cycle {}, LY {}, mode {}->{}", m_clock_count,
                             m_registers.get_register_value(PpuRegisters::Register::LyRegister),
@@ -289,6 +285,7 @@ void Ppu::write_scanline() {
     if (m_registers.is_window_enabled()) {
         draw_window_line();
     }
+    draw_sprites_line();
 }
 
 namespace {
@@ -305,13 +302,6 @@ bool bg_window_over_sprite(const OamEntry& oam_entry) {
     return bitmanip::is_bit_set(oam_entry.m_flags, 7);
 }
 } // namespace
-
-void Ppu::draw_sprites() {
-    if (!m_registers.is_sprites_enabled()) {
-        return;
-    }
-    write_sprites(m_game_framebuffer);
-}
 
 void Ppu::draw_sprites_debug() {
     m_sprites_framebuffer.reset(graphics::gb::ColorScreen::White);
@@ -382,6 +372,83 @@ void Ppu::write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN
                 }
                 framebuffer.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y), screen_color);
             }
+        }
+    }
+}
+
+void Ppu::draw_sprites_line() {
+    if (!m_registers.is_sprites_enabled()) {
+        return;
+    }
+
+    if (m_registers.get_sprite_height() == 16) {
+        throw LogicError("Tall sprites not supported");
+    }
+
+    const auto screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
+    const auto visible_sprites = get_visible_sprites(screen_y);
+    for (const auto& oam_entry : visible_sprites) {
+        // Skip offscreen sprites
+        if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
+            || oam_entry.m_x_position == 0 || oam_entry.m_x_position >= 168) {
+            continue;
+        }
+
+        auto sprite_data = get_sprite_tile(oam_entry.m_tile_index);
+        auto tile = graphics::gb::tile_to_gb_color(sprite_data);
+        auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
+        auto palette = m_registers.get_obj0_palette();
+        if (palette_bit) {
+            palette = m_registers.get_obj1_palette();
+        }
+
+        auto calculate_pixel_index = [&](size_t x, size_t y) {
+            const static graphics::gb::TileIndexMirrorBothAxes tim(8, 8);
+            const static graphics::gb::TileIndexMirrorHorizontal tih(8, 8);
+            const static graphics::gb::TileIndexMirrorVertical tiv(8, 8);
+            const static graphics::gb::TileIndex ti(8, 8);
+            if (should_mirror_horizontally(oam_entry) && should_mirror_vertically(oam_entry)) {
+                return tim.pixel_index(x, y);
+            }
+            if (should_mirror_horizontally(oam_entry)) {
+                return tih.pixel_index(x, y);
+            }
+            if (should_mirror_vertically(oam_entry)) {
+                return tiv.pixel_index(x, y);
+            }
+            return ti.pixel_index(x, y);
+        };
+
+        // TODO Drawing priority should be: For identical X coordinates, the object located first in
+        // OAM has higher priority and should be drawn over later objects.
+        const unsigned sprite_y = screen_y % 8;
+        for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
+            auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
+            auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
+            if (x < 0 || y < 0 || x >= static_cast<int>(m_game_framebuffer.width())
+                || y >= static_cast<int>(m_game_framebuffer.height())) {
+                // This pixel of the sprite is hidden
+                continue;
+            }
+            auto pixel_index = calculate_pixel_index(sprite_x, sprite_y);
+            auto pixel_color = tile[pixel_index];
+            if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
+                // Color 0 is transparent for sprites, so those pixels are not drawn.
+                continue;
+            }
+
+            auto gb_color = palette[magic_enum::enum_integer(pixel_color)];
+            auto screen_color = graphics::gb::to_screen_color(gb_color);
+            // TODO The existing color was already mapped by the background palette at this point.
+            // For this comparison the unmapped color should be used.
+            auto existing_color
+                = m_game_framebuffer.get_pixel(static_cast<size_t>(x), static_cast<size_t>(y));
+            if (bg_window_over_sprite(oam_entry)
+                && existing_color != graphics::gb::ColorScreen::White) {
+                continue;
+            }
+            m_game_framebuffer.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y),
+                                         screen_color);
         }
     }
 }
@@ -567,4 +634,18 @@ void Ppu::start_oam_dma_transfer() {
     auto start_address = m_oam_dma_transfer.get_dma_start_address(high_byte_address);
     m_oam_dma_transfer.start_transfer(start_address);
     m_logger->debug("OAM DMA transfer from {:04X}", start_address);
+}
+
+std::vector<OamEntry> Ppu::get_visible_sprites(uint8_t screen_y) const {
+    std::vector<OamEntry> out;
+    for (const auto& oam_entry : m_oam_ram) {
+        if (oam_entry.m_x_position != 0 && screen_y + 16 >= oam_entry.m_y_position
+            && screen_y + 16 < oam_entry.m_y_position + m_registers.get_sprite_height()) {
+            out.push_back(oam_entry);
+        }
+        if (out.size() == 10) {
+            break;
+        }
+    }
+    return out;
 }

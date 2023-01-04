@@ -3,30 +3,30 @@
 #include "framebuffer.hpp"
 
 TEST_CASE("X/Y index access") {
-    Framebuffer<int> i{4, 3};
+    Framebuffer<int, 4, 3> fb{};
     auto c = 0xFF00FF00;
-    i.set_pixel(1, 2, c);
-    auto d = i.get_pixel(1, 2);
+    fb.set_pixel(1, 2, c);
+    auto d = fb.get_pixel(1, 2);
     CHECK(c == d);
 }
 
 TEST_CASE("pixel index access") {
-    Framebuffer<int> i{4, 3};
+    Framebuffer<int, 4, 3> fb{};
     auto c = 0xFF00FF00;
-    i.set_pixel(7, c);
-    auto d = i.get_pixel(7);
+    fb.set_pixel(7, c);
+    auto d = fb.get_pixel(7);
     CHECK(c == d);
 }
 
 TEST_CASE("Info getters") {
-    Framebuffer<int> i{4, 3};
-    CHECK(i.size() == 12);
-    CHECK(i.width() == 4);
-    CHECK(i.height() == 3);
+    Framebuffer<int, 4, 3> fb{};
+    CHECK(fb.size() == 12);
+    CHECK(fb.width() == 4);
+    CHECK(fb.height() == 3);
 }
 
 TEST_CASE("Wrapped pixel access") {
-    Framebuffer<int> fb{4, 3};
+    Framebuffer<int, 4, 3> fb{};
     // Fill pixels ascending, buffer will look like this:
     // 00 01 02 03
     // 04 05 06 07

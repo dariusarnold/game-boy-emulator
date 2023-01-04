@@ -177,7 +177,7 @@ TEST_CASE("Vertically and horizontally mirrored tile index") {
 }
 
 TEST_CASE("Using mirrored TileIndex to access Framebuffer") {
-    Framebuffer<int> fb(2, 2);
+    Framebuffer<int, 2, 2> fb;
     // Fill with
     // 1 2
     // 3 4

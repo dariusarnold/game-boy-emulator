@@ -55,6 +55,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/framebuffer.hpp
         game-boy-emulator/memorymappedfile.cpp
         game-boy-emulator/memorymappedfile.hpp
+        game-boy-emulator/dmatransfer.cpp
+        game-boy-emulator/dmatransfer.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

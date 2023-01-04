@@ -31,6 +31,8 @@ constexpr size_t BACKGROUND_SIZE_PIXELS = 256;
 constexpr int SPRITE_VIEWER_WIDTH = 16;
 constexpr int SPRITE_VIEWER_HEIGHT = 8;
 
+constexpr int OAM_DMA_NUM_BYTES = 160;
+
 } // namespace constants
 
 

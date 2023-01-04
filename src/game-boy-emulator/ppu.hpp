@@ -95,8 +95,6 @@ public:
 
     void cycle_elapsed_callback(size_t cycles_m_num);
 
-    std::span<uint8_t, memmap::TileDataSize> get_vram_tile_data();
-
     const auto& get_game() {
         return m_game_framebuffer;
     }

@@ -19,12 +19,7 @@ Ppu::Ppu(Emulator* emulator) :
         m_emulator(emulator),
         m_game_framebuffer(graphics::gb::ColorScreen::White),
         m_background_framebuffer(graphics::gb::ColorScreen::White),
-        m_sprites_framebuffer(),
         m_window_framebuffer(graphics::gb::ColorScreen::White),
-        // 16*8 sprites, each 8x8 pixels
-        m_tiledata_block0(),
-        m_tiledata_block1(),
-        m_tiledata_block2(),
         m_oam_dma_transfer(emulator->get_bus(), std::span<uint8_t, constants::OAM_DMA_NUM_BYTES>{
                                                     reinterpret_cast<uint8_t*>(m_oam_ram.data()),
                                                     constants::OAM_DMA_NUM_BYTES}) {}
@@ -80,10 +75,6 @@ void Ppu::write_byte(uint16_t address, uint8_t value) {
     } else {
         m_logger->error("PPU: unhandled write to {:04X}", address);
     }
-}
-
-std::span<uint8_t, memmap::TileDataSize> Ppu::get_vram_tile_data() {
-    return {m_tile_data};
 }
 
 namespace {

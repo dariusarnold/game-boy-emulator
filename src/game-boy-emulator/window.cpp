@@ -373,6 +373,9 @@ void Window::draw_menubar() {
                     m_emulator.get_state().new_rom_file_path = p;
                 }
             }
+            if (ImGui::MenuItem("Quit")) {
+                m_done = true;
+            }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Settings")) {

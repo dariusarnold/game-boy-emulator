@@ -175,11 +175,9 @@ void Ppu::do_mode0_hblank() {
             if (options.draw_debug_tiles) {
                 draw_vram_debug();
             }
-            if (options.draw_debug_sprites) {
-                draw_sprites_debug();
-            }
             m_emulator->draw();
             m_game_framebuffer.reset();
+            m_sprites_framebuffer.reset(graphics::gb::ColorScreen::TrueWhite);
             m_emulator->get_interrupt_handler()->request_interrupt(
                 InterruptHandler::InterruptType::VBlank);
             set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::VBlank, 1);
@@ -304,75 +302,6 @@ bool bg_window_over_sprite(const OamEntry& oam_entry) {
 }
 } // namespace
 
-void Ppu::draw_sprites_debug() {
-    m_sprites_framebuffer.reset(graphics::gb::ColorScreen::White);
-    write_sprites(m_sprites_framebuffer);
-}
-
-void Ppu::write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
-                                    constants::SCREEN_RES_HEIGHT>& framebuffer) {
-    for (const auto& oam_entry : m_oam_ram) {
-        // Skip offscreen sprites
-        if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
-            || oam_entry.m_x_position == 0 || oam_entry.m_x_position >= 168) {
-            continue;
-        }
-
-        auto sprite_data = get_sprite_tile(oam_entry.m_tile_index);
-        auto tile = graphics::gb::tile_to_gb_color(sprite_data);
-        auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
-        auto palette = m_registers.get_obj0_palette();
-        if (palette_bit) {
-            palette = m_registers.get_obj1_palette();
-        }
-
-        auto calculate_pixel_index = [&](size_t x, size_t y) {
-            const static graphics::gb::TileIndexMirrorBothAxes tim(8, 8);
-            const static graphics::gb::TileIndexMirrorHorizontal tih(8, 8);
-            const static graphics::gb::TileIndexMirrorVertical tiv(8, 8);
-            const static graphics::gb::TileIndex ti(8, 8);
-            if (should_mirror_horizontally(oam_entry) && should_mirror_vertically(oam_entry)) {
-                return tim.pixel_index(x, y);
-            }
-            if (should_mirror_horizontally(oam_entry)) {
-                return tih.pixel_index(x, y);
-            }
-            if (should_mirror_vertically(oam_entry)) {
-                return tiv.pixel_index(x, y);
-            }
-            return ti.pixel_index(x, y);
-        };
-
-        for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
-            for (unsigned sprite_y = 0; sprite_y < 8; ++sprite_y) {
-                auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
-                auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
-                if (x < 0 || y < 0 || x >= static_cast<int>(framebuffer.width())
-                    || y >= static_cast<int>(framebuffer.height())) {
-                    // This pixel of the sprite is hidden
-                    continue;
-                }
-                auto pixel_index = calculate_pixel_index(sprite_x, sprite_y);
-                auto pixel_color = tile[pixel_index];
-                if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
-                    // Color 0 is transparent for sprites, so those pixels are not drawn.
-                    continue;
-                }
-
-                auto gb_color = palette[magic_enum::enum_integer(pixel_color)];
-                auto screen_color = graphics::gb::to_screen_color(gb_color);
-                auto existing_color
-                    = m_game_framebuffer.get_pixel(static_cast<size_t>(x), static_cast<size_t>(y));
-                if (bg_window_over_sprite(oam_entry)
-                    && existing_color != graphics::gb::ColorScreen::White) {
-                    continue;
-                }
-                framebuffer.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y), screen_color);
-            }
-        }
-    }
-}
-
 void Ppu::draw_sprites_line() {
     if (!m_registers.is_sprites_enabled()) {
         return;
@@ -382,6 +311,7 @@ void Ppu::draw_sprites_line() {
     const auto visible_sprites = get_visible_sprites(screen_y);
     const auto obj_palette_0 = m_registers.get_obj0_palette();
     const auto obj_palette_1 = m_registers.get_obj1_palette();
+    const auto debug = m_emulator->get_options().draw_debug_sprites;
 
     for (const auto& oam_entry : visible_sprites) {
         // Skip offscreen sprites
@@ -443,6 +373,10 @@ void Ppu::draw_sprites_line() {
             }
             m_game_framebuffer.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y),
                                          screen_color);
+            if (debug) {
+                m_sprites_framebuffer.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y),
+                                                screen_color);
+            }
         }
     }
 }
@@ -456,6 +390,7 @@ void Ppu::draw_tall_sprites_line() {
     const auto visible_sprites = get_visible_sprites(screen_y);
     const auto obj_palette_0 = m_registers.get_obj0_palette();
     const auto obj_palette_1 = m_registers.get_obj1_palette();
+    const auto debug = m_emulator->get_options().draw_debug_sprites;
 
     for (const auto& oam_entry : visible_sprites) {
         // Skip sprites which are completly offscreen
@@ -520,6 +455,10 @@ void Ppu::draw_tall_sprites_line() {
             }
             m_game_framebuffer.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y),
                                          screen_color);
+            if (debug) {
+                m_sprites_framebuffer.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y),
+                                                screen_color);
+            }
         }
     }
 }

@@ -63,6 +63,7 @@ class Ppu {
         m_tiledata_block2;
     OamDmaTransfer m_oam_dma_transfer;
     uint8_t m_stat_interrupt_line = 0;
+    uint8_t m_window_internal_line_counter = 0;
 
     void write_scanline();
     void write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,

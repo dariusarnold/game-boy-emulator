@@ -206,6 +206,7 @@ void Ppu::do_mode1_vblank() {
 
         if (m_registers.get_register_value(PpuRegisters::Register::LyRegister) == 154) {
             m_registers.set_register_value(PpuRegisters::Register::LyRegister, 0);
+            m_window_internal_line_counter = 0;
             m_logger->debug("PPU1: cycle {}, LY {}, mode {}->{}", m_clock_count,
                             m_registers.get_register_value(PpuRegisters::Register::LyRegister),
                             static_cast<int>(m_registers.get_mode()),
@@ -555,7 +556,7 @@ void Ppu::draw_window_line() {
     for (unsigned screen_x = wx - 7; screen_x < constants::SCREEN_RES_WIDTH; ++screen_x) {
         // Index of tile in map
         auto tile_map_x = (screen_x - wx + 7) / constants::PIXELS_PER_TILE;
-        auto tile_map_y = scrolled_y / constants::PIXELS_PER_TILE;
+        auto tile_map_y = m_window_internal_line_counter / constants::PIXELS_PER_TILE;
         auto tile = get_tile_from_map(TileType::Window, tile_map_x, tile_map_y);
         // Index of the pixel in the tile
         auto tile_pixel_x = screen_x % constants::PIXELS_PER_TILE;
@@ -567,6 +568,9 @@ void Ppu::draw_window_line() {
         auto screencolor = graphics::gb::to_screen_color(color);
         m_game_framebuffer.set_pixel(screen_x, screen_y, screencolor);
     }
+
+    // Increment internal window line counter on lines where the window is visible
+    m_window_internal_line_counter++;
 }
 
 void Ppu::draw_background_line() {

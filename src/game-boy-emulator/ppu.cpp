@@ -319,8 +319,9 @@ void Ppu::draw_sprites_line() {
     // coordinates, the object located first in OAM has the higher priority.
     // Initially visible_sprites is ordered by OAM order. Sort by x coordinate but use stable_sort
     // to keep the relative order from OAM for the same x coordinates.
-    std::stable_sort(visible_sprites.begin(), visible_sprites.end(),
-              [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
+    std::stable_sort(
+        visible_sprites.begin(), visible_sprites.end(),
+        [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
     // Reverse order so the objects first in OAM stay (because they have higher priority).
     for (const auto& oam_entry : std::ranges::reverse_view(visible_sprites)) {
         // Skip offscreen sprites
@@ -403,8 +404,9 @@ void Ppu::draw_tall_sprites_line() {
     // coordinates, the object located first in OAM has the higher priority.
     // Initially visible_sprites is ordered by OAM order. Sort by x coordinate but use stable_sort
     // to keep the relative order from OAM for the same x coordinates.
-    std::stable_sort(visible_sprites.begin(), visible_sprites.end(),
-                     [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
+    std::stable_sort(
+        visible_sprites.begin(), visible_sprites.end(),
+        [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
     // Reverse order so the objects first in OAM stay (because they have higher priority).
     for (const auto& oam_entry : std::ranges::reverse_view(visible_sprites)) {
         // Skip sprites which are completly offscreen
@@ -565,12 +567,6 @@ void Ppu::draw_background_line() {
         auto screen_color = graphics::gb::to_screen_color(color_gb);
         m_game_framebuffer.set_pixel(screen_x, screen_y, screen_color);
     }
-}
-
-std::pair<uint8_t, uint8_t> Ppu::get_viewport_position() const {
-    auto x = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
-    auto y = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
-    return {x, y};
 }
 
 std::span<uint8_t, constants::BYTES_PER_TILE> Ppu::get_sprite_tile(uint8_t tile_index) {

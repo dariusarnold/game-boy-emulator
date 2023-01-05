@@ -66,13 +66,10 @@ class Ppu {
     uint8_t m_window_internal_line_counter = 0;
 
     void write_scanline();
-    void write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
-                                   constants::SCREEN_RES_HEIGHT>& framebuffer);
     void draw_window_line();
     void draw_background_line();
     void draw_sprites_line();
     void draw_tall_sprites_line();
-    void draw_sprites_debug();
     void draw_background_debug();
     void draw_window_debug();
     void draw_vram_debug();
@@ -127,6 +124,4 @@ public:
                           constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>*,
         3>
     get_tiledata();
-
-    [[nodiscard]] std::pair<uint8_t, uint8_t> get_viewport_position() const;
 };

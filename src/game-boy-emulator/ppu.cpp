@@ -493,7 +493,6 @@ void Ppu::draw_window_line() {
 
     const auto wx = m_registers.get_register_value(PpuRegisters::Register::WxRegister);
     const auto wy = m_registers.get_register_value(PpuRegisters::Register::WyRegister);
-    unsigned const scrolled_y = screen_y - wy;
 
     // The Window is visible (if enabled) when both coordinates are in the ranges WX=0..166,
     // WY=0..143 respectively.
@@ -502,14 +501,22 @@ void Ppu::draw_window_line() {
         return;
     }
 
-    for (unsigned screen_x = wx - 7; screen_x < constants::SCREEN_RES_WIDTH; ++screen_x) {
+    for (unsigned screen_x = 0; screen_x < static_cast<int>(constants::SCREEN_RES_WIDTH);
+         ++screen_x) {
+        // WX stores the window x coordinate plus 7. Don't draw anything if we are left of the
+        // window.
+        if (screen_x + 7 < static_cast<unsigned>(wx)) {
+            continue;
+        }
+        // X position within the window, e.g. at the left side of the window this will be 0.
+        auto in_window_x = screen_x + 7 - wx;
         // Index of tile in map
-        auto tile_map_x = (screen_x - wx + 7) / constants::PIXELS_PER_TILE;
+        auto tile_map_x = in_window_x / constants::PIXELS_PER_TILE;
         auto tile_map_y = m_window_internal_line_counter / constants::PIXELS_PER_TILE;
         auto tile = get_tile_from_map(TileType::Window, tile_map_x, tile_map_y);
         // Index of the pixel in the tile
-        auto tile_pixel_x = screen_x % constants::PIXELS_PER_TILE;
-        auto tile_pixel_y = scrolled_y % constants::PIXELS_PER_TILE;
+        auto tile_pixel_x = in_window_x % constants::PIXELS_PER_TILE;
+        auto tile_pixel_y = m_window_internal_line_counter % constants::PIXELS_PER_TILE;
         auto tile_line
             = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[tile_pixel_y * 2 + 1]);
         auto color_index = tile_line[tile_pixel_x];

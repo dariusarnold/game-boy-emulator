@@ -70,12 +70,14 @@ class Ppu {
     void draw_window_line();
     void draw_background_line();
     void draw_sprites_line();
+    void draw_tall_sprites_line();
     void draw_sprites_debug();
     void draw_background_debug();
     void draw_window_debug();
     void draw_vram_debug();
 
     std::span<uint8_t, 16> get_sprite_tile(uint8_t tile_index);
+    std::span<uint8_t, 32> get_tall_sprite_tile(uint8_t tile_index);
     std::span<uint8_t, 16> get_tile(unsigned block, unsigned index_in_block);
 
     enum class TileType { Background, Window };

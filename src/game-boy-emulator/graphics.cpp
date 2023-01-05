@@ -66,6 +66,19 @@ std::array<UnmappedColorGb, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_dat
     return out;
 }
 
+std::array<UnmappedColorGb, 128> tile_to_gb_color(std::span<uint8_t, 32> tile_data) {
+    std::array<UnmappedColorGb, 128> out{};
+    for (size_t i = 0; i < 32; i += 2) {
+        // 2 bytes represent one 8 pixel wide row in the tile
+        auto row = graphics::gb::convert_tile_line(tile_data[i], tile_data[i + 1]);
+        for (size_t j = 0; j < row.size(); j++) {
+            auto index = (i / 2) * 8 + j;
+            out[index] = row[j];
+        }
+    }
+    return out;
+}
+
 // std::pair<int, int> tile_data_to_image(std::span<uint8_t> tile_data, Framebuffer& image,
 //                                        size_t image_width_tiles, size_t image_height_tiles) {
 //     // Every tile is 16 bytes
@@ -127,12 +140,11 @@ size_t TileIndexMirrorVertical::pixel_index(size_t x, size_t y) const {
 }
 
 TileIndexMirrorBothAxes::TileIndexMirrorBothAxes(size_t tile_width_pixels,
-                                                               size_t tile_height_pixels) :
+                                                 size_t tile_height_pixels) :
         m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
 
 size_t TileIndexMirrorBothAxes::pixel_index(size_t x, size_t y) const {
     return m_tile_height * m_tile_width - (x + y * m_tile_width) - 1;
-
 }
 
 } // namespace graphics::gb

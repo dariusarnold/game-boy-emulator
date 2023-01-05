@@ -285,7 +285,11 @@ void Ppu::write_scanline() {
     if (m_registers.is_window_enabled()) {
         draw_window_line();
     }
-    draw_sprites_line();
+    if (m_registers.get_sprite_height() == 8) {
+        draw_sprites_line();
+    } else {
+        draw_tall_sprites_line();
+    }
 }
 
 namespace {
@@ -310,10 +314,6 @@ void Ppu::draw_sprites_debug() {
 
 void Ppu::write_sprites(Framebuffer<graphics::gb::ColorScreen, constants::SCREEN_RES_WIDTH,
                                     constants::SCREEN_RES_HEIGHT>& framebuffer) {
-    if (m_registers.get_sprite_height() == 16) {
-        throw LogicError("Tall sprites not supported");
-    }
-
     for (const auto& oam_entry : m_oam_ram) {
         // Skip offscreen sprites
         if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
@@ -381,12 +381,11 @@ void Ppu::draw_sprites_line() {
         return;
     }
 
-    if (m_registers.get_sprite_height() == 16) {
-        throw LogicError("Tall sprites not supported");
-    }
-
     const auto screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
     const auto visible_sprites = get_visible_sprites(screen_y);
+    const auto obj_palette_0 = m_registers.get_obj0_palette();
+    const auto obj_palette_1 = m_registers.get_obj1_palette();
+
     for (const auto& oam_entry : visible_sprites) {
         // Skip offscreen sprites
         if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
@@ -397,10 +396,7 @@ void Ppu::draw_sprites_line() {
         auto sprite_data = get_sprite_tile(oam_entry.m_tile_index);
         auto tile = graphics::gb::tile_to_gb_color(sprite_data);
         auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
-        auto palette = m_registers.get_obj0_palette();
-        if (palette_bit) {
-            palette = m_registers.get_obj1_palette();
-        }
+        auto palette = palette_bit ? obj_palette_1 : obj_palette_0;
 
         auto calculate_pixel_index = [&](size_t x, size_t y) {
             const static graphics::gb::TileIndexMirrorBothAxes tim(8, 8);
@@ -421,7 +417,8 @@ void Ppu::draw_sprites_line() {
 
         // TODO Drawing priority should be: For identical X coordinates, the object located first in
         // OAM has higher priority and should be drawn over later objects.
-        const unsigned sprite_y = screen_y % 8;
+        // Y position in sprite (0...15)
+        const auto sprite_y = screen_y - (oam_entry.m_y_position - 16);
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
             auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
             auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
@@ -430,7 +427,84 @@ void Ppu::draw_sprites_line() {
                 // This pixel of the sprite is hidden
                 continue;
             }
-            auto pixel_index = calculate_pixel_index(sprite_x, sprite_y);
+            auto pixel_index = calculate_pixel_index(sprite_x, static_cast<size_t>(sprite_y));
+            auto pixel_color = tile[pixel_index];
+            if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
+                // Color 0 is transparent for sprites, so those pixels are not drawn.
+                continue;
+            }
+
+            auto gb_color = palette[magic_enum::enum_integer(pixel_color)];
+            auto screen_color = graphics::gb::to_screen_color(gb_color);
+            // TODO The existing color was already mapped by the background palette at this point.
+            // For this comparison the unmapped color should be used.
+            auto existing_color
+                = m_game_framebuffer.get_pixel(static_cast<size_t>(x), static_cast<size_t>(y));
+            if (bg_window_over_sprite(oam_entry)
+                && existing_color != graphics::gb::ColorScreen::White) {
+                continue;
+            }
+            m_game_framebuffer.set_pixel(static_cast<size_t>(x), static_cast<size_t>(y),
+                                         screen_color);
+        }
+    }
+}
+
+void Ppu::draw_tall_sprites_line() {
+    if (!m_registers.is_sprites_enabled()) {
+        return;
+    }
+
+    const auto screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
+    const auto visible_sprites = get_visible_sprites(screen_y);
+    const auto obj_palette_0 = m_registers.get_obj0_palette();
+    const auto obj_palette_1 = m_registers.get_obj1_palette();
+
+    for (const auto& oam_entry : visible_sprites) {
+        // Skip sprites which are completly offscreen
+        if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
+            || oam_entry.m_x_position == 0 || oam_entry.m_x_position >= 168) {
+            continue;
+        }
+
+        auto tile_index = oam_entry.m_tile_index & 0xFE;
+        auto sprite_data = get_tall_sprite_tile(tile_index);
+        // TODO Only convert the required line from the tile (accounting for x-flip/y-flip).
+        auto tile = graphics::gb::tile_to_gb_color(sprite_data);
+        auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
+        auto palette = palette_bit ? obj_palette_1 : obj_palette_0;
+
+        auto calculate_pixel_index = [&](size_t x, size_t y) {
+            const static graphics::gb::TileIndexMirrorBothAxes tim(8, 16);
+            const static graphics::gb::TileIndexMirrorHorizontal tih(8, 16);
+            const static graphics::gb::TileIndexMirrorVertical tiv(8, 16);
+            const static graphics::gb::TileIndex ti(8, 16);
+            if (should_mirror_horizontally(oam_entry) && should_mirror_vertically(oam_entry)) {
+                return tim.pixel_index(x, y);
+            }
+            if (should_mirror_horizontally(oam_entry)) {
+                return tih.pixel_index(x, y);
+            }
+            if (should_mirror_vertically(oam_entry)) {
+                return tiv.pixel_index(x, y);
+            }
+            return ti.pixel_index(x, y);
+        };
+
+
+        // TODO Drawing priority should be: For identical X coordinates, the object located first in
+        // OAM has higher priority and should be drawn over later objects.
+        // Y position in sprite (0...15)
+        const auto sprite_y = screen_y - (oam_entry.m_y_position - 16);
+        for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
+            auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
+            auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
+            if (x < 0 || y < 0 || x >= static_cast<int>(m_game_framebuffer.width())
+                || y >= static_cast<int>(m_game_framebuffer.height())) {
+                // This pixel of the sprite is hidden
+                continue;
+            }
+            auto pixel_index = calculate_pixel_index(sprite_x, static_cast<size_t>(sprite_y));
             auto pixel_color = tile[pixel_index];
             if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
                 // Color 0 is transparent for sprites, so those pixels are not drawn.
@@ -519,10 +593,16 @@ std::pair<uint8_t, uint8_t> Ppu::get_viewport_position() const {
     return {x, y};
 }
 
-std::span<uint8_t, 16> Ppu::get_sprite_tile(uint8_t tile_index) {
-    return std::span<uint8_t, 16>{m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE,
-                                  constants::BYTES_PER_TILE};
+std::span<uint8_t, constants::BYTES_PER_TILE> Ppu::get_sprite_tile(uint8_t tile_index) {
+    return std::span<uint8_t, constants::BYTES_PER_TILE>{
+        m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE, constants::BYTES_PER_TILE};
 }
+
+std::span<uint8_t, constants::BYTES_PER_TILE * 2> Ppu::get_tall_sprite_tile(uint8_t tile_index) {
+    return std::span<uint8_t, constants::BYTES_PER_TILE * 2>{
+        m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE,
+        constants::BYTES_PER_TILE * 2};
+};
 
 void Ppu::draw_background_debug() {
     auto palette = m_registers.get_background_window_palette();

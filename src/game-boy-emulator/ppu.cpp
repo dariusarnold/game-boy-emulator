@@ -12,6 +12,7 @@
 #include "magic_enum.hpp"
 
 #include <span>
+#include <ranges>
 
 Ppu::Ppu(Emulator* emulator) :
         m_registers(emulator->get_options().stub_ly),
@@ -308,12 +309,20 @@ void Ppu::draw_sprites_line() {
     }
 
     const auto screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
-    const auto visible_sprites = get_visible_sprites(screen_y);
+    auto visible_sprites = get_visible_sprites(screen_y);
     const auto obj_palette_0 = m_registers.get_obj0_palette();
     const auto obj_palette_1 = m_registers.get_obj1_palette();
     const auto debug = m_emulator->get_options().draw_debug_sprites;
 
-    for (const auto& oam_entry : visible_sprites) {
+    // When opaque pixels from two objects overlap, the pixels belonging to the higher priority
+    // objects are displayed. The smaller the x coordinate, the higher the priority. For identical x
+    // coordinates, the object located first in OAM has the higher priority.
+    // Initially visible_sprites is ordered by OAM order. Sort by x coordinate but use stable_sort
+    // to keep the relative order from OAM for the same x coordinates.
+    std::stable_sort(visible_sprites.begin(), visible_sprites.end(),
+              [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
+    // Reverse order so the objects first in OAM stay (because they have higher priority).
+    for (const auto& oam_entry : std::ranges::reverse_view(visible_sprites)) {
         // Skip offscreen sprites
         if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
             || oam_entry.m_x_position == 0 || oam_entry.m_x_position >= 168) {
@@ -341,9 +350,6 @@ void Ppu::draw_sprites_line() {
             }
             return ti.pixel_index(x, y);
         };
-
-        // TODO Drawing priority should be: For identical X coordinates, the object located first in
-        // OAM has higher priority and should be drawn over later objects.
         // Y position in sprite (0...15)
         const auto sprite_y = screen_y - (oam_entry.m_y_position - 16);
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
@@ -387,12 +393,20 @@ void Ppu::draw_tall_sprites_line() {
     }
 
     const auto screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
-    const auto visible_sprites = get_visible_sprites(screen_y);
+    auto visible_sprites = get_visible_sprites(screen_y);
     const auto obj_palette_0 = m_registers.get_obj0_palette();
     const auto obj_palette_1 = m_registers.get_obj1_palette();
     const auto debug = m_emulator->get_options().draw_debug_sprites;
 
-    for (const auto& oam_entry : visible_sprites) {
+    // When opaque pixels from two objects overlap, the pixels belonging to the higher priority
+    // objects are displayed. The smaller the x coordinate, the higher the priority. For identical x
+    // coordinates, the object located first in OAM has the higher priority.
+    // Initially visible_sprites is ordered by OAM order. Sort by x coordinate but use stable_sort
+    // to keep the relative order from OAM for the same x coordinates.
+    std::stable_sort(visible_sprites.begin(), visible_sprites.end(),
+                     [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
+    // Reverse order so the objects first in OAM stay (because they have higher priority).
+    for (const auto& oam_entry : std::ranges::reverse_view(visible_sprites)) {
         // Skip sprites which are completly offscreen
         if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
             || oam_entry.m_x_position == 0 || oam_entry.m_x_position >= 168) {
@@ -422,10 +436,6 @@ void Ppu::draw_tall_sprites_line() {
             }
             return ti.pixel_index(x, y);
         };
-
-
-        // TODO Drawing priority should be: For identical X coordinates, the object located first in
-        // OAM has higher priority and should be drawn over later objects.
         // Y position in sprite (0...15)
         const auto sprite_y = screen_y - (oam_entry.m_y_position - 16);
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {

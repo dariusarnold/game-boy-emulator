@@ -154,8 +154,8 @@ void Ppu::do_mode3_pixel_transfer() {
 
 void Ppu::do_mode0_hblank() {
     if (m_clock_count >= DURATION_H_BLANK) {
-        set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::HBlank, 0);
         write_scanline();
+        set_stat_interrupt_line_bit(PpuRegisters::StatInterruptSource::HBlank, 0);
         m_registers.increment_register(PpuRegisters::Register::LyRegister);
 
         m_clock_count = m_clock_count % DURATION_H_BLANK;

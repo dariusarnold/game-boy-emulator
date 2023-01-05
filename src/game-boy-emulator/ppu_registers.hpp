@@ -97,7 +97,7 @@ public:
     [[nodiscard]] bool is_ppu_enabled() const;
     [[nodiscard]] bool was_oam_transfer_requested() const;
     void clear_oam_transfer_request();
-    [[nodiscard]] bool is_background_enabled() const;
+    [[nodiscard]] bool background_window_enabled() const;
     [[nodiscard]] bool is_window_enabled() const;
     [[nodiscard]] bool is_sprites_enabled() const;
     [[nodiscard]] std::array<graphics::gb::ColorGb, 4> get_background_window_palette() const;

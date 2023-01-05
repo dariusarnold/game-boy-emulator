@@ -279,12 +279,8 @@ void Ppu::write_scanline() {
     if (!m_registers.is_ppu_enabled()) {
         return;
     }
-    if (m_registers.is_background_enabled()) {
-        draw_background_line();
-    }
-    if (m_registers.is_window_enabled()) {
-        draw_window_line();
-    }
+    draw_background_line();
+    draw_window_line();
     if (m_registers.get_sprite_height() == 8) {
         draw_sprites_line();
     } else {
@@ -528,27 +524,41 @@ void Ppu::draw_tall_sprites_line() {
 }
 
 void Ppu::draw_window_line() {
+    if (!m_registers.is_window_enabled() || !m_registers.background_window_enabled()) {
+        // The specific window enable bit is overriden by the background and window enable bit
+        return;
+    }
+
     const auto screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
     auto palette = m_registers.get_background_window_palette();
+
+    if (!m_registers.background_window_enabled()) {
+        // Window disabled for this line, draw color0 from BGP
+        for (unsigned screen_x = 0; screen_x < constants::SCREEN_RES_WIDTH; ++screen_x) {
+            m_game_framebuffer.set_pixel(screen_x, screen_y,
+                                         graphics::gb::to_screen_color(palette[0]));
+        }
+        return;
+    }
 
     const auto wx = m_registers.get_register_value(PpuRegisters::Register::WxRegister);
     const auto wy = m_registers.get_register_value(PpuRegisters::Register::WyRegister);
     unsigned const scrolled_y = screen_y - wy;
 
-    // Don't draw anything when window is scrolled out of view port.
-    if (scrolled_y >= constants::SCREEN_RES_HEIGHT) {
+    // The Window is visible (if enabled) when both coordinates are in the ranges WX=0..166,
+    // WY=0..143 respectively.
+    // Third condition checks if the window starts below the current line.
+    if (wx > 166 || wy > 143 || screen_y < wy) {
         return;
     }
 
-    for (unsigned screen_x = 0; screen_x < constants::SCREEN_RES_WIDTH; ++screen_x) {
-        // Coordinate of top left pixel of full window buffer
-        auto scrolled_x = screen_x + wx - 7;
+    for (unsigned screen_x = wx - 7; screen_x < constants::SCREEN_RES_WIDTH; ++screen_x) {
         // Index of tile in map
-        auto tile_map_x = scrolled_x / constants::PIXELS_PER_TILE;
+        auto tile_map_x = (screen_x - wx + 7) / constants::PIXELS_PER_TILE;
         auto tile_map_y = scrolled_y / constants::PIXELS_PER_TILE;
         auto tile = get_tile_from_map(TileType::Window, tile_map_x, tile_map_y);
         // Index of the pixel in the tile
-        auto tile_pixel_x = scrolled_x % constants::PIXELS_PER_TILE;
+        auto tile_pixel_x = screen_x % constants::PIXELS_PER_TILE;
         auto tile_pixel_y = scrolled_y % constants::PIXELS_PER_TILE;
         auto tile_line
             = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[tile_pixel_y * 2 + 1]);
@@ -562,6 +572,16 @@ void Ppu::draw_window_line() {
 void Ppu::draw_background_line() {
     unsigned const screen_y = m_registers.get_register_value(PpuRegisters::Register::LyRegister);
     auto palette = m_registers.get_background_window_palette();
+
+    if (!m_registers.background_window_enabled()) {
+        // Background disabled for this line, draw color0 from BGP
+        for (unsigned screen_x = 0; screen_x < constants::SCREEN_RES_WIDTH; ++screen_x) {
+            m_game_framebuffer.set_pixel(screen_x, screen_y,
+                                         graphics::gb::to_screen_color(palette[0]));
+        }
+        return;
+    }
+
     auto scx = m_registers.get_register_value(PpuRegisters::Register::ScxRegister);
     auto scy = m_registers.get_register_value(PpuRegisters::Register::ScyRegister);
 

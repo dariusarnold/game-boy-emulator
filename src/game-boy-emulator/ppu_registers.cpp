@@ -123,7 +123,7 @@ void PpuRegisters::clear_oam_transfer_request() {
     m_oam_transfer_requested = false;
 }
 
-bool PpuRegisters::is_background_enabled() const {
+bool PpuRegisters::background_window_enabled() const {
     auto lcdc = get(Register::LcdcRegister);
     return bitmanip::is_bit_set(lcdc, static_cast<int>(LcdcBits::BgWindowEnablePriority));
 }

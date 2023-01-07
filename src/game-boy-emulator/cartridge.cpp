@@ -22,6 +22,8 @@ namespace {
 const int CARTRIDGE_TYPE_OFFSET = 0x147;
 const int ROM_SIZE = 0x148;
 const int RAM_SIZE = 0x149;
+const int TITLE_BEGIN = 0x134;
+const int TITLE_END = 0x143;
 } // namespace
 
 Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
@@ -49,6 +51,9 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
     m_logger->info("Detected MBC type {}, ROM {} bytes, {} banks, RAM {} bytes, {} banks",
                    magic_enum::enum_name(m_cartridge_type), rom_size.size_bytes, rom_size.num_banks,
                    ram_size_info.size_bytes, ram_size_info.num_banks);
+    auto title = get_title(rom);
+    m_emulator->get_state().game_title = title;
+    m_logger->info("Game {}", title);
     switch (m_cartridge_type) {
     case CartridgeType::ROM_ONLY:
         if (rom.size() != memmap::CartridgeRomSize) {
@@ -126,6 +131,12 @@ void Cartridge::sync() {
     if (m_ram_file) {
         m_ram_file->sync();
     }
+}
+
+std::string Cartridge::get_title(const std::vector<uint8_t>& rom) const {
+    auto title = std::string{rom.data() + TITLE_BEGIN, rom.data() + TITLE_END};
+    std::erase_if(title, [](auto c) { return !std::isprint(c); });
+    return title;
 }
 
 // We need a destructor for the outer class to be defined where the MemoryMappedFile is complete.

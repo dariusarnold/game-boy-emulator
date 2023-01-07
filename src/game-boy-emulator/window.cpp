@@ -299,7 +299,7 @@ void Window::vblank_callback() {
 }
 
 void Window::draw_game() {
-    ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoResize);
+    ImGui::Begin(m_emulator.get_state().game_title.c_str(), nullptr, ImGuiWindowFlags_NoResize);
     auto my_tex_id = static_cast<void*>(m_game_image.get_texture());
     ImGui::Image(my_tex_id, ImVec2(m_game_image.width() * 3, m_game_image.height() * 3));
     ImGui::End();

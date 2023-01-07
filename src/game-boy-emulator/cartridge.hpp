@@ -70,6 +70,7 @@ private:
 
     [[nodiscard]] RomInfo get_rom_size_info(const std::vector<uint8_t>& rom) const;
     [[nodiscard]] RamInfo get_ram_size_info(const std::vector<uint8_t>& rom) const;
+    [[nodiscard]] std::string get_title(const std::vector<uint8_t>& rom) const;
 
     Emulator* m_emulator;
     std::shared_ptr<spdlog::logger> m_logger;

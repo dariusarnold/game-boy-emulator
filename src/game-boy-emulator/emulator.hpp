@@ -45,6 +45,7 @@ struct EmulatorState {
     std::optional<std::filesystem::path> rom_file_path;
     // When changing the game the new path is stored here before the new game is loaded.
     std::optional<std::filesystem::path> new_rom_file_path;
+    std::string game_title;
 };
 
 /**

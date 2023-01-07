@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SDL_surface.h"
 #include <vector>
 #include <cstdint>
 #include <cstddef>
@@ -36,6 +37,8 @@ public:
 
     // Transfer frame buffer content into another buffer.
     void copy_into(void* ptr) const;
+    // Transfer content from another buffer into this framebuffer
+    void take_from(void* ptr);
 
     [[nodiscard]] size_t width() const;
     [[nodiscard]] size_t height() const;
@@ -43,6 +46,11 @@ public:
 
     // Clear screen buffer
     void reset(PixelType fill = {});
+
+    // Check if the two framebuffers have the same content
+    bool operator==(const Framebuffer<PixelType, Width, Height>& other) const;
+
+    SDL_Surface* to_surface();
 };
 
 template <typename PixelType, size_t Width, size_t Height>

@@ -52,6 +52,11 @@ void Framebuffer<PixelType, Width, Height>::copy_into(void* ptr) const {
 }
 
 template <typename PixelType, size_t Width, size_t Height>
+void Framebuffer<PixelType, Width, Height>::take_from(void* ptr) {
+    std::memcpy(m_buffer.data(), ptr, sizeof(PixelType) * m_buffer.size());
+}
+
+template <typename PixelType, size_t Width, size_t Height>
 void Framebuffer<PixelType, Width, Height>::reset(PixelType fill) {
     m_buffer.assign(size(), fill);
 }
@@ -92,6 +97,18 @@ PixelType Framebuffer<PixelType, Width, Height>::get_pixel_wraparound(int x, int
     return get_pixel(static_cast<size_t>(x_unsigned), static_cast<size_t>(y_unsigned));
 }
 
+template <typename PixelType, size_t Width, size_t Height>
+bool Framebuffer<PixelType, Width, Height>::operator==(
+    const Framebuffer<PixelType, Width, Height>& other) const {
+    return other.m_buffer == m_buffer;
+}
+
+template <typename PixelType, size_t Width, size_t Height>
+SDL_Surface* Framebuffer<PixelType, Width, Height>::to_surface() {
+    return SDL_CreateRGBSurfaceFrom(m_buffer.data(), width(), height(), sizeof(PixelType) * 8,
+                                    width() * sizeof(PixelType), 0x00000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+}
+
 /**
  * Draw an unfilled rectangle with 1 pixel wide border on the image
  * @param img
@@ -102,8 +119,8 @@ PixelType Framebuffer<PixelType, Width, Height>::get_pixel_wraparound(int x, int
  * @param rect_color
  */
 template <typename PixelType, size_t Width, size_t Height>
-void draw_rectangle_border(Framebuffer<PixelType, Width, Height>& img, int top_left_x, int top_left_y,
-                           int rect_width, int rect_height, PixelType rect_color) {
+void draw_rectangle_border(Framebuffer<PixelType, Width, Height>& img, int top_left_x,
+                           int top_left_y, int rect_width, int rect_height, PixelType rect_color) {
     for (auto x = top_left_x; x < top_left_x + rect_width; ++x) {
         img.set_pixel_wraparound(x, top_left_y, rect_color);
         img.set_pixel_wraparound(x, top_left_y + rect_height - 1, rect_color);

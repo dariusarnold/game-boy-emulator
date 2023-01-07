@@ -54,6 +54,7 @@ enum class ColorGb : uint8_t {
 
 // Color values used for SDL rendering
 enum class ColorScreen : uint32_t {
+    // Format is ARGB
     TrueWhite = 0xFFFFFFFF,
     White = 0xff0fbc9b,
     LightGray = 0xff0fac8b,

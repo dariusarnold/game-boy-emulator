@@ -54,3 +54,12 @@ template <size_t Width, size_t Height>
 size_t Image<Width, Height>::size() const {
     return m_width * m_height;
 }
+
+template <size_t Width, size_t Height>
+void Image<Width, Height>::save_as_bitmap(std::string_view filename) const {
+    SDL_Surface* surf = nullptr;
+    auto res = SDL_LockTextureToSurface(m_texture.get(), nullptr, &surf);
+    assert(res == 0);
+    res = SDL_SaveBMP(surf, filename.data());
+    assert(res == 0);
+}

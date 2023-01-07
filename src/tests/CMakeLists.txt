@@ -22,6 +22,7 @@ add_executable(game_boy_emulator_tests
         test_joypad.cpp
         test_mem_timing.cpp
         test_mooneye_mbc1.cpp
+        test_dmg_acid2.cpp
         )
 
 target_link_libraries(game_boy_emulator_tests PRIVATE

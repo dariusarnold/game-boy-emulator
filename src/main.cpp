@@ -15,7 +15,7 @@ int main(int argc, char** argv) { // NOLINT
     program.add_argument("rom").help("Path to game ROM file to run.");
     program.add_argument("--boot").default_value("").help("Path to boot ROM file.");
 
-    spdlog::set_level(spdlog::level::trace);
+    spdlog::set_level(spdlog::level::info);
 
     try {
         program.parse_args(argc, argv);

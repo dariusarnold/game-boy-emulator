@@ -177,3 +177,12 @@ TEST_CASE("Set bit testing") {
         CHECK(in == 0b00000011);
     }
 }
+
+TEST_CASE("Bit masking") {
+    CHECK(bitmanip::mask(0xFF, 1) == 0x1);
+    CHECK(bitmanip::mask(0xFF, 0) == 0x0);
+
+    CHECK(bitmanip::mask(0xAC, 8) == 0xAC);
+
+    CHECK(bitmanip::mask(0xAC, 4) == 0xC);
+}

@@ -11,7 +11,7 @@
 
 TEST_CASE("Compare blargg11 state") {
     spdlog::set_level(spdlog::level::err);
-    Emulator emulator{{.stub_ly = true}};
+    Emulator emulator{{.stub_ly_value = 0x90}};
     emulator.load_game(std::filesystem::absolute("roms/11-op a,(hl).gb"));
     for (auto i = 0; i <= 7429762; ++i) {
         REQUIRE(emulator.step());

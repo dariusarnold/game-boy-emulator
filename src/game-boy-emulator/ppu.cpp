@@ -15,7 +15,7 @@
 #include <ranges>
 
 Ppu::Ppu(Emulator* emulator) :
-        m_registers(emulator->get_options().stub_ly),
+        m_registers(emulator->get_options().stub_ly_value),
         m_logger(spdlog::get("")),
         m_emulator(emulator),
         m_game_framebuffer(graphics::gb::ColorScreen::White),

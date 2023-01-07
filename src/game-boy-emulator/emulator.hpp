@@ -60,7 +60,7 @@ public:
     void load_game(const std::filesystem::path& rom_path);
     // Actually run boot rom to initialize emulator and hand off control to game after booting.
     void load_boot_game(const std::filesystem::path& boot_rom_path,
-                         const std::filesystem::path& game_rom_path);
+                        const std::filesystem::path& game_rom_path);
 
     void run();
     bool step();
@@ -97,6 +97,8 @@ public:
 
     void draw();
     void set_draw_function(std::function<void()> f);
+    void debug();
+    void set_debug_function(std::function<void()> f);
 
     size_t get_cycle_count();
 
@@ -116,5 +118,9 @@ private:
     std::shared_ptr<Joypad> m_joypad;
     std::shared_ptr<spdlog::logger> m_logger;
 
+    // Function which is called on every VBlank. Can be used to draw the game framebuffer.
     std::function<void()> m_draw_function;
+    // Function which is called on LD B,B instruction, which is used sort of as a debug
+    // breakpoint.
+    std::function<void()> m_debug_function;
 };

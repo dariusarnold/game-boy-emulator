@@ -43,7 +43,7 @@ TEST_CASE("Compare boot sequence") {
      * 0x0, 0x0 global checksum
      */
     // clang-format on
-    Emulator emulator{{.stub_ly = true}};
+    Emulator emulator{{.stub_ly_value = 0x90}};
     emulator.load_boot_game(boot_rom_path, game_rom_path);
     for (auto i = 0; const auto& expected_line : expected_output) {
         auto actual_output = emulator.get_debug_state();

@@ -12,7 +12,7 @@
 
 TEST_CASE("Compare blargg8 state") {
     spdlog::set_level(spdlog::level::err);
-    Emulator emulator{{.stub_ly = true}};
+    Emulator emulator{{.stub_ly_value = 0x90}};
     emulator.load_game(std::filesystem::absolute("roms/08-misc instrs.gb"));
     for (auto i = 0; i <= 223892; ++i) {
         REQUIRE(emulator.step());

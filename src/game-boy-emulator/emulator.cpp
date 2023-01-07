@@ -194,7 +194,9 @@ std::shared_ptr<Joypad> Emulator::get_joypad() const {
 
 void Emulator::draw() {
     m_cartridge->sync();
-    m_draw_function();
+    if (m_draw_function) {
+        m_draw_function();
+    }
     m_state.frame_count++;
 }
 
@@ -204,4 +206,14 @@ void Emulator::set_draw_function(std::function<void()> f) {
 
 size_t Emulator::get_cycle_count() {
     return m_cpu->cycle_duration_previous_instruction();
+}
+
+void Emulator::set_debug_function(std::function<void()> f) {
+    m_debug_function = std::move(f);
+}
+
+void Emulator::debug() {
+    if (m_debug_function) {
+        m_debug_function();
+    }
 }

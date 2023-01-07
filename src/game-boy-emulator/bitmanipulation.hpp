@@ -51,4 +51,6 @@ uint8_t swap_nibbles(uint8_t x);
 
 uint16_t word_from_bytes(uint8_t high_byte, uint8_t low_byte);
 
+size_t mask(size_t value, uint8_t size_mask);
+
 } // namespace bitmanip

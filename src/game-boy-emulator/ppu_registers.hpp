@@ -19,7 +19,7 @@ class PpuRegisters {
     [[nodiscard]] std::array<graphics::gb::ColorGb, 4> get_palette(uint8_t palette_byte) const;
 
 public:
-    explicit PpuRegisters(bool fix_ly);
+    explicit PpuRegisters(int fix_ly);
 
     enum class Register : uint16_t {
         LcdcRegister = 0xFF40,
@@ -116,6 +116,6 @@ public:
 private:
     uint8_t& get(PpuRegisters::Register r);
     [[nodiscard]] const uint8_t& get(PpuRegisters::Register r) const;
-    bool m_fix_ly_register_value;
+    int m_fix_ly_register_value;
     bool m_oam_transfer_requested = false;
 };

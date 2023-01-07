@@ -6,6 +6,7 @@ class logger;
 }
 class MemoryMappedFile;
 class Mbc;
+#include "cartridge_info.hpp"
 #include <memory>
 #include <vector>
 #include <cstdint>
@@ -59,17 +60,6 @@ private:
     [[nodiscard]] static Cartridge::CartridgeType
     get_cartridge_type(const std::vector<uint8_t>& rom);
 
-    struct RomInfo {
-        size_t size_bytes = 0;
-        size_t num_banks = 0;
-    };
-    struct RamInfo {
-        size_t size_bytes = 0;
-        size_t num_banks = 0;
-    };
-
-    [[nodiscard]] RomInfo get_rom_size_info(const std::vector<uint8_t>& rom) const;
-    [[nodiscard]] RamInfo get_ram_size_info(const std::vector<uint8_t>& rom) const;
     [[nodiscard]] std::string get_title(const std::vector<uint8_t>& rom) const;
 
     Emulator* m_emulator;

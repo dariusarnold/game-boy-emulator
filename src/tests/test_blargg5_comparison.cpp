@@ -13,7 +13,7 @@
 
 TEST_CASE("Compare blargg5 state") {
     spdlog::set_level(spdlog::level::err);
-    Emulator emulator{{.stub_ly = true}};
+    Emulator emulator{{.stub_ly_value = 0x90}};
     emulator.load_game(std::filesystem::absolute("roms/05-op rp.gb"));
     for (auto i = 0; i <= 1763388; ++i) {
         auto actual_output = emulator.get_debug_state();

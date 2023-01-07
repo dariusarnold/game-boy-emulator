@@ -373,6 +373,10 @@ void Cpu::instructionLD(opcodes::Instruction instruction, uint16_t data) {
         set_register_value(instruction.register_type_destination, data);
         return;
     case opcodes::InteractionType::Register_Register:
+        if (instruction.register_type_source == opcodes::RegisterType::B
+            && instruction.register_type_destination == opcodes::RegisterType::B) {
+            m_emulator->debug();
+        }
         value = get_register_value(instruction.register_type_source);
         set_register_value(instruction.register_type_destination, value);
         if (instruction.opcode == 0xF9) {

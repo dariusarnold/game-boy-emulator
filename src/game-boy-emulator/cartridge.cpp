@@ -20,8 +20,6 @@
 
 namespace {
 const int CARTRIDGE_TYPE_OFFSET = 0x147;
-const int ROM_SIZE = 0x148;
-const int RAM_SIZE = 0x149;
 const int TITLE_BEGIN = 0x134;
 const int TITLE_END = 0x143;
 } // namespace
@@ -32,7 +30,7 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
         throw LogicError(
             fmt::format("ROM only {} bytes, does not contain cartridge header", rom.size()));
     }
-    auto ram_size_info = get_ram_size_info(rom);
+    auto ram_size_info = Mbc::read_ram_size_info(rom);
 
     std::span<uint8_t> ram;
     if (ram_size_info.size_bytes != 0) {
@@ -45,7 +43,7 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
         ram = m_ram_file->get_data();
     }
 
-    auto rom_size = get_rom_size_info(rom);
+    auto rom_size = Mbc::read_rom_size_info(rom);
     // Initialize after size check to avoid potential out-of-bounds access.
     m_cartridge_type = get_cartridge_type(rom);
     m_logger->info("Detected MBC type {}, ROM {} bytes, {} banks, RAM {} bytes, {} banks",
@@ -99,32 +97,6 @@ Cartridge::CartridgeType Cartridge::get_cartridge_type(const std::vector<uint8_t
         return CartridgeType{val};
     }
     throw LogicError(fmt::format("Invalid value {:02X} for cartridge type", val));
-}
-
-Cartridge::RomInfo Cartridge::get_rom_size_info(const std::vector<uint8_t>& rom) const {
-    auto val = rom[ROM_SIZE];
-    if (val > 0x8) {
-        throw LogicError("Invalid value for ROM size");
-    }
-    return {static_cast<size_t>((32 * 1024) * (1 << val)), static_cast<size_t>(1 << val)};
-}
-
-Cartridge::RamInfo Cartridge::get_ram_size_info(const std::vector<uint8_t>& rom) const {
-    auto val = rom[RAM_SIZE];
-    switch (val) {
-    case 0:
-        return {0, 0};
-    case 2:
-        return {8 * 1024, 1};
-    case 3:
-        return {32 * 1024, 4};
-    case 4:
-        return {128 * 1024, 16};
-    case 5:
-        return {64 * 1024, 8};
-    default:
-        throw LogicError("Invalid value for RAM size");
-    }
 }
 
 void Cartridge::sync() {

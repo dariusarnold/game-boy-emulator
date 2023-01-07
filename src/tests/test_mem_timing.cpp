@@ -1,7 +1,6 @@
 #include "catch2/catch.hpp"
 
 #include "emulator.hpp"
-#include "ppu.hpp"
 #include "serial_port.hpp"
 
 #include "test_helpers.hpp"

@@ -1,13 +1,10 @@
 #include "catch2/catch.hpp"
 
-#include "cpu.hpp"
-#include "io.hpp"
 #include "emulator.hpp"
-#include "ppu.hpp"
 #include "serial_port.hpp"
 
-#include "test_helpers.hpp"
 #include "spdlog/spdlog.h"
+#include "cpu.hpp"
 
 #include <filesystem>
 

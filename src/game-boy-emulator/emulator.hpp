@@ -3,7 +3,6 @@
 #include "constants.h"
 #include "options.hpp"
 #include "graphics.hpp"
-#include "framebuffer.hpp"
 #include <array>
 #include <cstdint>
 #include <memory>

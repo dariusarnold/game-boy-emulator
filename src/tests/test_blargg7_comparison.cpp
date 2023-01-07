@@ -1,8 +1,6 @@
 #include "catch2/catch.hpp"
 
-#include "cpu.hpp"
 #include "emulator.hpp"
-#include "ppu.hpp"
 #include "serial_port.hpp"
 
 #include "spdlog/spdlog.h"

@@ -1,13 +1,9 @@
 #include "catch2/catch.hpp"
 
-#include "cpu.hpp"
-#include "io.hpp"
 #include "emulator.hpp"
-#include "ppu.hpp"
 
 #include "test_helpers.hpp"
 
-#include "fmt/format.h"
 #include "spdlog/spdlog.h"
 
 #include <filesystem>

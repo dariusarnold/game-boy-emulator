@@ -52,7 +52,7 @@ struct EmulatorState {
  */
 class Emulator {
 public:
-    Emulator(EmulatorOptions options);
+    explicit Emulator(EmulatorOptions options);
     // Only load boot rom file.
     void load_boot(const std::filesystem::path& rom_path);
     // Don't run boot rom and use initial values for registers/flags/memory.

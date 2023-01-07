@@ -44,10 +44,14 @@ class Window {
     std::array<bool, 8> m_pressed_keys{};
     boost::circular_buffer<float> m_fps_history;
 
-    void handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<Joypad> joypad);
+    void handle_user_keyboard_input(const SDL_Event& event, const std::shared_ptr<Joypad>& joypad);
 
 public:
     explicit Window(Emulator& emulator);
+    Window(const Window&) = delete;
+    Window& operator=(const Window&) = delete;
+    Window(Window&&) = delete;
+    Window& operator=(Window&&) = delete;
     ~Window();
 
     void draw_frame();
@@ -61,5 +65,5 @@ public:
 
     void vblank_callback();
 
-    bool is_done() const;
+    [[nodiscard]] bool is_done() const;
 };

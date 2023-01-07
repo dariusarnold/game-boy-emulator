@@ -15,16 +15,7 @@
 #include "nfd.h"
 
 Window::Window(Emulator& emulator) :
-        m_emulator(emulator),
-        m_logger(spdlog::get("")),
-        m_background_image(),
-        m_window_image(),
-        m_sprites_image(),
-        m_game_image(),
-        m_tiledata_block0(),
-        m_tiledata_block1(),
-        m_tiledata_block2(),
-        m_fps_history(5 * 60, 5 * 60, 0) {
+        m_emulator(emulator), m_logger(spdlog::get("")), m_fps_history(5 * 60, 5 * 60, 0) {
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a
     // minority of Windows systems, depending on whether SDL_INIT_GAMECONTROLLER is enabled or
@@ -132,15 +123,17 @@ void Window::draw_frame() {
     // Rendering
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     ImGui::Render();
-    SDL_SetRenderDrawColor(m_sdl_renderer, (Uint8)(clear_color.x * 255),
-                           (Uint8)(clear_color.y * 255), (Uint8)(clear_color.z * 255),
-                           (Uint8)(clear_color.w * 255));
+    SDL_SetRenderDrawColor(m_sdl_renderer, static_cast<Uint8>(clear_color.x * 255),
+                           static_cast<Uint8>(clear_color.y * 255),
+                           static_cast<Uint8>(clear_color.z * 255),
+                           static_cast<Uint8>(clear_color.w * 255));
     SDL_RenderClear(m_sdl_renderer);
     ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
     SDL_RenderPresent(m_sdl_renderer);
 }
 
-void Window::handle_user_keyboard_input(const SDL_Event& event, std::shared_ptr<Joypad> joypad) {
+void Window::handle_user_keyboard_input(const SDL_Event& event,
+                                        const std::shared_ptr<Joypad>& joypad) {
     auto& io = ImGui::GetIO();
     if (!io.WantCaptureKeyboard) {
         // Ignore repeated down events since they don't alter joypad state
@@ -244,7 +237,7 @@ void Window::draw_background() {
     m_background_image.upload_to_texture(background);
     auto& options = m_emulator.get_options();
     ImGui::Begin("Background", &options.draw_debug_background, ImGuiWindowFlags_NoResize);
-    auto my_tex_id = (void*)m_background_image.get_texture();
+    auto my_tex_id = static_cast<void*>(m_background_image.get_texture());
     ImGui::Image(my_tex_id, ImVec2(background.width(), background.height()));
     ImGui::End();
 }
@@ -254,7 +247,7 @@ void Window::draw_sprites() {
     m_sprites_image.upload_to_texture(sprites);
     auto& options = m_emulator.get_options();
     ImGui::Begin("Sprites", &options.draw_debug_sprites, ImGuiWindowFlags_NoResize);
-    auto my_tex_id = (void*)m_sprites_image.get_texture();
+    auto my_tex_id = static_cast<void*>(m_sprites_image.get_texture());
     ImGui::Image(my_tex_id, ImVec2(sprites.width(), sprites.height()));
     ImGui::End();
 }
@@ -264,7 +257,7 @@ void Window::draw_window() {
     auto& options = m_emulator.get_options();
     ImGui::Begin("Window", &options.draw_debug_window, ImGuiWindowFlags_NoResize);
     m_window_image.upload_to_texture(window);
-    auto my_tex_id = (void*)m_window_image.get_texture();
+    auto my_tex_id = static_cast<void*>(m_window_image.get_texture());
     ImGui::Image(my_tex_id, ImVec2(window.width(), window.height()));
     ImGui::End();
 }
@@ -307,7 +300,7 @@ void Window::vblank_callback() {
 
 void Window::draw_game() {
     ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoResize);
-    auto my_tex_id = (void*)m_game_image.get_texture();
+    auto my_tex_id = static_cast<void*>(m_game_image.get_texture());
     ImGui::Image(my_tex_id, ImVec2(m_game_image.width() * 3, m_game_image.height() * 3));
     ImGui::End();
 }
@@ -324,14 +317,14 @@ void Window::draw_info(const EmulatorState& state) {
     m_fps_history.push_back(fps);
     // ImGui requires continuous storage of the data to be plotted.
     m_fps_history.linearize();
-    auto avg_fps = std::accumulate(m_fps_history.end() - 5, m_fps_history.end(), 0) / 5;
+    auto avg_fps = std::accumulate(m_fps_history.end() - 5, m_fps_history.end(), 0.) / 5;
     ImGui::PlotLines("FPS", &m_fps_history[0], m_fps_history.size(), 0,
                      fmt::format("{} FPS", avg_fps).c_str(), 0, 120, ImVec2{500, 100});
     m_previous_ticks = current_ticks;
     for (int i = 0; i < 8; ++i) {
-        const std::string_view state = m_pressed_keys[i] ? "Down" : "Up";
+        const std::string_view key_state = m_pressed_keys[i] ? "Down" : "Up";
         auto name = magic_enum::enum_name(magic_enum::enum_value<Joypad::Keys>(i));
-        ImGui::Text("%s", fmt::format("{}: {}", name, state).c_str());
+        ImGui::Text("%s", fmt::format("{}: {}", name, key_state).c_str());
     }
     ImGui::Text("%s", fmt::format("{} instructions elapsed", state.instructions_executed).c_str());
     ImGui::Text("Speed %d", options.game_speed);
@@ -345,15 +338,15 @@ void Window::draw_vram() {
     m_tiledata_block2.upload_to_texture(*buffers[2]);
     auto& options = m_emulator.get_options();
     ImGui::Begin("Tile block 0,1,2", &options.draw_debug_tiles, ImGuiWindowFlags_NoResize);
-    auto my_tex_id = (void*)m_tiledata_block0.get_texture();
+    auto my_tex_id = static_cast<void*>(m_tiledata_block0.get_texture());
     const auto scale = 2;
     ImGui::Image(my_tex_id,
                  ImVec2(m_tiledata_block0.width() * scale, m_tiledata_block0.height() * scale));
     ImGui::SameLine();
-    my_tex_id = (void*)m_tiledata_block1.get_texture();
+    my_tex_id = static_cast<void*>(m_tiledata_block1.get_texture());
     ImGui::Image(my_tex_id,
                  ImVec2(m_tiledata_block1.width() * scale, m_tiledata_block1.height() * scale));
-    my_tex_id = (void*)m_tiledata_block2.get_texture();
+    my_tex_id = static_cast<void*>(m_tiledata_block2.get_texture());
     ImGui::SameLine();
     ImGui::Image(my_tex_id,
                  ImVec2(m_tiledata_block2.width() * scale, m_tiledata_block2.height() * scale));

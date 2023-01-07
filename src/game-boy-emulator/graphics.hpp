@@ -98,7 +98,7 @@ class TileIndex {
 
 public:
     TileIndex(size_t tile_width_pixels, size_t tile_height_pixels);
-    size_t pixel_index(size_t x, size_t y) const;
+    [[nodiscard]] size_t pixel_index(size_t x, size_t y) const;
 };
 
 /**
@@ -113,7 +113,7 @@ class TileIndexMirrorHorizontal {
 
 public:
     TileIndexMirrorHorizontal(size_t tile_width_pixels, size_t tile_height_pixels);
-    size_t pixel_index(size_t x, size_t y) const;
+    [[nodiscard]] size_t pixel_index(size_t x, size_t y) const;
 };
 
 /**
@@ -128,7 +128,7 @@ class TileIndexMirrorVertical {
 
 public:
     TileIndexMirrorVertical(size_t tile_width_pixels, size_t tile_height_pixels);
-    size_t pixel_index(size_t x, size_t y) const;
+    [[nodiscard]] size_t pixel_index(size_t x, size_t y) const;
 };
 
 class TileIndexMirrorBothAxes {
@@ -137,7 +137,7 @@ class TileIndexMirrorBothAxes {
 
 public:
     TileIndexMirrorBothAxes(size_t tile_width_pixels, size_t tile_height_pixels);
-    size_t pixel_index(size_t x, size_t y) const;
+    [[nodiscard]] size_t pixel_index(size_t x, size_t y) const;
 };
 
 

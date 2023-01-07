@@ -33,7 +33,7 @@ class Image {
 public:
     // Create image with a texture using the given renderer. If no renderer is given, init_texture
     // has to be called before upload_to_texture is used.
-    Image(SDL_Renderer* sdl_renderer = nullptr);
+    explicit Image(SDL_Renderer* sdl_renderer = nullptr);
 
     void init_texture(SDL_Renderer* sdl_renderer);
 

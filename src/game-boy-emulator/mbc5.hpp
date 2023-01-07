@@ -17,7 +17,7 @@ class Mbc5 : public Mbc {
     void write_registers(uint16_t address, uint8_t value);
     void write_values(uint16_t address, uint8_t value);
 
-    uint16_t get_rom_bank_number() const;
+    [[nodiscard]] uint16_t get_rom_bank_number() const;
 
 public:
     using Mbc::Mbc;

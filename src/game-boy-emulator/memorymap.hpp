@@ -13,7 +13,7 @@ class Single {
     uint16_t m_address;
 
 public:
-    constexpr Single(uint16_t address, uint16_t) : m_address(address) {}
+    constexpr Single(uint16_t address, uint16_t /* Only here so this has the same interface as Multi */) : m_address(address) {}
 
     [[nodiscard]] bool is_in(uint16_t address) const {
         return address == m_address;

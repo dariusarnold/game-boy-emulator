@@ -23,8 +23,8 @@ protected:
 
     std::vector<uint8_t>& get_rom();
     [[nodiscard]] const std::vector<uint8_t>& get_rom() const;
-    std::span<uint8_t> get_ram();
-    std::span<const uint8_t> get_ram() const;
+    [[nodiscard]] std::span<uint8_t> get_ram();
+    [[nodiscard]] std::span<const uint8_t> get_ram() const;
     [[nodiscard]] std::shared_ptr<spdlog::logger> get_logger() const;
 
 public:

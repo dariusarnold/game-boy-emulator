@@ -670,10 +670,10 @@ void Ppu::draw_vram_debug() {
     }
 }
 
-const std::array<const Framebuffer<graphics::gb::ColorScreen,
-                                   constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
-                                   constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>*,
-                 3>
+std::array<const Framebuffer<graphics::gb::ColorScreen,
+                             constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                             constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>*,
+           3>
 Ppu::get_tiledata() {
     return {&m_tiledata_block0, &m_tiledata_block1, &m_tiledata_block2};
 }

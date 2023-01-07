@@ -129,4 +129,5 @@ void Cartridge::sync() {
 }
 
 // We need a destructor for the outer class to be defined where the MemoryMappedFile is complete.
+// Otherwise the unique_ptr won't compile for incomplete types.
 Cartridge::~Cartridge() = default;

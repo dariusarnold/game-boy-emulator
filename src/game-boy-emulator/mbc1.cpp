@@ -36,7 +36,7 @@ uint8_t Mbc1::read_byte(uint16_t address) const {
         return get_rom()[address_in_rom];
     }
     if (memmap::is_in(address, memmap::CartridgeRam)) {
-        if (m_ram_enable == false) {
+        if (!m_ram_enable) {
             get_logger()->error("Read from disabled cartridge RAM in MBC1");
             return 0xFF;
         }

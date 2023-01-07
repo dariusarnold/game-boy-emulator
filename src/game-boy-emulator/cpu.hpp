@@ -71,9 +71,9 @@ public:
 
     CpuDebugState get_debug_state();
 
-    opcodes::Instruction get_current_instruction() const;
-    opcodes::Instruction get_previous_instruction() const;
-    size_t cycle_duration_previous_instruction() const;
+    [[nodiscard]] opcodes::Instruction get_current_instruction() const;
+    [[nodiscard]] opcodes::Instruction get_previous_instruction() const;
+    [[nodiscard]] size_t cycle_duration_previous_instruction() const;
 
     void call_isr(uint16_t isr_address);
 

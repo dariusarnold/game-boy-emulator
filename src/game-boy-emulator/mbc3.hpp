@@ -11,11 +11,6 @@ struct Rtc {
     uint8_t m_days_low = 0;
     // Upper 1 bit of day counter, halt and Day counter carry bit
     uint8_t m_days_high_and_flags = 0;
-
-    // Sets the registers content to the current system time.
-    void set_current_time();
-    void set_halt_flag(bool is_halted);
-
 };
 
 class Mbc3 : public Mbc {
@@ -31,9 +26,9 @@ class Mbc3 : public Mbc {
         RamMapped,
         RtcMapped,
     };
-    RamOrRtcMapped m_ram_or_rtc_mapped;
+    RamOrRtcMapped m_ram_or_rtc_mapped = RamOrRtcMapped::RamMapped;
 
-    Rtc m_rtc;
+    Rtc m_rtc{};
 
     // Value required to map the corresponding RTC register to A000-BFFF
     enum class RtcRegisterValue {

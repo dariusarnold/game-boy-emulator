@@ -95,7 +95,7 @@ class Ppu {
     void do_mode1_vblank();
 
     // Get up to 10 sprites visible in this line
-    std::vector<OamEntry> get_visible_sprites(uint8_t screen_y) const;
+    [[nodiscard]] std::vector<OamEntry> get_visible_sprites(uint8_t screen_y) const;
 
 public:
     explicit Ppu(Emulator* emulator);
@@ -118,10 +118,9 @@ public:
     const auto& get_window() {
         return m_window_framebuffer;
     }
-    const std::array<
-        const Framebuffer<graphics::gb::ColorScreen,
-                          constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
-                          constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>*,
-        3>
+    std::array<const Framebuffer<graphics::gb::ColorScreen,
+                                 constants::SPRITE_VIEWER_WIDTH * constants::PIXELS_PER_TILE,
+                                 constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>*,
+               3>
     get_tiledata();
 };

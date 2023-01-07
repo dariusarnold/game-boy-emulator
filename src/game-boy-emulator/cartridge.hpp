@@ -5,7 +5,7 @@ namespace spdlog {
 class logger;
 }
 class MemoryMappedFile;
-#include "mbc.hpp"
+class Mbc;
 #include <memory>
 #include <vector>
 #include <cstdint>

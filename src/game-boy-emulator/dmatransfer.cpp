@@ -1,5 +1,6 @@
 #include "dmatransfer.hpp"
 #include "bitmanipulation.hpp"
+#include "memorymap.hpp"
 
 OamDmaTransfer::OamDmaTransfer(std::shared_ptr<AddressBus> address_bus,
                                std::span<uint8_t, constants::OAM_DMA_NUM_BYTES> target) :
@@ -7,6 +8,11 @@ OamDmaTransfer::OamDmaTransfer(std::shared_ptr<AddressBus> address_bus,
 
 void OamDmaTransfer::start_transfer(uint16_t start_address) {
     m_start_address = start_address;
+    // In most cases echo ram is only E000-FDFF (which actually accesses RAM from C000-DDFF). OAM
+    // DMA ist an exception, here the entire E000-FFF region is echo ram and accesses C000-DFFF.
+    if (m_start_address > memmap::EchoRamEnd) {
+        m_start_address -= memmap::InternalRamSize;
+    }
     m_counter = 0;
 }
 

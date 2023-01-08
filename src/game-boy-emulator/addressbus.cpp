@@ -29,7 +29,8 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     if (memmap::is_in(address, memmap::InternalRam) || memmap::is_in(address, memmap::HighRam)) {
         return m_emulator->get_ram()->read_byte(address);
     }
-    if (memmap::is_in(address, memmap::VRam) || memmap::is_in(address, memmap::PpuIoRegisters)) {
+    if (memmap::is_in(address, memmap::VRam) || memmap::is_in(address, memmap::PpuIoRegisters)
+        || memmap::is_in(address, memmap::OamRam)) {
         return m_emulator->get_ppu()->read_byte(address);
     }
     if (memmap::is_in(address, memmap::SerialPort)) {
@@ -49,6 +50,10 @@ uint8_t AddressBus::read_byte(uint16_t address) const {
     }
     if (memmap::is_in(address, memmap::Joypad)) {
         return m_emulator->get_joypad()->read_byte();
+    }
+    if (memmap::is_in(address, memmap::EchoRam)) {
+        address -= (memmap::EchoRamBegin - memmap::InternalRamBegin);
+        return m_emulator->get_ram()->read_byte(address);
     }
     m_logger->error("Addressing unmapped memory byte at {:04X}", address);
     return 0xFF;
@@ -85,7 +90,10 @@ void AddressBus::write_byte(uint16_t address, uint8_t value) {
         m_logger->error("Write to prohibited memory");
     } else if (memmap::is_in(address, memmap::Joypad)) {
         m_emulator->get_joypad()->write_byte(value);
+    } else if (memmap::is_in(address, memmap::EchoRam)) {
+        address -= (memmap::EchoRamBegin - memmap::InternalRamBegin);
+        m_emulator->get_ram()->write_byte(address, value);
     } else {
-    m_logger->error("Writing unmapped memory byte at {:04X}", address);
+        m_logger->error("Writing unmapped memory byte at {:04X}", address);
     }
 }

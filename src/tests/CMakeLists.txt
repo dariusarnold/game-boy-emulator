@@ -23,6 +23,7 @@ add_executable(game_boy_emulator_tests
         test_mem_timing.cpp
         test_mooneye_mbc1.cpp
         test_mooneye_mbc5.cpp
+        test_mooneye_oam_dma.cpp
         test_dmg_acid2.cpp
         )
 

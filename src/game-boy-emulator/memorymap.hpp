@@ -13,7 +13,9 @@ class Single {
     uint16_t m_address;
 
 public:
-    constexpr Single(uint16_t address, uint16_t /* Only here so this has the same interface as Multi */) : m_address(address) {}
+    constexpr Single(uint16_t address,
+                     uint16_t /* Only here so this has the same interface as Multi */) :
+            m_address(address) {}
 
     [[nodiscard]] bool is_in(uint16_t address) const {
         return address == m_address;
@@ -71,6 +73,7 @@ struct AddressRange : public T {
     X(0x9C00, 0x9FFF, TileMap2)                                                                    \
     X(0xA000, 0xBFFF, CartridgeRam)                                                                \
     X(0xC000, 0xDFFF, InternalRam)                                                                 \
+    X(0xE000, 0xFDFF, EchoRam)                                                                     \
     X(0xFE00, 0xFE9F, OamRam)                                                                      \
     X(0xFF00, 0xFF7F, IORegisters)                                                                 \
     X(0xFF00, 0xFF00, Joypad)                                                                      \

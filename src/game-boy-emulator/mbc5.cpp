@@ -8,10 +8,15 @@
 #include <cassert>
 
 
+Mbc5::Mbc5(std::vector<uint8_t> rom, std::span<uint8_t> ram) :
+        Mbc(rom, ram),
+        m_required_rom_bits(std::log2(get_rom_info().size_bytes)),
+        m_required_ram_bits(std::log2(get_ram_info().size_bytes)) {}
+
+
 namespace {
 bool decide_ram_enable(uint8_t value) {
-    // Any value with 0xA as lower nibble enables the ram, every other value disables it.
-    return bitmanip::get_low_nibble(value) == 0xA;
+    return bitmanip::get_low_nibble(value) == 0x0A;
 }
 } // namespace
 
@@ -25,7 +30,8 @@ uint8_t Mbc5::read_byte(uint16_t address) const {
         auto address_bank_begin = get_rom_bank_number() * memmap::CartridgeRomBankSwitchableSize;
         auto address_in_bank = address - memmap::CartridgeRomBankSwitchableBegin;
         auto address_rom = static_cast<size_t>(address_bank_begin + address_in_bank);
-        assert(address_rom < get_ram().size() && "Read to cartridge RAM bank out of bounds");
+        address_rom = bitmanip::mask(address_rom, m_required_rom_bits);
+        assert(address_rom < get_rom().size() && "Read to cartridge RAM bank out of bounds");
         return get_rom()[address_rom];
     }
     if (memmap::is_in(address, memmap::CartridgeRam)) {
@@ -36,6 +42,7 @@ uint8_t Mbc5::read_byte(uint16_t address) const {
         auto address_bank_begin = (m_ram_bank_number & 0x0F) * memmap::CartridgeRamSize;
         auto address_in_bank = address - memmap::CartridgeRamBegin;
         auto address_in_ram = static_cast<size_t>(address_bank_begin + address_in_bank);
+        address_in_ram = bitmanip::mask(address_in_ram, m_required_ram_bits);
         assert(address_in_ram < get_ram().size() && "Read to cartridge RAM bank out of bounds");
         return get_ram()[address_in_ram];
     }
@@ -43,8 +50,11 @@ uint8_t Mbc5::read_byte(uint16_t address) const {
 }
 
 void Mbc5::write_byte(uint16_t address, uint8_t value) {
-    write_registers(address, value);
-    write_values(address, value);
+    if (memmap::is_in(address, memmap::CartridgeRam)) {
+        write_values(address, value);
+    } else {
+        write_registers(address, value);
+    }
 }
 
 namespace {
@@ -63,22 +73,24 @@ void Mbc5::write_registers(uint16_t address, uint8_t value) {
     } else if (memmap::is_in(address, memmap::RamBankNumber)) {
         m_ram_bank_number = value;
     }
+    get_logger()->debug("MBC5 registers: RAM enable {} RAM bank {} ROM_LOW {} ROM_HIGH {}",
+                        m_ram_enable, m_ram_bank_number, m_rom_bank_number_low,
+                        m_rom_bank_number_high);
 }
 
 void Mbc5::write_values(uint16_t address, uint8_t value) {
     // Actual RAM writes
-    if (memmap::is_in(address, memmap::CartridgeRam)) {
-        if (!m_ram_enable) {
-            get_logger()->warn("Write to {:04X} with disabled ram");
-            return;
-        }
-
-        auto address_bank_begin = (m_ram_bank_number & 0x0F) * memmap::CartridgeRamSize;
-        auto address_in_bank = address - memmap::CartridgeRamBegin;
-        auto address_in_ram = static_cast<size_t>(address_bank_begin + address_in_bank);
-        assert(address_in_ram < get_ram().size() && "Read to cartridge RAM bank out of bounds");
-        get_ram()[address_in_ram] = value;
+    if (!m_ram_enable) {
+        get_logger()->warn("Write to {:04X} with disabled ram", address);
+        return;
     }
+
+    auto address_bank_begin = (m_ram_bank_number & 0x0F) * memmap::CartridgeRamSize;
+    auto address_in_bank = address - memmap::CartridgeRamBegin;
+    auto address_in_ram = static_cast<size_t>(address_bank_begin + address_in_bank);
+    address_in_ram = bitmanip::mask(address_in_ram, m_required_ram_bits);
+    assert(address_in_ram < get_ram().size() && "Read to cartridge RAM bank out of bounds");
+    get_ram()[address_in_ram] = value;
 }
 
 uint16_t Mbc5::get_rom_bank_number() const {

@@ -75,6 +75,7 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
     case CartridgeType::MBC5_RAM_BATTERY:
     case CartridgeType::MBC5_RUMBLE_RAM_BATTERY:
     case CartridgeType::MBC5_RUMBLE:
+    case CartridgeType::MBC5_RUMBLE_RAM:
         m_mbc = std::make_unique<Mbc5>(std::move(rom), ram);
         break;
     default:

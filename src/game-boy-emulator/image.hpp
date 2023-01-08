@@ -27,7 +27,7 @@ struct SdlTextureDeleter {
 /**
  * Couples a framebuffer to SDL rendering.
  */
- template <size_t Width, size_t Height>
+template <size_t Width, size_t Height>
 class Image {
     size_t m_width = Width;
     size_t m_height = Height;
@@ -49,6 +49,6 @@ public:
     [[nodiscard]] SDL_Texture* get_texture() const;
 
     void save_as_bitmap(std::string_view filename) const;
- };
+};
 
 #include "image.tpp"

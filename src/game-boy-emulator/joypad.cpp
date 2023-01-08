@@ -55,9 +55,9 @@ void Joypad::write_byte(uint8_t value) {
     auto select_direction_bit
         = bitmanip::bit_value(value, static_cast<int>(Joypad::BitValues::SelectDirectionButtons));
     bitmanip::set_bit(m_register, static_cast<int>(Joypad::BitValues::SelectActionButtons),
-                            select_action_bit);
+                      select_action_bit);
     bitmanip::set_bit(m_register, static_cast<int>(Joypad::BitValues::SelectDirectionButtons),
-                            select_direction_bit);
+                      select_direction_bit);
 }
 
 Joypad::KeyStatus Joypad::get_key_state(Joypad::Keys key) const {

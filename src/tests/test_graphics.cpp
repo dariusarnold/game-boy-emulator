@@ -219,3 +219,4 @@ TEST_CASE("Using mirrored TileIndex to access Framebuffer") {
         CHECK(fb.get_pixel(tim.pixel_index(1, 1)) == 1);
     }
 }
+

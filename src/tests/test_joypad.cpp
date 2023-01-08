@@ -7,7 +7,7 @@ namespace {
 uint8_t REQUEST_ACTION_BUTTONS = 0b011111;
 uint8_t REQUEST_DIRECTION_BUTTONS = 0b101111;
 uint8_t REQUEST_BOTH_TYPES = 0b001111;
-}
+} // namespace
 
 TEST_CASE("Register FF00") {
     Joypad jp(nullptr);

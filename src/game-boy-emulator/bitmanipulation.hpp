@@ -14,7 +14,8 @@ void unset(uint8_t& input, uint8_t position);
  * Set bit at position to value
  * @param input Byte to modify
  * @param position 0..7 where 0 is the least significant bit
- */;
+ */
+;
 void set_bit(uint8_t& input, uint8_t position, uint8_t value);
 
 template <typename T, typename U>

@@ -23,6 +23,7 @@ public:
 
     // Write memory mapped ram contents to disk.
     void sync();
+
 private:
     // Memory bank controllers (MBCs) are used to expand the available address space by bank
     // switching.

@@ -20,6 +20,6 @@ public:
 
     MemoryMappedFile(const MemoryMappedFile&) = delete;
     MemoryMappedFile& operator=(const MemoryMappedFile&) = delete;
-    MemoryMappedFile( MemoryMappedFile&&) = delete;
+    MemoryMappedFile(MemoryMappedFile&&) = delete;
     MemoryMappedFile& operator=(MemoryMappedFile&&) = delete;
 };

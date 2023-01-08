@@ -37,17 +37,17 @@ void InterruptHandler::callback_instruction_elapsed() {
 
 void InterruptHandler::write_interrupt_enable(uint8_t val) {
     m_logger->debug("Write interrupt enable VBlank {}, LCD STAT {}, Timer {}, Serial {}, Joypad {}",
-                   bitmanip::is_bit_set(val, 0), bitmanip::is_bit_set(val, 1),
-                   bitmanip::is_bit_set(val, 2), bitmanip::is_bit_set(val, 3),
-                   bitmanip::is_bit_set(val, 4));
+                    bitmanip::is_bit_set(val, 0), bitmanip::is_bit_set(val, 1),
+                    bitmanip::is_bit_set(val, 2), bitmanip::is_bit_set(val, 3),
+                    bitmanip::is_bit_set(val, 4));
     m_interrupt_enable_register = val;
 }
 
 void InterruptHandler::write_interrupt_flag(uint8_t val) {
     m_logger->debug("Write interrupt flag VBlank {}, LCD STAT {}, Timer {}, Serial {}, Joypad {}",
-                   bitmanip::is_bit_set(val, 0), bitmanip::is_bit_set(val, 1),
-                   bitmanip::is_bit_set(val, 2), bitmanip::is_bit_set(val, 3),
-                   bitmanip::is_bit_set(val, 4));
+                    bitmanip::is_bit_set(val, 0), bitmanip::is_bit_set(val, 1),
+                    bitmanip::is_bit_set(val, 2), bitmanip::is_bit_set(val, 3),
+                    bitmanip::is_bit_set(val, 4));
     m_interrupt_request_flags = val;
 }
 

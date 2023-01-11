@@ -33,6 +33,11 @@ constexpr int SPRITE_VIEWER_HEIGHT = 8;
 
 constexpr int OAM_DMA_NUM_BYTES = 160;
 
+// CPU speed
+constexpr int CLOCK_SPEED_T = 4194304;
+// Speed in M cycles
+constexpr int CLOCK_SPEED_M = CLOCK_SPEED_T / 4;
+
 } // namespace constants
 
 

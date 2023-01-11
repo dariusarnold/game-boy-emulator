@@ -57,6 +57,18 @@ add_library(game_boy_emulator_library
         game-boy-emulator/memorymappedfile.hpp
         game-boy-emulator/dmatransfer.cpp
         game-boy-emulator/dmatransfer.hpp
+        game-boy-emulator/audiochannel.cpp
+        game-boy-emulator/audiochannel.hpp
+        game-boy-emulator/pulsechannel.cpp
+        game-boy-emulator/pulsechannel.hpp
+        game-boy-emulator/wavechannel.cpp
+        game-boy-emulator/wavechannel.hpp
+        game-boy-emulator/noisechannel.cpp
+        game-boy-emulator/noisechannel.hpp
+        game-boy-emulator/audio.cpp
+        game-boy-emulator/audio.hpp
+        game-boy-emulator/resampler.cpp
+        game-boy-emulator/resampler.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

@@ -1,6 +1,8 @@
 #include "emulator.hpp"
 #include "window.hpp"
 #include "ppu.hpp"
+#include "apu.hpp"
+#include "audio.hpp"
 
 #include "spdlog/spdlog.h"
 #include "argparse/argparse.hpp"
@@ -40,6 +42,9 @@ int main(int argc, char** argv) { // NOLINT
 
     Window window(emulator);
     emulator.set_draw_function([&]() { window.vblank_callback(); });
+
+    Audio audio;
+    emulator.set_audio_function([&](SampleFrame sample){audio.callback(sample);});
 
     // Main loop
     while (!window.is_done()) {

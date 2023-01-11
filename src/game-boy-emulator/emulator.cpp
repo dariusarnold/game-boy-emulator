@@ -93,6 +93,10 @@ void Emulator::elapse_cycle() {
     m_state.cycles_m += 1;
     m_timer->cycle_elapsed_callback(m_state.cycles_m);
     m_ppu->cycle_elapsed_callback(m_state.cycles_m);
+    m_apu->cycle_elapsed_callback(m_state.cycles_m);
+    if (m_audio_function) {
+        m_audio_function(m_apu->get_sample());
+    }
 }
 
 std::shared_ptr<Ppu> Emulator::get_ppu() const {
@@ -216,4 +220,8 @@ void Emulator::debug() {
     if (m_debug_function) {
         m_debug_function();
     }
+}
+
+void Emulator::set_audio_function(std::function<void(SampleFrame)> f) {
+    m_audio_function = std::move(f);
 }

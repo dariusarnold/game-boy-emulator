@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "options.hpp"
 #include "graphics.hpp"
+#include "apu.hpp"
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -98,6 +99,7 @@ public:
     void set_draw_function(std::function<void()> f);
     void debug();
     void set_debug_function(std::function<void()> f);
+    void set_audio_function(std::function<void(SampleFrame s)> f);
 
     size_t get_cycle_count();
 
@@ -122,4 +124,6 @@ private:
     // Function which is called on LD B,B instruction, which is used sort of as a debug
     // breakpoint.
     std::function<void()> m_debug_function;
+    // Function which is called with a new sample generated from the APU every cycle.
+    std::function<void(SampleFrame s)> m_audio_function;
 };

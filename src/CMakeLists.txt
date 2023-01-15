@@ -69,6 +69,8 @@ add_library(game_boy_emulator_library
         game-boy-emulator/audio.hpp
         game-boy-emulator/resampler.cpp
         game-boy-emulator/resampler.hpp
+        game-boy-emulator/clocktimer.cpp
+        game-boy-emulator/clocktimer.hpp
         )
 
 target_include_directories(game_boy_emulator_library PUBLIC

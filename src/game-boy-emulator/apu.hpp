@@ -6,6 +6,7 @@ class logger;
 #include "pulsechannel.hpp"
 #include "wavechannel.hpp"
 #include "noisechannel.hpp"
+#include "clocktimer.hpp"
 #include <memory>
 #include <cstdint>
 #include <array>
@@ -27,13 +28,15 @@ class Apu {
     bool m_apu_enabled = false;
     // Corresponds to value of 0xFF25/NR51 register
     uint8_t m_sound_panning = 0;
-    // Correspons to value of 0xFF24/NR50
+    // Corresponds to value of 0xFF24/NR50
     uint8_t m_master_volume = 0;
 
     PulseChannel m_channel1;
     PulseChannel m_channel2;
     WaveChannel m_channel3;
     NoiseChannel m_channel4;
+
+    ClockTimer m_frame_sequencer_timer;
 
     // Get right/left volume from NR50
     uint8_t get_left_output_volume() const;

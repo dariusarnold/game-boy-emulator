@@ -13,13 +13,10 @@ const uint16_t NR11_ADDRESS = 0xFF11;
 const uint16_t NR12_ADDRESS = 0xFF12;
 const uint16_t NR13_ADDRESS = 0xFF13;
 const uint16_t NR14_ADDRESS = 0xFF14;
-
-const int ENVELOPE_SWEEP_FREQ = 64;
-const int SOUND_LENGTH_FREQ = 256;
-const int CHA1_FREQ_SWEEP = 128;
 } // namespace
 
-Apu::Apu() : m_logger(spdlog::get("")) {}
+// Frame sequencer ticks every 8192 T cycle
+Apu::Apu() : m_logger(spdlog::get("")), m_frame_sequencer_timer(2048) {}
 
 uint8_t Apu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::Apu)) {
@@ -85,7 +82,8 @@ void Apu::write_byte(uint16_t address, uint8_t value) {
             m_channel1.set_nrx4(value);
             break;
         default:
-            m_register_block1[address] = value;
+            m_logger->info("APU: Unhandled write at {:04X}", address);
+            m_register_block1.at(address- memmap::ApuBegin) = value;
             break;
         }
     } else if (memmap::is_in(address, memmap::WavePattern)) {
@@ -97,16 +95,64 @@ void Apu::write_byte(uint16_t address, uint8_t value) {
 void Apu::cycle_elapsed_callback(size_t cycle_count_m) {
     // TODO Use DIV-APU as a clock source
     (void)cycle_count_m;
-    if (cycle_count_m % CHA1_FREQ_SWEEP == 0) {
-        m_channel1.do_frequency_sweep();
+    if (m_frame_sequencer_timer.tick()) {
+        // Frame sequencer stepping:
+        // Step   Length Ctr  Vol Env     Sweep
+        //---------------------------------------
+        // 0      Clock       -           -
+        // 1      -           -           -
+        // 2      Clock       -           Clock
+        // 3      -           -           -
+        // 4      Clock       -           -
+        // 5      -           -           -
+        // 6      Clock       -           Clock
+        // 7      -           Clock       -
+        //---------------------------------------
+        // Rate   256 Hz      64 Hz       128 Hz
+        auto frame_sequencer_step = m_frame_sequencer_timer.get_trigger_count() % 8;
+        switch (frame_sequencer_step) {
+        case 0:
+            m_channel1.do_sound_length();
+            break;
+        case 1:
+            break;
+        case 2:
+            m_channel1.do_sound_length();
+            m_channel1.do_frequency_sweep();
+            break;
+        case 3:
+            break;
+        case 4:
+            m_channel1.do_sound_length();
+            break;
+        case 5:
+            break;
+        case 6:
+            m_channel1.do_sound_length();
+            m_channel1.do_frequency_sweep();
+            break;
+        case 7:
+            m_channel1.do_envelope_sweep();
+            break;
+        }
     }
-    if (cycle_count_m % ENVELOPE_SWEEP_FREQ == 0) {
-        m_channel1.do_envelope_sweep();
-    }
-    if (cycle_count_m % SOUND_LENGTH_FREQ == 0) {
-        m_channel1.do_sound_length();
-    }
+    m_channel1.tick_wave();
 }
+
+
+namespace {
+float capacitor = 0.;
+
+float high_pass(float in, bool dacs_enabled) {
+    float out = 0.;
+    if (dacs_enabled) {
+        out = in - capacitor;
+        // Capacitor slowly charges to in via their difference
+        capacitor = in - out * 0.999832011;
+    }
+    return out;
+}
+} // namespace
 
 SampleFrame Apu::get_sample() {
     SampleFrame out;
@@ -116,12 +162,19 @@ SampleFrame Apu::get_sample() {
     if (m_channel1.is_enabled()) {
         // Channel output is 0..15, DAC converts it to -1..1
         auto value_digital = m_channel1.get_sample();
+        assert(value_digital >= 0 && value_digital < 16 && "Channel 1 digital value out of bounds");
         auto value_analog = convert_dac(value_digital);
+        assert(value_analog >= -1 && value_analog <= 1 && "Chanel 1 analog volume out of bounds");
+        value_analog = high_pass(value_analog, true);
         if (bitmanip::is_bit_set(m_sound_panning, 4)) {
-            out.left += value_analog * get_left_output_volume();
+            auto left_vol = get_left_output_volume();
+            assert(left_vol > 0 && left_vol < 9 && "left vol");
+            out.left += value_analog * left_vol;
         }
         if (bitmanip::is_bit_set(m_sound_panning, 0)) {
-            out.right += value_analog * get_right_output_volume();
+            auto right_vol = get_right_output_volume();
+            assert(right_vol > 0 && right_vol < 9 && "right vol");
+            out.right += value_analog * right_vol;
         }
     }
     return out;
@@ -138,5 +191,4 @@ uint8_t Apu::get_right_output_volume() const {
 
 float Apu::convert_dac(uint8_t value) {
     return (value - (15. / 2.)) / 7.5;
-    ;
 }

@@ -4,7 +4,7 @@
 #include "resampler.hpp"
 #include "SDL_audio.h"
 #include <vector>
-
+class Emulator;
 
 class Audio {
     SDL_AudioDeviceID m_device_id = 0;
@@ -15,8 +15,10 @@ class Audio {
         return c.size() * sizeof(typename Container::value_type);
     }
 
+    Emulator& m_emulator;
+
 public:
-    Audio();
+    explicit Audio(Emulator& emulator);
     ~Audio();
 
     void callback(SampleFrame sample);

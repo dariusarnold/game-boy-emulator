@@ -372,37 +372,49 @@ void Window::draw_menubar() {
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Settings")) {
-            if (ImGui::MenuItem("Toggle info window")) {
-                toggle(options.draw_info_window);
+            if (ImGui::BeginMenu("PPU debug")) {
+                if (ImGui::MenuItem("Toggle info window")) {
+                    toggle(options.draw_info_window);
+                }
+                if (ImGui::MenuItem("Toggle debug background")) {
+                    toggle(options.draw_debug_background);
+                }
+                if (ImGui::MenuItem("Toggle debug window")) {
+                    toggle(options.draw_debug_window);
+                }
+                if (ImGui::MenuItem("Toggle debug sprites")) {
+                    toggle(options.draw_debug_sprites);
+                }
+                if (ImGui::MenuItem("Toggle debug tile viewer")) {
+                    toggle(options.draw_debug_tiles);
+                }
+                ImGui::EndMenu();
             }
-            if (ImGui::MenuItem("Toggle debug background")) {
-                toggle(options.draw_debug_background);
+            if (ImGui::BeginMenu("Emulation speed")) {
+                if (ImGui::RadioButton("Speed 1", &options.game_speed, 1)) {
+                    options.fast_forward = false;
+                    options.game_speed = 1;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (ImGui::RadioButton("Speed 2", &options.game_speed, 2)) {
+                    options.fast_forward = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (ImGui::RadioButton("Speed 3", &options.game_speed, 3)) {
+                    options.fast_forward = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                if (ImGui::RadioButton("Speed 4", &options.game_speed, 4)) {
+                    options.fast_forward = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndMenu();
             }
-            if (ImGui::MenuItem("Toggle debug window")) {
-                toggle(options.draw_debug_window);
-            }
-            if (ImGui::MenuItem("Toggle debug sprites")) {
-                toggle(options.draw_debug_sprites);
-            }
-            if (ImGui::MenuItem("Toggle debug tile viewer")) {
-                toggle(options.draw_debug_tiles);
-            }
-            if (ImGui::RadioButton("Speed 1", &options.game_speed, 1)) {
-                options.fast_forward = false;
-                options.game_speed = 1;
-                ImGui::CloseCurrentPopup();
-            }
-            if (ImGui::RadioButton("Speed 2", &options.game_speed, 2)) {
-                options.fast_forward = true;
-                ImGui::CloseCurrentPopup();
-            }
-            if (ImGui::RadioButton("Speed 3", &options.game_speed, 3)) {
-                options.fast_forward = true;
-                ImGui::CloseCurrentPopup();
-            }
-            if (ImGui::RadioButton("Speed 4", &options.game_speed, 4)) {
-                options.fast_forward = true;
-                ImGui::CloseCurrentPopup();
+            if (ImGui::BeginMenu("Sound")) {
+                float volume = m_emulator.get_options().volume;
+                ImGui::SliderFloat("Volume", &volume, 0, 1);
+                m_emulator.get_options().volume = volume;
+                ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }

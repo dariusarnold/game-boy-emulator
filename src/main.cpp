@@ -43,7 +43,7 @@ int main(int argc, char** argv) { // NOLINT
     Window window(emulator);
     emulator.set_draw_function([&]() { window.vblank_callback(); });
 
-    Audio audio;
+    Audio audio(emulator);
     emulator.set_audio_function([&](SampleFrame sample){audio.callback(sample);});
 
     // Main loop

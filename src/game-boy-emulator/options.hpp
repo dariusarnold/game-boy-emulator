@@ -12,4 +12,5 @@ struct EmulatorOptions {
     bool draw_debug_tiles = true;
     bool fast_forward = false;
     int game_speed = 1;
+    float volume = 0.1;
 };

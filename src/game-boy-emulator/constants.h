@@ -38,6 +38,11 @@ constexpr int CLOCK_SPEED_T = 4194304;
 // Speed in M cycles
 constexpr int CLOCK_SPEED_M = CLOCK_SPEED_T / 4;
 
+// 100% volume is far too loud where the max value of a volume slider would induce tinnitus in
+// seconds. To be able to use the whole range of the volume slider, we scale the volume down by a
+// fixed value in addition to the scaling from the volume slider.
+constexpr float FIXED_VOLUME_SCALE = 0.1;
+
 } // namespace constants
 
 

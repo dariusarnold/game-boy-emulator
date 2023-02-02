@@ -20,7 +20,7 @@ Apu::Apu() : m_logger(spdlog::get("")), m_frame_sequencer_timer(2048) {}
 
 uint8_t Apu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::Apu)) {
-        m_logger->info("APU read {:04X}", address);
+        m_logger->trace("APU read {:04X}", address);
         switch (address) {
         case NR52_ADDRESS:
             return m_apu_enabled << 7 | m_channel4.is_enabled() << 3 | m_channel3.is_enabled() << 2
@@ -52,7 +52,7 @@ uint8_t Apu::read_byte(uint16_t address) {
 
 void Apu::write_byte(uint16_t address, uint8_t value) {
     if (memmap::is_in(address, memmap::Apu)) {
-        m_logger->info("APU write {:04X} value {:02X}", address, value);
+        m_logger->trace("APU write {:04X} value {:02X}", address, value);
         switch (address) {
         case NR52_ADDRESS:
             // Only bit 7 (APU on/off) is writable

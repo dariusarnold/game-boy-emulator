@@ -44,13 +44,9 @@ std::array<UnmappedColorGb, 8> convert_tile_line(uint8_t byte1, uint8_t byte2) {
 }
 
 ColorScreen to_screen_color(ColorGb color_gb) {
-    return get_screen_palette()[magic_enum::enum_integer(color_gb)];
-}
-
-constexpr std::array<ColorScreen, 4> get_screen_palette() {
-    constexpr std::array<ColorScreen, 4> palette
+    static std::array<ColorScreen, 4> palette
         = {ColorScreen::White, ColorScreen::LightGray, ColorScreen::DarkGray, ColorScreen::Black};
-    return palette;
+    return palette[magic_enum::enum_integer(color_gb)];
 }
 
 std::array<UnmappedColorGb, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data) {

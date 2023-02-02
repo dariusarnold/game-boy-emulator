@@ -80,15 +80,6 @@ std::array<UnmappedColorGb, 8> convert_tile_line(uint8_t byte1, uint8_t byte2);
 std::array<UnmappedColorGb, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_data);
 std::array<UnmappedColorGb, 128> tile_to_gb_color(std::span<uint8_t, 32> tile_data);
 
-
-constexpr std::array<ColorScreen, 4> get_screen_palette();
-
-template <typename It>
-void map_gb_color_to_rgba(It begin, It end) {
-    const auto palette = get_screen_palette();
-    std::for_each(begin, end, [palette](auto& x) { x = palette[x]; });
-}
-
 /**
  * Get index into a 1D array used to store 2D image by x,y coordinate.
  * 1D array consists of pixels in row-major order.

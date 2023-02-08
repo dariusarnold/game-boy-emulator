@@ -413,9 +413,31 @@ void Window::draw_menubar() {
             if (ImGui::BeginMenu("Sound")) {
                 float volume = m_emulator.get_options().volume;
                 ImGui::SliderFloat("Volume", &volume, 0, 1);
-                m_emulator.get_options().volume = volume;
+                options.volume = volume;
+                auto label = fmt::format("Toggle channel 1 (Now {})",
+                                         options.apu_channel1_enabled ? "ON" : "OFF");
+                if (ImGui::MenuItem(label.c_str())) {
+                    toggle(options.apu_channel1_enabled);
+                }
+                label = fmt::format("Toggle channel 2 (Now {})",
+                                    options.apu_channel2_enabled ? "ON" : "OFF");
+                if (ImGui::MenuItem(label.c_str())) {
+                    toggle(options.apu_channel2_enabled);
+                }
+                label = fmt::format("Toggle channel 3 (Now {})",
+                                    options.apu_channel2_enabled ? "ON" : "OFF");
+                if (ImGui::MenuItem(label.c_str())) {
+                    toggle(options.apu_channel3_enabled);
+                }
+                label = fmt::format("Toggle channel 4 (Now {})",
+                                    options.apu_channel2_enabled ? "ON" : "OFF");
+                if (ImGui::MenuItem(label.c_str())) {
+                    toggle(options.apu_channel4_enabled);
+                }
+
                 ImGui::EndMenu();
             }
+
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();

@@ -71,14 +71,5 @@ public:
     void do_envelope_sweep();
     void do_sound_length();
 
-//    void set_nrx0(uint8_t value) override;
-//    void set_nrx1(uint8_t value) override;
-//    void set_nrx2(uint8_t value) override;
-//    void set_nrx3(uint8_t value) override;
     void set_nrx4(uint8_t value) override;
-//    uint8_t read_nrx0() const override;
-//    uint8_t read_nrx1() const override;
-//    uint8_t read_nrx2() const override;
-//    uint8_t read_nrx3() const override;
-//    uint8_t read_nrx4() const override;
 };

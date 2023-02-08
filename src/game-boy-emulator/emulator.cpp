@@ -22,7 +22,7 @@ Emulator::Emulator(EmulatorOptions options) :
         m_address_bus(std::make_shared<AddressBus>(this)),
         m_ram(std::make_shared<Ram>(this)),
         m_cpu(std::make_shared<Cpu>(this)),
-        m_apu(std::make_shared<Apu>()),
+        m_apu(std::make_shared<Apu>(this)),
         m_ppu(std::make_shared<Ppu>(this)),
         m_interrupt_handler(std::make_shared<InterruptHandler>(this)),
         m_timer(std::make_shared<Timer>(this)),

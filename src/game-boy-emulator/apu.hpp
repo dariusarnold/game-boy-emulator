@@ -10,6 +10,7 @@ class logger;
 #include <memory>
 #include <cstdint>
 #include <array>
+class Emulator;
 
 struct SampleFrame {
     float left = 0;
@@ -45,8 +46,10 @@ class Apu {
     // Analog-Digital conversion of value in range 0..15 to value in range -1..1
     float convert_dac(uint8_t value);
 
+    Emulator* m_emulator;
+
 public:
-    Apu();
+    Apu(Emulator* emulator);
 
     uint8_t read_byte(uint16_t address);
 

@@ -75,35 +75,6 @@ void PulseChannel::do_frequency_sweep() {
             }
         }
     }
-
-
-    //    if (get_wavelength_sweep_pace() == 0) {
-    //        // When the pace is 0 iterations are disabled.
-    //        return;
-    //    }
-    //    if (m_sweep_counter == get_wavelength_sweep_pace()) {
-    //        // Enough ticks occured to actually do a frequency sweep
-    //        m_sweep_counter = 0;
-    //        int wavelength = get_current_wavelength();
-    //        auto n = get_sweep_slope();
-    //        if (get_sweep_direction() == SweepDirection::Increase) {
-    //            wavelength += wavelength / std::pow(2, n);
-    //        } else {
-    //            wavelength -= wavelength / std::pow(2, n);
-    //        }
-    //        if (wavelength > 0x7FF) {
-    //            // If the wavelength would overflow, the channel is disabled
-    //            set_enabled(false);
-    //            return;
-    //        }
-    //        if (get_wavelength_sweep_pace() != 0) {
-    //            // For a slope of 0 iterations do nothing (except possibly turn of the channel if
-    //            the
-    //            // new wavelength would overflow).
-    //            set_wavelength(wavelength);
-    //        }
-    //    }
-    //    m_sweep_counter++;
 }
 
 void PulseChannel::do_envelope_sweep() {
@@ -194,12 +165,6 @@ void PulseChannel::set_length_timer(uint8_t length_timer) {
     auto new_value = prev_value | length_timer;
     set_nrx1(new_value);
 }
-
-namespace {
-const int ENVELOPE_SWEEP_FREQ = 64;
-const int SOUND_LENGTH_FREQ = 256;
-const int CHA1_FREQ_SWEEP = 128;
-} // namespace
 
 void PulseChannel::tick_wave() {
     m_cycle_count++;

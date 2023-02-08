@@ -1,6 +1,7 @@
 #include "apu.hpp"
 #include "memorymap.hpp"
 #include "bitmanipulation.hpp"
+#include "emulator.hpp"
 #include "spdlog/spdlog.h"
 
 
@@ -13,10 +14,15 @@ const uint16_t NR11_ADDRESS = 0xFF11;
 const uint16_t NR12_ADDRESS = 0xFF12;
 const uint16_t NR13_ADDRESS = 0xFF13;
 const uint16_t NR14_ADDRESS = 0xFF14;
+const uint16_t NR21_ADDRESS = 0xFF16;
+const uint16_t NR22_ADDRESS = 0xFF17;
+const uint16_t NR23_ADDRESS = 0xFF18;
+const uint16_t NR24_ADDRESS = 0xFF19;
 } // namespace
 
 // Frame sequencer ticks every 8192 T cycle
-Apu::Apu() : m_logger(spdlog::get("")), m_frame_sequencer_timer(2048) {}
+Apu::Apu(Emulator* emulator) :
+        m_logger(spdlog::get("")), m_frame_sequencer_timer(2048), m_emulator(emulator) {}
 
 uint8_t Apu::read_byte(uint16_t address) {
     if (memmap::is_in(address, memmap::Apu)) {
@@ -81,9 +87,21 @@ void Apu::write_byte(uint16_t address, uint8_t value) {
         case NR14_ADDRESS:
             m_channel1.set_nrx4(value);
             break;
+        case NR21_ADDRESS:
+            m_channel2.set_nrx1(value);
+            break;
+        case NR22_ADDRESS:
+            m_channel2.set_nrx2(value);
+            break;
+        case NR23_ADDRESS:
+            m_channel2.set_nrx3(value);
+            break;
+        case NR24_ADDRESS:
+            m_channel2.set_nrx4(value);
+            break;
         default:
             m_logger->info("APU: Unhandled write at {:04X}", address);
-            m_register_block1.at(address- memmap::ApuBegin) = value;
+            m_register_block1.at(address - memmap::ApuBegin) = value;
             break;
         }
     } else if (memmap::is_in(address, memmap::WavePattern)) {
@@ -113,37 +131,43 @@ void Apu::cycle_elapsed_callback(size_t cycle_count_m) {
         switch (frame_sequencer_step) {
         case 0:
             m_channel1.do_sound_length();
+            m_channel2.do_sound_length();
             break;
         case 1:
             break;
         case 2:
             m_channel1.do_sound_length();
+            m_channel2.do_sound_length();
+            // Only channel 1 has the frequency/wavelength sweep ability (not channel 2).
             m_channel1.do_frequency_sweep();
             break;
         case 3:
             break;
         case 4:
             m_channel1.do_sound_length();
+            m_channel2.do_sound_length();
             break;
         case 5:
             break;
         case 6:
             m_channel1.do_sound_length();
+            m_channel2.do_sound_length();
             m_channel1.do_frequency_sweep();
             break;
         case 7:
             m_channel1.do_envelope_sweep();
+            m_channel2.do_envelope_sweep();
             break;
         }
     }
     m_channel1.tick_wave();
+    m_channel2.tick_wave();
 }
 
 
 namespace {
-float capacitor = 0.;
 
-float high_pass(float in, bool dacs_enabled) {
+float high_pass_impl(float& capacitor, float in, bool dacs_enabled) {
     float out = 0.;
     if (dacs_enabled) {
         out = in - capacitor;
@@ -152,32 +176,91 @@ float high_pass(float in, bool dacs_enabled) {
     }
     return out;
 }
+
+float high_pass_left(float in, bool dacs_enabled) {
+    static float capacitor = 0;
+    return high_pass_impl(capacitor, in, dacs_enabled);
+}
+
+float high_pass_right(float in, bool dacs_enabled) {
+    static float capacitor = 0;
+    return high_pass_impl(capacitor, in, dacs_enabled);
+}
+
+SampleFrame high_pass(SampleFrame in) {
+    in.left = high_pass_left(in.left, true);
+    in.right = high_pass_right(in.right, true);
+    return in;
+}
+
+const int CH4_LEFT = 7;
+const int CH3_LEFT = 6;
+const int CH2_LEFT = 5;
+const int CH1_LEFT = 4;
+const int CH4_RIGHT = 3;
+const int CH3_RIGHT = 2;
+const int CH2_RIGHT = 1;
+const int CH1_RIGHT = 0;
+
 } // namespace
 
 SampleFrame Apu::get_sample() {
-    SampleFrame out;
     if (!m_apu_enabled) {
-        return out;
+        return {};
     }
+
+    struct ChannelSamples {
+        float ch1 = 0;
+        float ch2 = 0;
+        float ch3 = 0;
+        float ch4 = 0;
+    };
+    auto mix = [&](const ChannelSamples& samples) {
+        // Pan audio channel samples depending on NR51
+        SampleFrame out;
+        auto options = m_emulator->get_options();
+        if (options.apu_channel1_enabled && bitmanip::is_bit_set(m_sound_panning, CH1_LEFT)) {
+            out.left += samples.ch1;
+        }
+        if (options.apu_channel1_enabled && bitmanip::is_bit_set(m_sound_panning, CH1_RIGHT)) {
+            out.right += samples.ch1;
+        }
+        if (options.apu_channel2_enabled && bitmanip::is_bit_set(m_sound_panning, CH2_LEFT)) {
+            out.left += samples.ch2;
+        }
+        if (options.apu_channel2_enabled && bitmanip::is_bit_set(m_sound_panning, CH2_RIGHT)) {
+            out.right += samples.ch2;
+        }
+        if (options.apu_channel3_enabled && bitmanip::is_bit_set(m_sound_panning, CH3_LEFT)) {
+            out.left += samples.ch3;
+        }
+        if (options.apu_channel3_enabled && bitmanip::is_bit_set(m_sound_panning, CH3_RIGHT)) {
+            out.right += samples.ch3;
+        }
+        if (options.apu_channel4_enabled && bitmanip::is_bit_set(m_sound_panning, CH4_LEFT)) {
+            out.left += samples.ch4;
+        }
+        if (options.apu_channel4_enabled && bitmanip::is_bit_set(m_sound_panning, CH4_RIGHT)) {
+            out.right += samples.ch4;
+        }
+        return out;
+    };
+
+    ChannelSamples samples;
     if (m_channel1.is_enabled()) {
         // Channel output is 0..15, DAC converts it to -1..1
         auto value_digital = m_channel1.get_sample();
-        assert(value_digital >= 0 && value_digital < 16 && "Channel 1 digital value out of bounds");
-        auto value_analog = convert_dac(value_digital);
-        assert(value_analog >= -1 && value_analog <= 1 && "Chanel 1 analog volume out of bounds");
-        value_analog = high_pass(value_analog, true);
-        if (bitmanip::is_bit_set(m_sound_panning, 4)) {
-            auto left_vol = get_left_output_volume();
-            assert(left_vol > 0 && left_vol < 9 && "left vol");
-            out.left += value_analog * left_vol;
-        }
-        if (bitmanip::is_bit_set(m_sound_panning, 0)) {
-            auto right_vol = get_right_output_volume();
-            assert(right_vol > 0 && right_vol < 9 && "right vol");
-            out.right += value_analog * right_vol;
-        }
+        samples.ch1 = convert_dac(value_digital);
     }
-    return out;
+    if (m_channel2.is_enabled()) {
+        auto value_digital = m_channel2.get_sample();
+        samples.ch2 = convert_dac(value_digital);
+    }
+    auto mixed_sample = mix(samples);
+    mixed_sample.left *= get_left_output_volume();
+    mixed_sample.right *= get_right_output_volume();
+    mixed_sample = high_pass(mixed_sample);
+    return mixed_sample;
 }
 
 uint8_t Apu::get_left_output_volume() const {

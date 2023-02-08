@@ -70,7 +70,7 @@ ColorScreen to_screen_color(ColorGb color_gb);
  * available on the game boy.
  * Will return an array of values 0b0, 0b01, 0b10, 0b11, which has to be colorized by a palette.
  */
-std::array<UnmappedColorGb, 8> convert_tile_line(uint8_t byte1, uint8_t byte2);
+const std::array<UnmappedColorGb, 8>& convert_tile_line(uint8_t byte1, uint8_t byte2);
 
 /**
  * This takes one tile and converts it from the 2bpp format to rgba format.

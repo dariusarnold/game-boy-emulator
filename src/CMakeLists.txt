@@ -85,6 +85,8 @@ target_link_libraries(game_boy_emulator_library PUBLIC
         fmt::fmt
         Boost::Boost
         )
+# Required for the compile time caching of tile lines.
+target_compile_options(game_boy_emulator_library PRIVATE -fconstexpr-ops-limit=335544320)
 
 add_executable(game_boy_emulator
         main.cpp

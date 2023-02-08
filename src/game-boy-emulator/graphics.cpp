@@ -32,7 +32,7 @@ void load_texture_rgba(const uint32_t* data, int width, int height, GLuint* out_
 
 namespace {
 
-constexpr std::array<std::array<graphics::gb::UnmappedColorGb, 8>, 256 * 256> cache{[]() constexpr {
+constexpr std::array<std::array<graphics::gb::UnmappedColorGb, 8>, 256 * 256> cache{[]() consteval {
     std::array<std::array<graphics::gb::UnmappedColorGb, 8>, 256 * 256> arr{};
     for (unsigned b1 = 0; b1 <= 255; ++b1) {
         for (unsigned b2 = 0; b2 <= 255; ++b2) {

@@ -10,8 +10,10 @@
 
 Mbc5::Mbc5(std::vector<uint8_t> rom, std::span<uint8_t> ram) :
         Mbc(rom, ram),
-        m_required_rom_bits(std::log2(get_rom_info().size_bytes)),
-        m_required_ram_bits(std::log2(get_ram_info().size_bytes)) {}
+        m_required_rom_bits(static_cast<decltype(m_required_rom_bits)>(
+            std::ceil(std::log2(get_rom_info().size_bytes)))),
+        m_required_ram_bits(static_cast<decltype(m_required_ram_bits)>(
+            std::ceil(std::log2(get_ram_info().size_bytes)))) {}
 
 
 namespace {

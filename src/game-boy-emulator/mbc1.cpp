@@ -102,5 +102,7 @@ void Mbc1::write_values(uint16_t address, uint8_t value) {
 
 Mbc1::Mbc1(std::vector<uint8_t> rom, std::span<uint8_t> ram) :
         Mbc(std::move(rom), ram),
-        m_required_rom_bits(std::log2(get_rom_info().size_bytes)),
-        m_required_ram_bits(std::log2(get_ram_info().size_bytes)) {}
+        m_required_rom_bits(static_cast<decltype(m_required_rom_bits)>(
+            std::ceil(std::log2(get_rom_info().size_bytes)))),
+        m_required_ram_bits(static_cast<decltype(m_required_ram_bits)>(
+            std::ceil(std::log2(get_ram_info().size_bytes)))) {}

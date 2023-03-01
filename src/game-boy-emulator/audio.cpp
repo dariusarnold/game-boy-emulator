@@ -46,7 +46,7 @@ namespace {
 // Scale input value logarithmically to account for the perception of volume.
 // A logarithmic scale gives the perception of a linear volume change.
 float calc_volume_log(float volume) {
-    return (std::exp(volume) - 1) / (std::exp(1) - 1);
+    return (std::exp(volume) - 1.f) / (std::exp(1.f) - 1.f);
 }
 }
 
@@ -61,6 +61,6 @@ void Audio::callback(SampleFrame sample) {
             sf.left *= volume;
             sf.right *= volume;
         });
-        SDL_QueueAudio(m_device_id, resampled_data.data(), get_buffersize_bytes(resampled_data));
+        SDL_QueueAudio(m_device_id, resampled_data.data(), static_cast<Uint32>(get_buffersize_bytes(resampled_data)));
     }
 }

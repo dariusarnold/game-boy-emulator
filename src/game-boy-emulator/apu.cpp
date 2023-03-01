@@ -172,7 +172,7 @@ float high_pass_impl(float& capacitor, float in, bool dacs_enabled) {
     if (dacs_enabled) {
         out = in - capacitor;
         // Capacitor slowly charges to in via their difference
-        capacitor = in - out * 0.999832011;
+        capacitor = in - out * 0.999832011f;
     }
     return out;
 }
@@ -273,5 +273,5 @@ uint8_t Apu::get_right_output_volume() const {
 }
 
 float Apu::convert_dac(uint8_t value) {
-    return (value - (15. / 2.)) / 7.5;
+    return (value - (15.f / 2.f)) / 7.5f;
 }

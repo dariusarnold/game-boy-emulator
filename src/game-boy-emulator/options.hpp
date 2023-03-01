@@ -19,7 +19,7 @@ struct EmulatorOptions {
     // Fast forward multiplier
     int game_speed = 1;
     // Global sound volume
-    float volume = 0.1;
+    float volume = 0.1f;
     // Allows toggling the output of a channel of the APU on/off for sound debugging purposes.
     bool apu_channel1_enabled = true;
     bool apu_channel2_enabled = true;

@@ -66,8 +66,4 @@ uint8_t rotate_right_carry(uint8_t x, bool& carry_flag) {
     return x;
 }
 
-size_t mask(size_t value, uint8_t size_mask) {
-    return value & ((1U << size_mask) - 1);
-}
-
 } // namespace bitmanip

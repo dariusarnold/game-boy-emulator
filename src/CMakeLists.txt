@@ -86,7 +86,10 @@ target_link_libraries(game_boy_emulator_library PUBLIC
         Boost::Boost
         )
 # Required for the compile time caching of tile lines.
-target_compile_options(game_boy_emulator_library PRIVATE -fconstexpr-ops-limit=335544320)
+target_compile_options(game_boy_emulator_library PRIVATE
+        $<$<CXX_COMPILER_ID:GNU>:-fconstexpr-ops-limit=335544320>
+        $<$<CXX_COMPILER_ID:Clang>:-fconstexpr-steps=335544320>
+        )
 
 add_executable(game_boy_emulator
         main.cpp
@@ -170,7 +173,14 @@ if (WARNINGS_ENABLED)
             $<$<CXX_COMPILER_ID:GNU>:-Wnull-dereference>
             $<$<CXX_COMPILER_ID:GNU>:-Wundef>
             # Disabling the errors enabled by Weverything for clang which are not useful
+            # These warnings meaning is not warn me when I use something newer than this standard version but warn me
+            # when I use something from the standard version which works differently when compiling with an older
+            # standard. Since I am not interested in supporting older compiler versions, the warnings are disabled.
             $<$<CXX_COMPILER_ID:Clang>:-Wno-c++98-compat>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-c++11-compat>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-c++14-compat>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-c++17-compat>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-c++20-compat>
             $<$<CXX_COMPILER_ID:Clang>:-Wno-c++98-compat-pedantic>
             $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation>
             $<$<CXX_COMPILER_ID:Clang>:-Wno-padded>

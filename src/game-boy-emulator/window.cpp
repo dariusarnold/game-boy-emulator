@@ -413,23 +413,33 @@ void draw_menubar_settings_speed(EmulatorOptions& options) {
     ImGui::EndMenu();
 }
 
+namespace {
+std::string_view stringify_bool(bool b) {
+    return b ? "ON" : "OFF";
+}
+} // namespace
+
 void draw_menubar_settings_sound(EmulatorOptions& options, float volume) {
+    if (ImGui::MenuItem(
+            fmt::format("Toggle sound (Now {})", stringify_bool(options.sound_enabled)).c_str())) {
+        toggle(options.sound_enabled);
+    }
     ImGui::SliderFloat("Volume", &volume, 0, 1);
     options.volume = volume;
     auto label
-        = fmt::format("Toggle channel 1 (Now {})", options.apu_channel1_enabled ? "ON" : "OFF");
+        = fmt::format("Toggle channel 1 (Now {})", stringify_bool(options.apu_channel1_enabled));
     if (ImGui::MenuItem(label.c_str())) {
         toggle(options.apu_channel1_enabled);
     }
-    label = fmt::format("Toggle channel 2 (Now {})", options.apu_channel2_enabled ? "ON" : "OFF");
+    label = fmt::format("Toggle channel 2 (Now {})", stringify_bool(options.apu_channel2_enabled));
     if (ImGui::MenuItem(label.c_str())) {
         toggle(options.apu_channel2_enabled);
     }
-    label = fmt::format("Toggle channel 3 (Now {})", options.apu_channel2_enabled ? "ON" : "OFF");
+    label = fmt::format("Toggle channel 3 (Now {})", stringify_bool(options.apu_channel2_enabled));
     if (ImGui::MenuItem(label.c_str())) {
         toggle(options.apu_channel3_enabled);
     }
-    label = fmt::format("Toggle channel 4 (Now {})", options.apu_channel2_enabled ? "ON" : "OFF");
+    label = fmt::format("Toggle channel 4 (Now {})", stringify_bool(options.apu_channel2_enabled));
     if (ImGui::MenuItem(label.c_str())) {
         toggle(options.apu_channel4_enabled);
     }

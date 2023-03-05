@@ -94,7 +94,7 @@ void Emulator::elapse_cycle() {
     m_timer->cycle_elapsed_callback(m_state.cycles_m);
     m_ppu->cycle_elapsed_callback(m_state.cycles_m);
     m_apu->cycle_elapsed_callback(m_state.cycles_m);
-    if (m_audio_function) {
+    if (m_audio_function && m_options.sound_enabled) {
         m_audio_function(m_apu->get_sample());
     }
 }

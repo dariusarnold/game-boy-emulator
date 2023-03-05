@@ -103,6 +103,7 @@ uint8_t Timer::read_byte(uint16_t address) const {
         return m_timer_modulo;
     case ADDRESS_TIMER_CONTROL:
         return m_timer_control;
+    default:
+        throw LogicError(fmt::format("Timer invalid read from {:04X}", address));
     }
-    throw LogicError(fmt::format("Timer invalid read from {:04X}", address));
 }

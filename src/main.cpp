@@ -33,7 +33,7 @@ int main(int argc, char** argv) { // NOLINT
     }
     auto rom_path = std::filesystem::absolute(program.get("rom"));
 
-    Emulator emulator({false});
+    Emulator emulator({});
     if (boot_rom_path.has_value()) {
         emulator.load_boot_game(boot_rom_path.value(), rom_path);
     } else {
@@ -60,7 +60,7 @@ int main(int argc, char** argv) { // NOLINT
             // and overwrote the existing object, the components would store the stack address of
             // the temporary object which would be invalid after leaving this block.
             // TODO Improve this.
-            new (&emulator) Emulator({false});
+            new (&emulator) Emulator({});
             emulator.load_game(path);
             emulator.set_draw_function([&]() { window.vblank_callback(); });
         }

@@ -63,7 +63,7 @@ const std::array<UnmappedColorGb, 8>& convert_tile_line(uint8_t byte1, uint8_t b
 }
 
 namespace {
-std::array<ColorScreen, 4> PALETTE
+const std::array<ColorScreen, 4> PALETTE
     = {ColorScreen::White, ColorScreen::LightGray, ColorScreen::DarkGray, ColorScreen::Black};
 }
 

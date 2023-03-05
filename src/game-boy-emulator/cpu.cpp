@@ -75,7 +75,7 @@ void Cpu::step() {
         instructionADD(current_instruction, data);
         break;
     case opcodes::InstructionType::ADD_Signed:
-        instructionADD_Signed(data);
+        instructionADD_Signed(static_cast<int8_t>(data));
         break;
     case opcodes::InstructionType::NOP:
         break;
@@ -911,7 +911,7 @@ void Cpu::instructionADD(opcodes::Instruction instruction, uint16_t data) {
 void Cpu::instructionADD_Signed(int8_t data) {
     set_zero_flag(BitValues::Inactive);
     set_subtract_flag(BitValues::Inactive);
-    int result = static_cast<int>(registers.sp + data);
+    auto result = static_cast<int>(registers.sp + data);
     set_half_carry_flag(((registers.sp ^ data ^ (result & 0xFFFF)) & 0x10) == 0x10);
     set_carry_flag(((registers.sp ^ data ^ (result & 0xFFFF)) & 0x100) == 0x100);
     registers.sp = result;

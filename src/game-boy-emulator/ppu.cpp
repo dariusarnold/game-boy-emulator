@@ -20,9 +20,7 @@ Ppu::Ppu(Emulator* emulator) :
         m_game_framebuffer(graphics::gb::ColorScreen::White),
         m_background_framebuffer(graphics::gb::ColorScreen::White),
         m_window_framebuffer(graphics::gb::ColorScreen::White),
-        m_oam_dma_transfer(emulator->get_bus(), std::span<uint8_t, constants::OAM_DMA_NUM_BYTES>{
-                                                    reinterpret_cast<uint8_t*>(m_oam_ram.data()),
-                                                    constants::OAM_DMA_NUM_BYTES}) {}
+        m_oam_dma_transfer(emulator->get_bus(), std::as_writable_bytes(std::span{m_oam_ram})) {}
 
 
 uint8_t Ppu::read_byte(uint16_t address) {
@@ -39,7 +37,8 @@ uint8_t Ppu::read_byte(uint16_t address) {
             m_logger->error("PPU: OAM read at {:04X} during mode {}", address,
                             magic_enum::enum_name(mode));
         }
-        return reinterpret_cast<uint8_t*>(m_oam_ram.data())[address - memmap::OamRamBegin];
+        return std::to_integer<uint8_t>(
+            std::as_bytes(std::span{m_oam_ram})[address - memmap::OamRamBegin]);
     }
     if (memmap::is_in(address, memmap::PpuIoRegisters)) {
         return m_registers.get_register_value(address);
@@ -66,7 +65,8 @@ void Ppu::write_byte(uint16_t address, uint8_t value) {
             m_logger->error("PPU: Oam write at {:04X} during mode {}", address,
                             magic_enum::enum_name(m_registers.get_mode()));
         }
-        reinterpret_cast<uint8_t*>(m_oam_ram.data())[address - memmap::OamRamBegin] = value;
+        std::as_writable_bytes(std::span{m_oam_ram})[address - memmap::OamRamBegin]
+            = std::byte{value};
     } else if (memmap::is_in(address, memmap::TileMaps)) {
         if (m_registers.is_ppu_enabled() && m_registers.get_mode() == PpuMode::PixelTransfer_3) {
             m_logger->error("PPU: VRAM write at {:04X} during pixel transfer", address);
@@ -300,6 +300,24 @@ bool bg_window_over_sprite(const OamEntry& oam_entry) {
     // Bit7   OBJ-to-BG Priority (0=OBJ Above BG, 1=OBJ behind BG color 1-3)
     return bitmanip::is_bit_set(oam_entry.m_flags, 7);
 }
+
+size_t calculate_pixel_index(const OamEntry& oam_entry, size_t x, size_t y) {
+    const static graphics::gb::TileIndexMirrorBothAxes tim(8, 8);
+    const static graphics::gb::TileIndexMirrorHorizontal tih(8, 8);
+    const static graphics::gb::TileIndexMirrorVertical tiv(8, 8);
+    const static graphics::gb::TileIndex ti(8, 8);
+    if (should_mirror_horizontally(oam_entry) && should_mirror_vertically(oam_entry)) {
+        return tim.pixel_index(x, y);
+    }
+    if (should_mirror_horizontally(oam_entry)) {
+        return tih.pixel_index(x, y);
+    }
+    if (should_mirror_vertically(oam_entry)) {
+        return tiv.pixel_index(x, y);
+    }
+    return ti.pixel_index(x, y);
+};
+
 } // namespace
 
 void Ppu::draw_sprites_line() {
@@ -322,6 +340,9 @@ void Ppu::draw_sprites_line() {
         visible_sprites.begin(), visible_sprites.end(),
         [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
     // Reverse order so the objects first in OAM stay (because they have higher priority).
+    // std::ranges::reverse_view doesn't work in clang 15, so we use the iterator alternative. To
+    // stop clang-tidy from complaining, disable just that warning.
+    // NOLINTNEXTLINE(modernize-loop-convert)
     for (auto oam_entry = visible_sprites.rbegin(); oam_entry != visible_sprites.rend();
          ++oam_entry) {
         // Skip offscreen sprites
@@ -335,22 +356,6 @@ void Ppu::draw_sprites_line() {
         auto palette_bit = bitmanip::is_bit_set(oam_entry->m_flags, 4);
         auto palette = palette_bit ? obj_palette_1 : obj_palette_0;
 
-        auto calculate_pixel_index = [&](size_t x, size_t y) {
-            const static graphics::gb::TileIndexMirrorBothAxes tim(8, 8);
-            const static graphics::gb::TileIndexMirrorHorizontal tih(8, 8);
-            const static graphics::gb::TileIndexMirrorVertical tiv(8, 8);
-            const static graphics::gb::TileIndex ti(8, 8);
-            if (should_mirror_horizontally(*oam_entry) && should_mirror_vertically(*oam_entry)) {
-                return tim.pixel_index(x, y);
-            }
-            if (should_mirror_horizontally(*oam_entry)) {
-                return tih.pixel_index(x, y);
-            }
-            if (should_mirror_vertically(*oam_entry)) {
-                return tiv.pixel_index(x, y);
-            }
-            return ti.pixel_index(x, y);
-        };
         // Y position in sprite (0...15)
         const auto sprite_y = screen_y - (oam_entry->m_y_position - 16);
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
@@ -361,7 +366,8 @@ void Ppu::draw_sprites_line() {
                 // This pixel of the sprite is hidden
                 continue;
             }
-            auto pixel_index = calculate_pixel_index(sprite_x, static_cast<size_t>(sprite_y));
+            auto pixel_index
+                = calculate_pixel_index(*oam_entry, sprite_x, static_cast<size_t>(sprite_y));
             auto pixel_color = tile[pixel_index];
             if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
                 // Color 0 is transparent for sprites, so those pixels are not drawn.
@@ -408,6 +414,7 @@ void Ppu::draw_tall_sprites_line() {
         visible_sprites.begin(), visible_sprites.end(),
         [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
     // Reverse order so the objects first in OAM stay (because they have higher priority).
+    // NOLINTNEXTLINE(modernize-loop-convert)
     for (auto oam_entry = visible_sprites.rbegin(); oam_entry != visible_sprites.rend();
          ++oam_entry) {
         // Skip sprites which are completly offscreen
@@ -423,22 +430,6 @@ void Ppu::draw_tall_sprites_line() {
         auto palette_bit = bitmanip::is_bit_set(oam_entry->m_flags, 4);
         auto palette = palette_bit ? obj_palette_1 : obj_palette_0;
 
-        auto calculate_pixel_index = [&](size_t x, size_t y) {
-            const static graphics::gb::TileIndexMirrorBothAxes tim(8, 16);
-            const static graphics::gb::TileIndexMirrorHorizontal tih(8, 16);
-            const static graphics::gb::TileIndexMirrorVertical tiv(8, 16);
-            const static graphics::gb::TileIndex ti(8, 16);
-            if (should_mirror_horizontally(*oam_entry) && should_mirror_vertically(*oam_entry)) {
-                return tim.pixel_index(x, y);
-            }
-            if (should_mirror_horizontally(*oam_entry)) {
-                return tih.pixel_index(x, y);
-            }
-            if (should_mirror_vertically(*oam_entry)) {
-                return tiv.pixel_index(x, y);
-            }
-            return ti.pixel_index(x, y);
-        };
         // Y position in sprite (0...15)
         const auto sprite_y = screen_y - (oam_entry->m_y_position - 16);
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
@@ -449,7 +440,8 @@ void Ppu::draw_tall_sprites_line() {
                 // This pixel of the sprite is hidden
                 continue;
             }
-            auto pixel_index = calculate_pixel_index(sprite_x, static_cast<size_t>(sprite_y));
+            auto pixel_index
+                = calculate_pixel_index(*oam_entry, sprite_x, static_cast<size_t>(sprite_y));
             auto pixel_color = tile[pixel_index];
             if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
                 // Color 0 is transparent for sprites, so those pixels are not drawn.

@@ -17,6 +17,13 @@ class Cartridge {
 public:
     Cartridge(Emulator* emulator, std::vector<uint8_t> rom);
     ~Cartridge();
+    // Sadly, to keep the forward declarations for Mbc and MemoryMappedFile, a destructor for
+    // Cartridge is required to be defined. This triggers warnings about the rule of five, to
+    // silence those we have to manually define the other functions.
+    Cartridge(const Cartridge&) = delete;
+    Cartridge& operator=(const Cartridge&) = delete;
+    Cartridge(Cartridge&&) = default;
+    Cartridge& operator=(Cartridge&&) = default;
 
     [[nodiscard]] uint8_t read_byte(uint16_t address) const;
     void write_byte(uint16_t address, uint8_t value);

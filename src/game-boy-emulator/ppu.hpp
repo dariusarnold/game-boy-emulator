@@ -5,6 +5,7 @@
 #include "constants.h"
 #include "framebuffer.hpp"
 #include "dmatransfer.hpp"
+#include "bitmanipulation.hpp"
 class Emulator;
 namespace spdlog {
 class logger;
@@ -20,8 +21,8 @@ struct OamEntry {
     uint8_t m_tile_index;
     uint8_t m_flags;
 };
-static_assert(sizeof(OamEntry) == 4 && "Padding in OamEntry detected");
-static_assert(alignof(OamEntry) == 1 && "Invalid alignment of OamEntry detected");
+static_assert(sizeof(OamEntry) == 4, "Padding in OamEntry detected");
+static_assert(alignof(OamEntry) == 1, "Invalid alignment of OamEntry detected");
 
 class Ppu {
     // 0x8000-0x97FFF
@@ -74,8 +75,9 @@ class Ppu {
     void draw_window_debug();
     void draw_vram_debug();
 
-    std::span<uint8_t, 16> get_sprite_tile(uint8_t tile_index);
-    std::span<uint8_t, 32> get_tall_sprite_tile(uint8_t tile_index);
+    std::span<uint8_t, constants::BYTES_PER_TILE> get_sprite_tile(uint8_t tile_index);
+    std::span<uint8_t, constants::BYTES_PER_TILE*2> get_tall_sprite_tile(uint8_t tile_index);
+
     std::span<uint8_t, 16> get_tile(unsigned block, unsigned index_in_block);
 
     enum class TileType { Background, Window };

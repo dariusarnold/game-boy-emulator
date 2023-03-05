@@ -26,20 +26,10 @@ Audio::Audio(Emulator& emulator) :
     audio_spec.format = AUDIO_F32;
     audio_spec.samples = BUFFER_SIZE;
     audio_spec.channels = 2;
-    SDL_AudioSpec obtained{};
     spdlog::info("Using audio device {}", device_ids[0]);
-    m_device_id = SDL_OpenAudioDevice(device_ids[0], SDL_AUDIO_PLAYBACK, &audio_spec, &obtained, 0);
-    assert(obtained.freq == audio_spec.freq && "Audio device configuration mismatch");
-    if (m_device_id == 0) {
-        spdlog::error("Failed to open audio: {}", SDL_GetError());
-        std::exit(EXIT_FAILURE);
-    }
+    m_audio_ressource = AudioRessource(device_ids[0], audio_spec);
     // Start playback on device
-    SDL_PauseAudioDevice(m_device_id, 0);
-}
-
-Audio::~Audio() {
-    SDL_CloseAudioDevice(m_device_id);
+    SDL_PauseAudioDevice(m_audio_ressource.get(), 0);
 }
 
 namespace {
@@ -48,7 +38,7 @@ namespace {
 float calc_volume_log(float volume) {
     return (std::exp(volume) - 1.f) / (std::exp(1.f) - 1.f);
 }
-}
+} // namespace
 
 void Audio::callback(SampleFrame sample) {
     m_resampler.submit_sample_data(sample);
@@ -56,11 +46,34 @@ void Audio::callback(SampleFrame sample) {
     // queuing data involves locks on SDLs side.
     if (m_resampler.available_samples() >= BUFFER_SIZE) {
         auto resampled_data = m_resampler.get_resampled_data();
-        auto volume = calc_volume_log(m_emulator.get_options().volume) * constants::FIXED_VOLUME_SCALE;
+        auto volume
+            = calc_volume_log(m_emulator.get_options().volume) * constants::FIXED_VOLUME_SCALE;
         std::for_each(resampled_data.begin(), resampled_data.end(), [volume](SampleFrame& sf) {
             sf.left *= volume;
             sf.right *= volume;
         });
-        SDL_QueueAudio(m_device_id, resampled_data.data(), static_cast<Uint32>(get_buffersize_bytes(resampled_data)));
+        SDL_QueueAudio(m_audio_ressource.get(), resampled_data.data(),
+                       static_cast<Uint32>(get_buffersize_bytes(resampled_data)));
     }
+}
+AudioRessource::operator SDL_AudioDeviceID() const {
+    return m_device_id;
+}
+
+AudioRessource::AudioRessource(std::string_view device, const SDL_AudioSpec& audio_spec) {
+    SDL_AudioSpec obtained{};
+    SDL_OpenAudioDevice(device.data(), SDL_AUDIO_PLAYBACK, &audio_spec, &obtained, 0);
+    assert(obtained.freq == audio_spec.freq && "Audio device configuration mismatch");
+    if (m_device_id == 0) {
+        spdlog::error("Failed to open audio: {}", SDL_GetError());
+        std::exit(EXIT_FAILURE);
+    }
+}
+
+AudioRessource::~AudioRessource() {
+    SDL_CloseAudioDevice(m_device_id);
+}
+
+SDL_AudioDeviceID AudioRessource::get() const {
+    return m_device_id;
 }

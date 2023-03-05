@@ -4,7 +4,7 @@
 #include <cassert>
 
 namespace {
-std::array<std::array<int, 8>, 4> WAVE_DUTY_CYCLES{
+const std::array<std::array<int, 8>, 4> WAVE_DUTY_CYCLES{
     std::array{0, 1, 1, 1, 1, 1, 1, 1}, std::array{0, 1, 1, 1, 1, 1, 1, 0},
     std::array{0, 0, 1, 1, 0, 0, 1, 1}, std::array{0, 0, 0, 0, 0, 0, 1, 1}};
 }

@@ -13,13 +13,13 @@
 class OamDmaTransfer {
     std::shared_ptr<AddressBus> m_address_bus;
     uint16_t m_start_address = 0;
-    std::span<uint8_t, constants::OAM_DMA_NUM_BYTES> m_target;
+    std::span<std::byte, constants::OAM_DMA_NUM_BYTES> m_target;
     // Count the number of bytes transferred (Total 160 bytes will be transferred)
     size_t m_counter = 0;
 
 public:
     explicit OamDmaTransfer(std::shared_ptr<AddressBus> address_bus,
-                            std::span<uint8_t, constants::OAM_DMA_NUM_BYTES> target);
+                            std::span<std::byte, constants::OAM_DMA_NUM_BYTES> target);
 
     // Will set the transfer state to active
     void start_transfer(uint16_t start_address);

@@ -22,6 +22,7 @@ namespace {
 const int CARTRIDGE_TYPE_OFFSET = 0x147;
 const int TITLE_BEGIN = 0x134;
 const int TITLE_END = 0x143;
+const int TITLE_SIZE = TITLE_END - TITLE_BEGIN;
 } // namespace
 
 Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
@@ -107,7 +108,9 @@ void Cartridge::sync() {
 }
 
 std::string Cartridge::get_title(const std::vector<uint8_t>& rom) const {
-    auto title = std::string{rom.data() + TITLE_BEGIN, rom.data() + TITLE_END};
+    std::string title(TITLE_SIZE, '\0');
+    auto s = std::span(rom).subspan<TITLE_BEGIN, TITLE_SIZE>();
+    std::copy(s.begin(), s.end(), title.begin());
     std::erase_if(title, [](auto c) { return !std::isprint(c); });
     return title;
 }

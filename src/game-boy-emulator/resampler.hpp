@@ -16,10 +16,10 @@ class Resampler {
 
 public:
     Resampler(int format_in, int format_out, size_t samplerate_in, size_t samplerate_out,
-              int channels_in, int channels_out) {
-        m_audio_stream
-            = SDL_NewAudioStream(format_in, channels_in, static_cast<int>(samplerate_in),
-                                 format_out, channels_out, static_cast<int>(samplerate_out));
+              int channels_in, int channels_out) :
+            m_audio_stream(SDL_NewAudioStream(format_in, channels_in,
+                                              static_cast<int>(samplerate_in), format_out,
+                                              channels_out, static_cast<int>(samplerate_out))) {
         if (m_audio_stream == nullptr) {
             spdlog::error("Failed to create SDL_AudioStream: {}", SDL_GetError());
             std::exit(EXIT_FAILURE);

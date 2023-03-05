@@ -29,8 +29,11 @@ uint8_t Apu::read_byte(uint16_t address) {
         m_logger->trace("APU read {:04X}", address);
         switch (address) {
         case NR52_ADDRESS:
-            return m_apu_enabled << 7 | m_channel4.is_enabled() << 3 | m_channel3.is_enabled() << 2
-                   | m_channel2.is_enabled() << 1 | m_channel1.is_enabled();
+            return static_cast<int>(m_apu_enabled) << 7
+                   | static_cast<int>(m_channel4.is_enabled()) << 3
+                   | static_cast<int>(m_channel3.is_enabled()) << 2
+                   | static_cast<int>(m_channel2.is_enabled()) << 1
+                   | static_cast<int>(m_channel1.is_enabled());
         case NR51_ADDRESS:
             return m_sound_panning;
         case NR50_ADDRESS:
@@ -158,6 +161,9 @@ void Apu::cycle_elapsed_callback(size_t cycle_count_m) {
             m_channel1.do_envelope_sweep();
             m_channel2.do_envelope_sweep();
             break;
+        default:
+            assert(false && "There must be an error since this should be unreachable");
+            break;
         }
     }
     m_channel1.tick_wave();
@@ -209,43 +215,6 @@ SampleFrame Apu::get_sample() {
         return {};
     }
 
-    struct ChannelSamples {
-        float ch1 = 0;
-        float ch2 = 0;
-        float ch3 = 0;
-        float ch4 = 0;
-    };
-    auto mix = [&](const ChannelSamples& samples) {
-        // Pan audio channel samples depending on NR51
-        SampleFrame out;
-        auto options = m_emulator->get_options();
-        if (options.apu_channel1_enabled && bitmanip::is_bit_set(m_sound_panning, CH1_LEFT)) {
-            out.left += samples.ch1;
-        }
-        if (options.apu_channel1_enabled && bitmanip::is_bit_set(m_sound_panning, CH1_RIGHT)) {
-            out.right += samples.ch1;
-        }
-        if (options.apu_channel2_enabled && bitmanip::is_bit_set(m_sound_panning, CH2_LEFT)) {
-            out.left += samples.ch2;
-        }
-        if (options.apu_channel2_enabled && bitmanip::is_bit_set(m_sound_panning, CH2_RIGHT)) {
-            out.right += samples.ch2;
-        }
-        if (options.apu_channel3_enabled && bitmanip::is_bit_set(m_sound_panning, CH3_LEFT)) {
-            out.left += samples.ch3;
-        }
-        if (options.apu_channel3_enabled && bitmanip::is_bit_set(m_sound_panning, CH3_RIGHT)) {
-            out.right += samples.ch3;
-        }
-        if (options.apu_channel4_enabled && bitmanip::is_bit_set(m_sound_panning, CH4_LEFT)) {
-            out.left += samples.ch4;
-        }
-        if (options.apu_channel4_enabled && bitmanip::is_bit_set(m_sound_panning, CH4_RIGHT)) {
-            out.right += samples.ch4;
-        }
-        return out;
-    };
-
     ChannelSamples samples;
     if (m_channel1.is_enabled()) {
         // Channel output is 0..15, DAC converts it to -1..1
@@ -263,15 +232,46 @@ SampleFrame Apu::get_sample() {
     return mixed_sample;
 }
 
-uint8_t Apu::get_left_output_volume() const {
+float Apu::get_left_output_volume() const {
     // A value of 0 is treated as volume 1 and a value of 7 is treated as volume 8 (no reduction).
-    return ((m_master_volume & 0b01110000) >> 4) + 1;
+    return static_cast<float>(((m_master_volume & 0b01110000) >> 4) + 1);
 }
 
-uint8_t Apu::get_right_output_volume() const {
-    return (m_master_volume & 0b111) + 1;
+float Apu::get_right_output_volume() const {
+    return static_cast<float>((m_master_volume & 0b111) + 1);
 }
 
 float Apu::convert_dac(uint8_t value) {
-    return (value - (15.f / 2.f)) / 7.5f;
+    return (static_cast<float>(value) - (15.f / 2.f)) / 7.5f;
+}
+
+SampleFrame Apu::mix(const ChannelSamples& samples) {
+    // Pan audio channel samples depending on NR51
+    SampleFrame out;
+    auto options = m_emulator->get_options();
+    if (options.apu_channel1_enabled && bitmanip::is_bit_set(m_sound_panning, CH1_LEFT)) {
+        out.left += samples.ch1;
+    }
+    if (options.apu_channel1_enabled && bitmanip::is_bit_set(m_sound_panning, CH1_RIGHT)) {
+        out.right += samples.ch1;
+    }
+    if (options.apu_channel2_enabled && bitmanip::is_bit_set(m_sound_panning, CH2_LEFT)) {
+        out.left += samples.ch2;
+    }
+    if (options.apu_channel2_enabled && bitmanip::is_bit_set(m_sound_panning, CH2_RIGHT)) {
+        out.right += samples.ch2;
+    }
+    if (options.apu_channel3_enabled && bitmanip::is_bit_set(m_sound_panning, CH3_LEFT)) {
+        out.left += samples.ch3;
+    }
+    if (options.apu_channel3_enabled && bitmanip::is_bit_set(m_sound_panning, CH3_RIGHT)) {
+        out.right += samples.ch3;
+    }
+    if (options.apu_channel4_enabled && bitmanip::is_bit_set(m_sound_panning, CH4_LEFT)) {
+        out.left += samples.ch4;
+    }
+    if (options.apu_channel4_enabled && bitmanip::is_bit_set(m_sound_panning, CH4_RIGHT)) {
+        out.right += samples.ch4;
+    }
+    return out;
 }

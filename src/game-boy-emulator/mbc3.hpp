@@ -40,7 +40,7 @@ class Mbc3 : public Mbc {
     };
 
     // Which register is currently mapped
-    RtcRegisterValue m_current_rtc_register;
+    RtcRegisterValue m_current_rtc_register = RtcRegisterValue::RTC_S;
 
     void write_registers(uint16_t address, uint8_t value);
     void write_values(uint16_t address, uint8_t value);

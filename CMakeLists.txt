@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.25)
 project(game_boy_emulator)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -22,6 +22,8 @@ find_package(Boost REQUIRED)
 include(FetchContent)
 
 FetchContent_Declare(nativefiledialog-extended
+        # Without this clang-tidy would warn about things in the libraries header, but this requires cmake 3.25
+        SYSTEM
         GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
         GIT_TAG v1.0.1
         )
@@ -34,7 +36,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules
 set(CLANG_FORMAT_EXCLUDE_PATTERNS "src/bindings" ${CMAKE_BINARY_DIR})
 find_package(ClangFormat)
 
-include(clang-tidy)
+if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+    # The CMAKE_CXX_CLANG_TIDY integration passes all compiler arguments to clang-tidy. For gcc we have a required
+    # compiler option to increase constexpr evaluation limit (fconstexpr-ops-limit), which clang does not know (it has
+    # a different option). But this flag leads to cland-diagnostics-error and the workaround would be manually removing
+    # it from the compilation database. Instead activate clang-tidy only for clang.
+    message(STATUS "Checking with clang-tidy was enabled")
+    include(clang-tidy)
+else()
+    message(STATUS "clang-tidy is only active for clang, disabling checks")
+endif ()
 
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)

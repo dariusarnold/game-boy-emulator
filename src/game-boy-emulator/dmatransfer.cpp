@@ -3,7 +3,7 @@
 #include "memorymap.hpp"
 
 OamDmaTransfer::OamDmaTransfer(std::shared_ptr<AddressBus> address_bus,
-                               std::span<uint8_t, constants::OAM_DMA_NUM_BYTES> target) :
+                               std::span<std::byte, constants::OAM_DMA_NUM_BYTES> target) :
         m_address_bus(std::move(address_bus)), m_target(target) {}
 
 void OamDmaTransfer::start_transfer(uint16_t start_address) {
@@ -21,7 +21,7 @@ void OamDmaTransfer::callback_cycle() {
         return;
     }
 
-    auto x = m_address_bus->read_byte(m_start_address + m_counter);
+    auto x = std::byte{m_address_bus->read_byte(m_start_address + m_counter)};
     m_target[m_counter] = x;
     m_counter++;
 }

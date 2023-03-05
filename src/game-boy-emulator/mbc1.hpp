@@ -22,8 +22,8 @@ class Mbc1 : public Mbc {
     void write_registers(uint16_t address, uint8_t value);
     void write_values(uint16_t address, uint8_t value);
 
-    uint32_t get_address_in_rom(uint16_t address, uint32_t bank_number) const;
-    uint32_t get_address_in_ram(uint16_t address) const;
+    [[nodiscard]] uint32_t get_address_in_rom(uint16_t address, uint32_t bank_number) const;
+    [[nodiscard]] uint32_t get_address_in_ram(uint16_t address) const;
 
 public:
     Mbc1(std::vector<uint8_t> rom, std::span<uint8_t> ram);

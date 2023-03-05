@@ -40,8 +40,21 @@ class Apu {
     ClockTimer m_frame_sequencer_timer;
 
     // Get right/left volume from NR50
-    uint8_t get_left_output_volume() const;
-    uint8_t get_right_output_volume() const;
+    [[nodiscard]] float get_left_output_volume() const;
+    [[nodiscard]] float get_right_output_volume() const;
+
+    struct ChannelSamples {
+        float ch1 = 0;
+        float ch2 = 0;
+        float ch3 = 0;
+        float ch4 = 0;
+    };
+    /**
+     * Mix all channels into left/right channel according to sound panning register.
+     */
+    SampleFrame mix(const ChannelSamples& samples);
+
+
 
     // Analog-Digital conversion of value in range 0..15 to value in range -1..1
     float convert_dac(uint8_t value);
@@ -49,7 +62,7 @@ class Apu {
     Emulator* m_emulator;
 
 public:
-    Apu(Emulator* emulator);
+    explicit Apu(Emulator* emulator);
 
     uint8_t read_byte(uint16_t address);
 

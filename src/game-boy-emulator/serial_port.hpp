@@ -18,6 +18,10 @@ class SerialPort {
 public:
     explicit SerialPort(Emulator* emulator);
     ~SerialPort();
+    SerialPort(const SerialPort&) = default;
+    SerialPort(SerialPort&&) = default;
+    SerialPort& operator=(const SerialPort&) = default;
+    SerialPort& operator=(SerialPort&&) = default;
 
     [[nodiscard]] std::string get_buffer() const;
 

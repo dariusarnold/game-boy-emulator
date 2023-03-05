@@ -6,8 +6,28 @@
 #include <vector>
 class Emulator;
 
+/**
+ * Owner class for the SDL ressource AudioDeviceID.
+ */
+class AudioRessource {
+    SDL_AudioDeviceID m_device_id{};
+
+public:
+    explicit operator SDL_AudioDeviceID() const;
+    [[nodiscard]] SDL_AudioDeviceID get() const;
+
+    AudioRessource() = default;
+    AudioRessource(std::string_view device, const SDL_AudioSpec& audio_spec);
+    ~AudioRessource();
+    // Since we handle a ressource in this class delete copy operators.
+    AudioRessource(const AudioRessource&) = delete;
+    AudioRessource& operator=(const AudioRessource&) = delete;
+    AudioRessource(AudioRessource&&) = default;
+    AudioRessource& operator=(AudioRessource&&) = default;
+};
+
 class Audio {
-    SDL_AudioDeviceID m_device_id = 0;
+    AudioRessource m_audio_ressource;
     Resampler<SampleFrame> m_resampler;
 
     template <typename Container>
@@ -19,7 +39,5 @@ class Audio {
 
 public:
     explicit Audio(Emulator& emulator);
-    ~Audio();
-
     void callback(SampleFrame sample);
 };

@@ -46,6 +46,9 @@ class Window {
 
     void handle_user_keyboard_input(const SDL_Event& event, const std::shared_ptr<Joypad>& joypad);
 
+    void draw_menubar_file();
+    void draw_menubar_settings();
+
 public:
     explicit Window(Emulator& emulator);
     Window(const Window&) = delete;

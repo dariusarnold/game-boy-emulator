@@ -29,7 +29,9 @@ Audio::Audio(Emulator& emulator) :
     spdlog::info("Using audio device {}", device_ids[0]);
     m_audio_ressource = AudioRessource(device_ids[0], audio_spec);
     // Start playback on device
-    SDL_PauseAudioDevice(m_audio_ressource.get(), 0);
+    if (m_audio_ressource.is_valid()) {
+        SDL_PauseAudioDevice(m_audio_ressource.get(), 0);
+    }
 }
 
 namespace {
@@ -56,24 +58,42 @@ void Audio::callback(SampleFrame sample) {
                        static_cast<Uint32>(get_buffersize_bytes(resampled_data)));
     }
 }
-AudioRessource::operator SDL_AudioDeviceID() const {
-    return m_device_id;
+
+bool Audio::is_working() const {
+    return m_audio_ressource.is_valid();
 }
 
-AudioRessource::AudioRessource(std::string_view device, const SDL_AudioSpec& audio_spec) {
+AudioRessource::AudioRessource(const char* device, const SDL_AudioSpec& audio_spec) {
     SDL_AudioSpec obtained{};
-    SDL_OpenAudioDevice(device.data(), SDL_AUDIO_PLAYBACK, &audio_spec, &obtained, 0);
+    m_device_id = SDL_OpenAudioDevice(device, SDL_AUDIO_PLAYBACK, &audio_spec, &obtained, 0);
     assert(obtained.freq == audio_spec.freq && "Audio device configuration mismatch");
     if (m_device_id == 0) {
-        spdlog::error("Failed to open audio: {}", SDL_GetError());
-        std::exit(EXIT_FAILURE);
+        spdlog::error("Failed to open audio device: {}. Disabling audio emulation.",
+                      SDL_GetError());
     }
 }
 
 AudioRessource::~AudioRessource() {
-    SDL_CloseAudioDevice(m_device_id);
+    if (m_device_id != 0) {
+        SDL_CloseAudioDevice(m_device_id);
+    }
 }
 
 SDL_AudioDeviceID AudioRessource::get() const {
+    assert(m_device_id != 0 && "Audio device not opened but requested");
     return m_device_id;
+}
+
+bool AudioRessource::is_valid() const {
+    return m_device_id != 0;
+}
+
+AudioRessource::AudioRessource(AudioRessource&& other) noexcept : m_device_id(other.m_device_id) {
+    other.m_device_id = 0;
+}
+
+AudioRessource& AudioRessource::operator=(AudioRessource&& other)  noexcept {
+    m_device_id = other.m_device_id;
+    other.m_device_id = 0;
+    return *this;
 }

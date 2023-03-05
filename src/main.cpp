@@ -44,7 +44,9 @@ int main(int argc, char** argv) { // NOLINT
     emulator.set_draw_function([&]() { window.vblank_callback(); });
 
     Audio audio(emulator);
-    emulator.set_audio_function([&](SampleFrame sample){audio.callback(sample);});
+    if (audio.is_working()) {
+        emulator.set_audio_function([&](SampleFrame sample){audio.callback(sample);});
+    }
 
     // Main loop
     while (!window.is_done()) {

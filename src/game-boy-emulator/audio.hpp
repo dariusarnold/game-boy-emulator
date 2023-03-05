@@ -13,17 +13,18 @@ class AudioRessource {
     SDL_AudioDeviceID m_device_id{};
 
 public:
-    explicit operator SDL_AudioDeviceID() const;
+    // Since opening the audio device can fail we need a way to check for a valid device
+    [[nodiscard]] bool is_valid() const;
     [[nodiscard]] SDL_AudioDeviceID get() const;
 
     AudioRessource() = default;
-    AudioRessource(std::string_view device, const SDL_AudioSpec& audio_spec);
+    AudioRessource(const char* device, const SDL_AudioSpec& audio_spec);
     ~AudioRessource();
     // Since we handle a ressource in this class delete copy operators.
     AudioRessource(const AudioRessource&) = delete;
     AudioRessource& operator=(const AudioRessource&) = delete;
-    AudioRessource(AudioRessource&&) = default;
-    AudioRessource& operator=(AudioRessource&&) = default;
+    AudioRessource(AudioRessource&& other) noexcept ;
+    AudioRessource& operator=(AudioRessource&& other) noexcept;
 };
 
 class Audio {
@@ -40,4 +41,5 @@ class Audio {
 public:
     explicit Audio(Emulator& emulator);
     void callback(SampleFrame sample);
+    [[nodiscard]] bool is_working() const;
 };

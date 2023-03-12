@@ -86,7 +86,7 @@ void Mbc3::write_registers(uint16_t address, uint8_t value) {
         }
     } else if (memmap::is_in(address, memmap::BankingModeSelect)) {
         // Latch clock data if previous write was 0x0 and this write was 0x1
-        throw NotImplementedError("Unimplemented: Latch clock data");
+        get_logger()->warn("Latch clock data not implemented");
     }
     //    get_logger()->debug("Cartridge registers: RAMG {}, BANK1 {:05B}, BANK2 {:02b}, MODE
     //    {:1B}",

@@ -110,7 +110,7 @@ void Window::draw_frame() {
         draw_sprites();
     }
     if (options.draw_info_window) {
-        draw_info(m_emulator.get_state());
+        draw_info();
     }
     if (options.draw_debug_tiles) {
         draw_vram();
@@ -307,7 +307,8 @@ void Window::draw_game() {
     ImGui::End();
 }
 
-void Window::draw_info(const EmulatorState& state) {
+void Window::draw_info() {
+    const auto& state = m_emulator.get_state();
     auto& options = m_emulator.get_options();
     ImGui::Begin("Info", &options.draw_info_window, ImGuiWindowFlags_NoResize);
     auto current_ticks = SDL_GetTicks64();

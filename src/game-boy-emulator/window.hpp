@@ -49,6 +49,15 @@ class Window {
     void draw_menubar_file();
     void draw_menubar_settings();
 
+    void draw_background();
+    void draw_sprites();
+    void draw_window();
+    void draw_game();
+    void draw_info();
+    void draw_vram();
+    void draw_menubar();
+    void draw_frame();
+
 public:
     explicit Window(Emulator& emulator);
     Window(const Window&) = delete;
@@ -56,15 +65,6 @@ public:
     Window(Window&&) = delete;
     Window& operator=(Window&&) = delete;
     ~Window();
-
-    void draw_frame();
-    void draw_background();
-    void draw_sprites();
-    void draw_window();
-    void draw_game();
-    void draw_info(const EmulatorState& state);
-    void draw_vram();
-    void draw_menubar();
 
     void vblank_callback();
 

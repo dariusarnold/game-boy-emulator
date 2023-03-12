@@ -100,23 +100,26 @@ void Window::draw_frame() {
     draw_menubar();
 
     auto& options = m_emulator.get_options();
-    if (options.draw_debug_background) {
-        draw_background();
-    }
-    if (options.draw_debug_window) {
-        draw_window();
-    }
-    if (options.draw_debug_sprites) {
-        draw_sprites();
-    }
-    if (options.draw_info_window) {
-        draw_info();
-    }
-    if (options.draw_debug_tiles) {
-        draw_vram();
-    }
+    const auto& state = m_emulator.get_state();
+    if (state.rom_file_path.has_value()) {
 
-    draw_game();
+        if (options.draw_debug_background) {
+            draw_background();
+        }
+        if (options.draw_debug_window) {
+            draw_window();
+        }
+        if (options.draw_debug_sprites) {
+            draw_sprites();
+        }
+        if (options.draw_info_window) {
+            draw_info();
+        }
+        if (options.draw_debug_tiles) {
+            draw_vram();
+        }
+        draw_game();
+    }
 
     // Rendering
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);

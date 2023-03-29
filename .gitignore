@@ -1,8 +1,13 @@
 *.asm
 *.bin
 
-
 .idea
+.vscode
+.vs
+
+CMakeUserPresets.json
+
+build
 cmake-build-*
 
 bindings/*

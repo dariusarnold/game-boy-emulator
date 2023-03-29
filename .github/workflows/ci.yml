@@ -1,0 +1,37 @@
+name: continuos integration
+run-name: Build using clang 14
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install ninja
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install ninja-build
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with: { python-version: "3.10" }
+
+      - name: Install conan
+        shell: bash
+        run: |
+          pip3 install conan==1.59
+          conan profile new --detect --force default
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+          conan install . --build=missing -pr:b=default -pr:h=default \
+            -c tools.system.package_manager:mode=install \
+            -c tools.system.package_manager:sudo=True \
+
+      - name: Configure
+        shell: bash
+        run: cmake --preset release -G Ninja
+
+      - name: Build
+        shell: bash
+        run: cmake --build --preset release

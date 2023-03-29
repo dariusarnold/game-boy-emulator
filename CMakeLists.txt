@@ -3,12 +3,6 @@ project(game_boy_emulator)
 
 set(CMAKE_CXX_STANDARD 20)
 
-# This is done because after executing "conan install .." in the binary dir, conan_paths.cmake
-# will set up CMAKE_MODULE_PATH so find_package will find the packages install by conan.
-include(${CMAKE_BINARY_DIR}/conan_paths.cmake OPTIONAL RESULT_VARIABLE CONAN_PATHS_FOUND)
-if (${CONAN_PATHS_FOUND} STREQUAL "NOTFOUND")
-    message(STATUS "File conan_paths.cmake not found. Maybe conan install was not executed?")
-endif ()
 find_package(fmt REQUIRED)
 find_package(Catch2 REQUIRED)
 find_package(SDL2 REQUIRED)

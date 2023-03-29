@@ -83,7 +83,7 @@ target_link_libraries(game_boy_emulator_library PUBLIC
         magic_enum::magic_enum
         spdlog::spdlog
         fmt::fmt
-        Boost::Boost
+        boost::boost
         )
 # Required for the compile time caching of tile lines.
 target_compile_options(game_boy_emulator_library PRIVATE

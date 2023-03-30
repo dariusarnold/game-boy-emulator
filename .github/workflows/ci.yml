@@ -34,4 +34,4 @@ jobs:
 
       - name: Build
         shell: bash
-        run: cmake --build --preset release
+        run: cmake --build --preset release --target game_boy_emulator

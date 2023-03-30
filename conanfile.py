@@ -25,4 +25,5 @@ class GameBoyEmulatorConan(ConanFile):
         self.options["boost"].header_only = True
 
     def imports(self):
-        self.copy("imgui_imp_sdl*", dst="../bindings", src="res/bindings")
+        self.output.error("XXX imports")
+        self.copy("imgui_impl_sdl*", dst="bindings", src="res/bindings", root_package="imgui")

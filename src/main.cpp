@@ -41,7 +41,7 @@ int main(int argc, char** argv) { // NOLINT
         emulator.load_boot_game(boot_rom_path.value(), game_rom_path.value());
     } else if (game_rom_path.has_value()) {
         emulator.load_game(game_rom_path.value());
-    } else {
+    } else if (boot_rom_path.has_value()) {
         // This means only a boot rom without a game was given
         spdlog::error("Running boot rom without a game rom not supported.");
         std::exit(1);

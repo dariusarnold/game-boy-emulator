@@ -12,16 +12,7 @@ find_package(magic_enum REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(argparse REQUIRED)
 find_package(Boost REQUIRED)
-
-include(FetchContent)
-
-FetchContent_Declare(nativefiledialog-extended
-        # Without this clang-tidy would warn about things in the libraries header, but this requires cmake 3.25
-        SYSTEM
-        GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
-        GIT_TAG v1.0.1
-        )
-FetchContent_MakeAvailable(nativefiledialog-extended)
+find_package(nativefiledialog REQUIRED)
 
 # Enable clang-format integration by creating clang-format CMake targets
 # Add a custom CMake Modules directory

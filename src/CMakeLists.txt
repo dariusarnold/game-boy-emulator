@@ -118,7 +118,7 @@ target_link_libraries(game_boy_emulator PRIVATE
         game_boy_emulator_library
         imgui_bindings
         argparse::argparse
-        nfd
+        nativefiledialog::nativefiledialog
         )
 target_include_directories(game_boy_emulator
         PRIVATE

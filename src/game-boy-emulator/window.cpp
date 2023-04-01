@@ -10,7 +10,7 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
 #include "SDL.h"
-#include "nfd.hpp"
+#include "nfd.h"
 
 Window::Window(Emulator& emulator) :
         m_emulator(emulator), m_logger(spdlog::get("")), m_fps_history(5 * 60, 5 * 60, 0) {
@@ -29,12 +29,6 @@ Window::Window(Emulator& emulator) :
                                     SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
     m_sdl_renderer = SDL_CreateRenderer(m_sdl_window, -1,
                                         SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
-
-    // Initialize nativefiledialog-extended
-    if (NFD::Init() != NFD_OKAY) {
-        spdlog::error("Failed to initialize native filedialog");
-        std::exit(EXIT_FAILURE);
-    }
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -62,8 +56,6 @@ Window::~Window() {
     ImGui_ImplSDLRenderer_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-
-    NFD::Quit();
 
     SDL_DestroyRenderer(m_sdl_renderer);
     SDL_DestroyWindow(m_sdl_window);
@@ -362,8 +354,10 @@ void Window::draw_vram() {
 
 void Window::draw_menubar_file() {
     if (ImGui::MenuItem("Load game")) {
-        NFD::UniquePath out_path;
-        nfdresult_t const result = NFD::OpenDialog(out_path);
+        nfdchar_t* outpath_ptr = nullptr;
+        const auto result = NFD_OpenDialog(nullptr, nullptr, &outpath_ptr);
+        const std::unique_ptr<nfdchar_t, decltype(&free)> out_path{outpath_ptr, &free};
+
         if (result == NFD_OKAY) {
             std::filesystem::path const p{out_path.get()};
             m_emulator.get_state().new_rom_file_path = p;

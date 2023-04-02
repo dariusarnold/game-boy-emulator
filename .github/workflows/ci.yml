@@ -1,9 +1,13 @@
 name: continuous integration
-run-name: Build using clang 14
+run-name: Build with Clang and GCC
 on: [push]
 jobs:
   build:
     runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        profile: [gcc-12, clang-14]
 
     steps:
       - uses: actions/checkout@v3
@@ -25,14 +29,14 @@ jobs:
           conan config install https://github.com/dariusarnold/conan-profiles.git
           conan profile new --detect --force default
           conan profile update settings.compiler.libcxx=libstdc++11 default
-          conan install . --build=missing -pr:b=clang-14 -pr:h=clang-14 \
+          conan install . --build=missing -pr:b=${{ matrix.profile }} -pr:h=${{ matrix.profile }} \
             -c tools.system.package_manager:mode=install \
             -c tools.system.package_manager:sudo=True \
 
       - name: Configure
         shell: bash
-        run: cmake --preset linux-x86_64-clang-14-release -G Ninja
+        run: cmake --preset linux-x86_64-${{ matrix.profile }}-release -G Ninja
 
       - name: Build
         shell: bash
-        run: cmake --build --preset linux-x86_64-clang-14-release --target game_boy_emulator
+        run: cmake --build --preset linux-x86_64-${{ matrix.profile }}-release --target game_boy_emulator

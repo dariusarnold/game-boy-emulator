@@ -16,11 +16,9 @@ class GameBoyEmulatorConan(ConanFile):
         self.requires("sdl/2.26.1")
         self.requires("catch2/2.13.6")
         self.requires("nativefiledialog/116")
-        # Overrides for nativefiledialog since it requires gtk which has some version conflicts
-        self.requires("expat/2.5.0", override=True)
-        self.requires("libpng/1.6.39", override=True)
-        self.requires("libxml2/2.10.3", override=True)
-        self.requires("glib/2.75.0", override=True)
+        # Overrides for nativefiledialogs gtk dependency which cant be built with recent compilers (clang/gcc)
+        # since there are warnins as errors.
+        self.requires("gtk/system", override=True)
 
     def layout(self):
         cmake_layout(self)

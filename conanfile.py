@@ -21,14 +21,13 @@ class GameBoyEmulatorConan(ConanFile):
         self.requires("libpng/1.6.39", override=True)
         self.requires("libxml2/2.10.3", override=True)
         self.requires("glib/2.75.0", override=True)
-        if "arm" in self.settings.arch:
-            self.requires("nas/1.9.4", override=True)
 
     def layout(self):
         cmake_layout(self)
 
     def configure(self):
         self.options["boost"].header_only = True
+        self.options["sdl"].nas = False
 
     def imports(self):
         self.copy("imgui_impl_sdl*", dst="bindings", src="res/bindings", root_package="imgui")

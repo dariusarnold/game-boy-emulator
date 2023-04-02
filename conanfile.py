@@ -1,10 +1,9 @@
 from conans import ConanFile
-from conan.tools.cmake import cmake_layout
+from conan.tools.cmake import cmake_layout, CMakeDeps, CMakeToolchain
 
 
 class GameBoyEmulatorConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeToolchain", "CMakeDeps"
 
     def requirements(self):
         self.requires("fmt/9.1.0")
@@ -26,6 +25,18 @@ class GameBoyEmulatorConan(ConanFile):
     def configure(self):
         self.options["boost"].header_only = True
         self.options["sdl"].nas = False
+
+    def generate(self):
+        tc = CMakeToolchain(self)
+        tc.generate()
+        # Workaround to be able to build the consumer (game_boy_emulator) with both Debug and Release while the
+        # dependencies are built with whatever built type (most likeley Release) and still be able to use find_package
+        # to find the dependencies.
+        deps = CMakeDeps(self)
+        deps.configuration = "Release"
+        deps.generate()
+        deps.configuration = "Debug"
+        deps.generate()
 
     def imports(self):
         self.copy("imgui_impl_sdl*", dst="bindings", src="res/bindings", root_package="imgui")

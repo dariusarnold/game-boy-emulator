@@ -76,7 +76,7 @@ class Ppu {
     void draw_vram_debug();
 
     std::span<uint8_t, constants::BYTES_PER_TILE> get_sprite_tile(uint8_t tile_index);
-    std::span<uint8_t, constants::BYTES_PER_TILE*2> get_tall_sprite_tile(uint8_t tile_index);
+    std::span<uint8_t, constants::BYTES_PER_TILE * 2> get_tall_sprite_tile(uint8_t tile_index);
 
     std::span<uint8_t, 16> get_tile(unsigned block, unsigned index_in_block);
 

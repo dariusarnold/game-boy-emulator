@@ -29,7 +29,8 @@ uint8_t Mbc5::read_byte(uint16_t address) const {
         return get_rom()[address];
     }
     if (memmap::is_in(address, memmap::CartridgeRomBankSwitchable)) {
-        const size_t address_bank_begin = get_rom_bank_number() * memmap::CartridgeRomBankSwitchableSize;
+        const size_t address_bank_begin
+            = get_rom_bank_number() * memmap::CartridgeRomBankSwitchableSize;
         const size_t address_in_bank = address - memmap::CartridgeRomBankSwitchableBegin;
         auto address_rom = address_bank_begin + address_in_bank;
         address_rom = bitmanip::mask(address_rom, m_required_rom_bits);

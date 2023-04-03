@@ -8,7 +8,7 @@ void AudioChannel::set_enabled(bool enabled) {
     m_enabled = enabled;
 }
 
-uint8_t  AudioChannel::read_nrx0() const {
+uint8_t AudioChannel::read_nrx0() const {
     return m_nrx0;
 }
 
@@ -16,15 +16,15 @@ uint8_t AudioChannel::read_nrx1() const {
     return m_nrx1;
 }
 
-uint8_t  AudioChannel::read_nrx2() const {
+uint8_t AudioChannel::read_nrx2() const {
     return m_nrx2;
 }
 
-uint8_t  AudioChannel::read_nrx3() const {
+uint8_t AudioChannel::read_nrx3() const {
     return m_nrx3;
 }
 
-uint8_t  AudioChannel::read_nrx4() const {
+uint8_t AudioChannel::read_nrx4() const {
     return m_nrx4;
 }
 

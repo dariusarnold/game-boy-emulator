@@ -1,6 +1,7 @@
 #include "clocktimer.hpp"
 
-ClockTimer::ClockTimer(size_t clock_count): m_clock_count(clock_count), m_clock_amount(clock_count) {}
+ClockTimer::ClockTimer(size_t clock_count) :
+        m_clock_count(clock_count), m_clock_amount(clock_count) {}
 
 bool ClockTimer::tick() {
     m_clock_count--;

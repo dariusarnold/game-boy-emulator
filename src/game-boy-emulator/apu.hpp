@@ -55,7 +55,6 @@ class Apu {
     SampleFrame mix(const ChannelSamples& samples);
 
 
-
     // Analog-Digital conversion of value in range 0..15 to value in range -1..1
     float convert_dac(uint8_t value);
 

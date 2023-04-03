@@ -50,7 +50,6 @@ class PulseChannel : public AudioChannel {
     size_t m_cycle_count = 0;
 
 
-
     void trigger();
 
     /*

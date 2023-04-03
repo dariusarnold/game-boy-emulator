@@ -92,7 +92,7 @@ AudioRessource::AudioRessource(AudioRessource&& other) noexcept : m_device_id(ot
     other.m_device_id = 0;
 }
 
-AudioRessource& AudioRessource::operator=(AudioRessource&& other)  noexcept {
+AudioRessource& AudioRessource::operator=(AudioRessource&& other) noexcept {
     m_device_id = other.m_device_id;
     other.m_device_id = 0;
     return *this;

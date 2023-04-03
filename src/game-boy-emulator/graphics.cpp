@@ -32,23 +32,26 @@ void load_texture_rgba(const uint32_t* data, int width, int height, GLuint* out_
 
 namespace {
 
-constexpr std::array<std::array<graphics::gb::UnmappedColorGb, 8>, 256 * 256> cache{[]() consteval {
-    std::array<std::array<graphics::gb::UnmappedColorGb, 8>, 256 * 256> arr{};
-    for (unsigned b1 = 0; b1 <= 255; ++b1) {
-        for (unsigned b2 = 0; b2 <= 255; ++b2) {
-            auto index = bitmanip::word_from_bytes(b1, b2);
-            for (uint8_t i = 0; i < 8; ++i) {
-                auto msb = bitmanip::bit_value(b2, i);
-                auto lsb = bitmanip::bit_value(b1, i);
-                arr[index][7 - i] = static_cast<graphics::gb::UnmappedColorGb>((msb << 1) + lsb);
-            }
+constexpr std::array<std::array<graphics::gb::UnmappedColorGb, 8>, 256 * 256> cache{
+    []() consteval {std::array<std::array<graphics::gb::UnmappedColorGb, 8>, 256 * 256> arr{};
+for (unsigned b1 = 0; b1 <= 255; ++b1) {
+    for (unsigned b2 = 0; b2 <= 255; ++b2) {
+        auto index = bitmanip::word_from_bytes(b1, b2);
+        for (uint8_t i = 0; i < 8; ++i) {
+            auto msb = bitmanip::bit_value(b2, i);
+            auto lsb = bitmanip::bit_value(b1, i);
+            arr[index][7 - i] = static_cast<graphics::gb::UnmappedColorGb>((msb << 1) + lsb);
         }
     }
-    return arr;
-}()
-};
+}
+return arr;
+} // namespace
+()
+}
+;
 
-const std::array<graphics::gb::UnmappedColorGb, 8>& get_cached_tile_line(uint8_t byte1, uint8_t byte2) {
+const std::array<graphics::gb::UnmappedColorGb, 8>& get_cached_tile_line(uint8_t byte1,
+                                                                         uint8_t byte2) {
     auto index = bitmanip::word_from_bytes(byte1, byte2);
     return cache[index];
 }
@@ -58,7 +61,7 @@ const std::array<graphics::gb::UnmappedColorGb, 8>& get_cached_tile_line(uint8_t
 namespace graphics::gb {
 
 const std::array<UnmappedColorGb, 8>& convert_tile_line(uint8_t byte1, uint8_t byte2) {
-   const auto& line = get_cached_tile_line(byte1, byte2);
+    const auto& line = get_cached_tile_line(byte1, byte2);
     return line;
 }
 

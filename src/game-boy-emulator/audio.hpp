@@ -23,7 +23,7 @@ public:
     // Since we handle a ressource in this class delete copy operators.
     AudioRessource(const AudioRessource&) = delete;
     AudioRessource& operator=(const AudioRessource&) = delete;
-    AudioRessource(AudioRessource&& other) noexcept ;
+    AudioRessource(AudioRessource&& other) noexcept;
     AudioRessource& operator=(AudioRessource&& other) noexcept;
 };
 

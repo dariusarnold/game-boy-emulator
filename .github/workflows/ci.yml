@@ -11,27 +11,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Install python
-        uses: actions/setup-python@v4
-        with: { python-version: "3.10" }
-
-      - name: Install build requirements
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install ninja-build
-          pip3 install conan==1.59
-
-      - name: Install conan dependencies
-        shell: bash
-        run: |
-          conan config install https://github.com/dariusarnold/conan-profiles.git
-          conan profile new --detect --force default
-          conan profile update settings.compiler.libcxx=libstdc++11 default
-          conan install . --build=missing -pr:b=${{ matrix.profile }} -pr:h=${{ matrix.profile }} \
-            -c tools.system.package_manager:mode=install \
-            -c tools.system.package_manager:sudo=True \
+      - uses: ./.github/workflows/actions/setup
+        with:
+          conanprofile: ${{ matrix.profile }}
 
       - name: Configure
         shell: bash
@@ -40,3 +22,29 @@ jobs:
       - name: Build
         shell: bash
         run: cmake --build --preset linux-x86_64-${{ matrix.profile }}-release --target game_boy_emulator
+
+  test:
+    runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        profile: [gcc-12, clang-14]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/workflows/actions/setup
+        with:
+          conanprofile: ${{ matrix.profile }}
+
+      - name: Configure
+        shell: bash
+        run: cmake --preset linux-x86_64-${{ matrix.profile }}-release -G Ninja
+
+      - name: Build
+        shell: bash
+        run: cmake --build --preset linux-x86_64-${{ matrix.profile }}-release --target game_boy_emulator_tests
+
+      - name: Test
+        shell: bash
+        run: ctest --output-on-failure --progress --test-dir build/linux-x86_64-${{ matrix.profile }}-release/src/tests

@@ -3,6 +3,8 @@ project(game_boy_emulator)
 
 set(CMAKE_CXX_STANDARD 20)
 
+option(SANITIZE "Enable address and undefined behavior sanitizers" ON)
+
 find_package(fmt REQUIRED)
 find_package(Catch2 REQUIRED)
 find_package(SDL2 REQUIRED)
@@ -31,8 +33,11 @@ else()
     message(STATUS "clang-tidy is only active for clang, disabling checks")
 endif ()
 
-add_compile_options(-fsanitize=address,undefined)
-add_link_options(-fsanitize=address,undefined)
+if (SANITIZE)
+    message(STATUS "Sanitizers were enabled")
+    add_compile_options(-fsanitize=address,undefined)
+    add_link_options(-fsanitize=address,undefined)
+endif ()
 
 add_subdirectory(src)
 add_subdirectory(src/tests)

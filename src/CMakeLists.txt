@@ -125,7 +125,7 @@ target_include_directories(game_boy_emulator
         bindings
         )
 
-option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang as well as MSVC." ON)
+install(TARGETS game_boy_emulator)
 
 if (WARNINGS_ENABLED)
     target_compile_options(game_boy_emulator_library PRIVATE

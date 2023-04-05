@@ -1,5 +1,5 @@
 from conans import ConanFile
-from conan.tools.cmake import cmake_layout, CMakeDeps, CMakeToolchain
+from conan.tools.cmake import cmake_layout, CMakeDeps, CMakeToolchain, CMake
 
 
 class GameBoyEmulatorConan(ConanFile):
@@ -23,6 +23,9 @@ class GameBoyEmulatorConan(ConanFile):
         # since there are warnins as errors.
         self.requires("gtk/system", override=True)
 
+    def export_sources(self):
+        self.copy("*", excludes=("build*", "cmake-build*"))
+
     def layout(self):
         cmake_layout(self)
 
@@ -42,5 +45,21 @@ class GameBoyEmulatorConan(ConanFile):
         deps.configuration = "Debug"
         deps.generate()
 
+    def build(self):
+        cmake = CMake(self)
+        # Since conan is mostly used for releases, we dont want sanitizers enabled and we dont want to run clang-tidy
+        # during the build since it is slow (and was run in CI for the commit already).
+        cmake.configure(variables={"SANITIZE": "OFF", "TIDY": "OFF"})
+        cmake.build()
+
+    def package(self):
+        cmake = CMake(self)
+        cmake.install()
+
     def imports(self):
+        # Copy the imgui bindings to the package
         self.copy("imgui_impl_sdl*", dst="bindings", src="res/bindings", root_package="imgui")
+
+    def deploy(self):
+        # Copy just the executable from the cache to the local filesystem
+        self.copy("game_boy_emulator*", dst="", src="bin")

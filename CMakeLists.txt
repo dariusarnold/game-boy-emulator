@@ -4,6 +4,8 @@ project(game_boy_emulator)
 set(CMAKE_CXX_STANDARD 20)
 
 option(SANITIZE "Enable address and undefined behavior sanitizers" ON)
+option(TIDY "Enable clang-tidy checks" ON)
+option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang." ON)
 
 find_package(fmt REQUIRED)
 find_package(Catch2 REQUIRED)
@@ -22,7 +24,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 set(CLANG_FORMAT_EXCLUDE_PATTERNS "src/bindings" ${CMAKE_BINARY_DIR})
 find_package(ClangFormat)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
+if (CMAKE_CXX_COMPILER_ID STREQUAL Clang AND TIDY)
     # The CMAKE_CXX_CLANG_TIDY integration passes all compiler arguments to clang-tidy. For gcc we have a required
     # compiler option to increase constexpr evaluation limit (fconstexpr-ops-limit), which clang does not know (it has
     # a different option). But this flag leads to cland-diagnostics-error and the workaround would be manually removing

@@ -32,6 +32,8 @@ target_link_libraries(game_boy_emulator_tests PRIVATE
         Catch2::Catch2
         )
 
+set_target_properties(game_boy_emulator_tests PROPERTIES CXX_CLANG_TIDY "")
+
 add_custom_target(copy_test_dependencies ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/recorded-logs

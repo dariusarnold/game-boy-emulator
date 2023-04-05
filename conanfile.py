@@ -3,7 +3,11 @@ from conan.tools.cmake import cmake_layout, CMakeDeps, CMakeToolchain
 
 
 class GameBoyEmulatorConan(ConanFile):
+    name = "game_boy_emulator"
     settings = "os", "compiler", "build_type", "arch"
+    license = "GPL-3.0-or-later"
+    author = "Darius Arnold"
+    version = "0.1.0"
 
     def requirements(self):
         self.requires("fmt/9.1.0")

@@ -16,8 +16,7 @@ find_package(nativefiledialog REQUIRED)
 
 # Enable clang-format integration by creating clang-format CMake targets
 # Add a custom CMake Modules directory
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules
-        ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 set(CLANG_FORMAT_EXCLUDE_PATTERNS "src/bindings" ${CMAKE_BINARY_DIR})
 find_package(ClangFormat)
 
@@ -32,8 +31,8 @@ else()
     message(STATUS "clang-tidy is only active for clang, disabling checks")
 endif ()
 
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+add_compile_options(-fsanitize=address,undefined)
+add_link_options(-fsanitize=address,undefined)
 
 add_subdirectory(src)
 add_subdirectory(src/tests)

@@ -301,20 +301,20 @@ bool bg_window_over_sprite(const OamEntry& oam_entry) {
     return bitmanip::is_bit_set(oam_entry.m_flags, 7);
 }
 
-size_t calculate_pixel_index(const OamEntry& oam_entry, size_t x, size_t y) {
-    const static graphics::gb::TileIndexMirrorBothAxes tim(8, 8);
-    const static graphics::gb::TileIndexMirrorHorizontal tih(8, 8);
-    const static graphics::gb::TileIndexMirrorVertical tiv(8, 8);
-    const static graphics::gb::TileIndex ti(8, 8);
+size_t calculate_pixel_index(const OamEntry& oam_entry, size_t x, size_t y, size_t sprite_height) {
     if (should_mirror_horizontally(oam_entry) && should_mirror_vertically(oam_entry)) {
+        const graphics::gb::TileIndexMirrorBothAxes tim(8, sprite_height);
         return tim.pixel_index(x, y);
     }
     if (should_mirror_horizontally(oam_entry)) {
+        const graphics::gb::TileIndexMirrorHorizontal tih(8, sprite_height);
         return tih.pixel_index(x, y);
     }
     if (should_mirror_vertically(oam_entry)) {
+        const graphics::gb::TileIndexMirrorVertical tiv(8, sprite_height);
         return tiv.pixel_index(x, y);
     }
+    const graphics::gb::TileIndex ti(8, sprite_height);
     return ti.pixel_index(x, y);
 };
 
@@ -367,7 +367,7 @@ void Ppu::draw_sprites_line() {
                 continue;
             }
             auto pixel_index
-                = calculate_pixel_index(*oam_entry, sprite_x, static_cast<size_t>(sprite_y));
+                = calculate_pixel_index(*oam_entry, sprite_x, static_cast<size_t>(sprite_y), 8);
             auto pixel_color = tile[pixel_index];
             if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
                 // Color 0 is transparent for sprites, so those pixels are not drawn.
@@ -441,7 +441,7 @@ void Ppu::draw_tall_sprites_line() {
                 continue;
             }
             auto pixel_index
-                = calculate_pixel_index(*oam_entry, sprite_x, static_cast<size_t>(sprite_y));
+                = calculate_pixel_index(*oam_entry, sprite_x, static_cast<size_t>(sprite_y), 16);
             auto pixel_color = tile[pixel_index];
             if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
                 // Color 0 is transparent for sprites, so those pixels are not drawn.

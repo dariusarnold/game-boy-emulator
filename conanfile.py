@@ -20,7 +20,7 @@ class GameBoyEmulatorConan(ConanFile):
         self.requires("catch2/2.13.6")
         self.requires("nativefiledialog/116")
         # Overrides for nativefiledialogs gtk dependency which cant be built with recent compilers (clang/gcc)
-        # since there are warnins as errors.
+        # since there are warnings as errors.
         self.requires("gtk/system", override=True)
 
     def export_sources(self):

@@ -1,4 +1,4 @@
-add_executable(game_boy_emulator_tests
+add_executable(game_boy_emulator_tests EXCLUDE_FROM_ALL
         main_tests.cpp
         test_helpers.cpp
         test_registers.cpp

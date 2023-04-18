@@ -40,6 +40,10 @@ public:
     // Transfer content from another buffer into this framebuffer
     void take_from(void* ptr);
 
+    const void* data() const {
+        return reinterpret_cast<const void*>(m_buffer.data());
+    }
+
     [[nodiscard]] size_t width() const;
     [[nodiscard]] size_t height() const;
     [[nodiscard]] size_t size() const;

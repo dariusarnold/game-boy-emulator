@@ -11,6 +11,23 @@
 #include <optional>
 #include <cstdlib>
 
+#ifdef __EMSCRIPTEN__
+// Check out imgui/examples/libs/emscripten/emscripten_mainloop_stub.h for a reason
+#include <emscripten.h>
+#include <functional>
+static std::function<void()> MainLoopForEmscriptenP;
+static void MainLoopForEmscripten() {
+    MainLoopForEmscriptenP();
+}
+#define EMSCRIPTEN_MAINLOOP_BEGIN MainLoopForEmscriptenP = [&]()
+#define EMSCRIPTEN_MAINLOOP_END                                                                    \
+    ;                                                                                              \
+    emscripten_set_main_loop(MainLoopForEmscripten, 0, true)
+#else
+#define EMSCRIPTEN_MAINLOOP_BEGIN
+#define EMSCRIPTEN_MAINLOOP_END
+#endif
+
 
 int main(int argc, char** argv) { // NOLINT
     argparse::ArgumentParser program("game boy emulator");
@@ -56,7 +73,12 @@ int main(int argc, char** argv) { // NOLINT
     }
 
     // Main loop
-    while (!window.is_done()) {
+#ifdef __EMSCRIPTEN__
+    EMSCRIPTEN_MAINLOOP_BEGIN
+#else
+    while (!window.is_done())
+#endif
+    {
         const auto& state = emulator.get_state();
         if (state.rom_file_path.has_value()) {
             auto sucess = emulator.step();
@@ -82,6 +104,7 @@ int main(int argc, char** argv) { // NOLINT
             emulator.set_draw_function([&]() { window.vblank_callback(); });
         }
     }
+    EMSCRIPTEN_MAINLOOP_END;
 
     return EXIT_SUCCESS;
 }

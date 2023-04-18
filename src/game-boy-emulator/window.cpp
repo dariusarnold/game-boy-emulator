@@ -7,9 +7,15 @@
 
 #include "spdlog/spdlog.h"
 #include "imgui.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_sdlrenderer.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_opengl3.h"
 #include "SDL.h"
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <SDL_opengles2.h>
+#else
+#include <SDL_opengl.h>
+#endif
+
 #ifndef __EMSCRIPTEN__
 #include "nfd.h"
 #endif
@@ -25,41 +31,85 @@ Window::Window(Emulator& emulator) :
         std::exit(EXIT_FAILURE);
     }
 
+    // Decide GL+GLSL versions
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    // GL ES 2.0 + GLSL 100
+    const char* glsl_version = "#version 100";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(__APPLE__)
+    // GL 3.2 Core + GLSL 150
+    const char* glsl_version = "#version 150";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,
+                        SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#else
+    // GL 3.0 + GLSL 130
+    const char* glsl_version = "#version 130";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#endif
+
+    // From 2.0.18: Enable native IME.
+#ifdef SDL_HINT_IME_SHOW_UI
+    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+#endif
+
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     auto window_flags
-        = static_cast<SDL_WindowFlags>(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+        = static_cast<SDL_WindowFlags>(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     m_sdl_window = SDL_CreateWindow("game boy emulator", SDL_WINDOWPOS_UNDEFINED,
                                     SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
-    m_sdl_renderer = SDL_CreateRenderer(m_sdl_window, -1,
-                                        SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+    m_sdl_gl_context = SDL_GL_CreateContext(m_sdl_window);
+    if (m_sdl_gl_context == nullptr) {
+        spdlog::error("Error: {}", SDL_GetError());
+        std::exit(EXIT_FAILURE);
+    }
+    SDL_GL_MakeCurrent(m_sdl_window, m_sdl_gl_context);
+    SDL_GL_SetSwapInterval(1); // Enable vsync
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+#ifdef __EMSCRIPTEN
+    // For an Emscripten build we are disabling file-system access, so let's not attempt to do a
+    // fopen() of the imgui.ini file. You may manually call LoadIniSettingsFromMemory() to load
+    // settings from your own storage.
+    io.IniFilename = nullptr;
+#endif
 
     // Setup Dear ImGui style
     ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForSDLRenderer(m_sdl_window, m_sdl_renderer);
-    ImGui_ImplSDLRenderer_Init(m_sdl_renderer);
+    ImGui_ImplSDL2_InitForOpenGL(m_sdl_window, m_sdl_gl_context);
+    ImGui_ImplOpenGL3_Init(glsl_version);
 
-    m_background_image.init_texture(m_sdl_renderer);
-    m_window_image.init_texture(m_sdl_renderer);
-    m_sprites_image.init_texture(m_sdl_renderer);
-    m_game_image.init_texture(m_sdl_renderer);
-    m_tiledata_block0.init_texture(m_sdl_renderer);
-    m_tiledata_block1.init_texture(m_sdl_renderer);
-    m_tiledata_block2.init_texture(m_sdl_renderer);
+    m_background_image.init_texture();
+    m_window_image.init_texture();
+    m_sprites_image.init_texture();
+    m_game_image.init_texture();
+    m_tiledata_block0.init_texture();
+    m_tiledata_block1.init_texture();
+    m_tiledata_block2.init_texture();
 }
 
 Window::~Window() {
-    ImGui_ImplSDLRenderer_Shutdown();
+    ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 
-    SDL_DestroyRenderer(m_sdl_renderer);
+    SDL_GL_DeleteContext(m_sdl_gl_context);
     SDL_DestroyWindow(m_sdl_window);
     SDL_Quit();
 }
@@ -87,7 +137,7 @@ void toggle(bool& b) {
 
 void Window::draw_frame() {
     // Start the Dear ImGui frame
-    ImGui_ImplSDLRenderer_NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
@@ -118,13 +168,13 @@ void Window::draw_frame() {
     // Rendering
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     ImGui::Render();
-    SDL_SetRenderDrawColor(m_sdl_renderer, static_cast<Uint8>(clear_color.x * 255),
-                           static_cast<Uint8>(clear_color.y * 255),
-                           static_cast<Uint8>(clear_color.z * 255),
-                           static_cast<Uint8>(clear_color.w * 255));
-    SDL_RenderClear(m_sdl_renderer);
-    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-    SDL_RenderPresent(m_sdl_renderer);
+    ImGuiIO& io = ImGui::GetIO();
+    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w,
+                 clear_color.z * clear_color.w, clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    SDL_GL_SwapWindow(m_sdl_window);
 }
 
 void Window::handle_user_keyboard_input(const SDL_Event& event,
@@ -232,9 +282,10 @@ void Window::draw_background() {
     m_background_image.upload_to_texture(background);
     auto& options = m_emulator.get_options();
     ImGui::Begin("Background", &options.draw_debug_background, ImGuiWindowFlags_NoResize);
-    auto* my_tex_id = static_cast<void*>(m_background_image.get_texture());
-    ImGui::Image(my_tex_id, ImVec2(static_cast<float>(background.width()),
-                                   static_cast<float>(background.height())));
+    auto my_tex_id = m_background_image.get_texture();
+    ImGui::Image(
+        reinterpret_cast<ImTextureID>(my_tex_id),
+        ImVec2(static_cast<float>(background.width()), static_cast<float>(background.height())));
     ImGui::End();
 }
 
@@ -243,8 +294,8 @@ void Window::draw_sprites() {
     m_sprites_image.upload_to_texture(sprites);
     auto& options = m_emulator.get_options();
     ImGui::Begin("Sprites", &options.draw_debug_sprites, ImGuiWindowFlags_NoResize);
-    auto* my_tex_id = static_cast<void*>(m_sprites_image.get_texture());
-    ImGui::Image(my_tex_id,
+    auto my_tex_id = m_sprites_image.get_texture();
+    ImGui::Image(reinterpret_cast<ImTextureID>(my_tex_id),
                  ImVec2(static_cast<float>(sprites.width()), static_cast<float>(sprites.height())));
     ImGui::End();
 }
@@ -254,8 +305,8 @@ void Window::draw_window() {
     auto& options = m_emulator.get_options();
     ImGui::Begin("Window", &options.draw_debug_window, ImGuiWindowFlags_NoResize);
     m_window_image.upload_to_texture(window);
-    auto* my_tex_id = static_cast<void*>(m_window_image.get_texture());
-    ImGui::Image(my_tex_id,
+    auto my_tex_id = m_window_image.get_texture();
+    ImGui::Image(reinterpret_cast<ImTextureID>(my_tex_id),
                  ImVec2(static_cast<float>(window.width()), static_cast<float>(window.height())));
     ImGui::End();
 }
@@ -298,9 +349,10 @@ void Window::vblank_callback() {
 
 void Window::draw_game() {
     ImGui::Begin(m_emulator.get_state().game_title.c_str(), nullptr, ImGuiWindowFlags_NoResize);
-    auto* my_tex_id = static_cast<void*>(m_game_image.get_texture());
-    ImGui::Image(my_tex_id, ImVec2(static_cast<float>(m_game_image.width() * 3),
-                                   static_cast<float>(m_game_image.height() * 3)));
+    auto my_tex_id = m_game_image.get_texture();
+    ImGui::Image(reinterpret_cast<ImTextureID>(my_tex_id),
+                 ImVec2(static_cast<float>(m_game_image.width() * 3),
+                        static_cast<float>(m_game_image.height() * 3)));
     ImGui::End();
 }
 
@@ -339,18 +391,21 @@ void Window::draw_vram() {
     m_tiledata_block2.upload_to_texture(*buffers[2]);
     auto& options = m_emulator.get_options();
     ImGui::Begin("Tile block 0,1,2", &options.draw_debug_tiles, ImGuiWindowFlags_NoResize);
-    auto* my_tex_id = static_cast<void*>(m_tiledata_block0.get_texture());
+    auto my_tex_id = m_tiledata_block0.get_texture();
     const auto scale = 2;
-    ImGui::Image(my_tex_id, ImVec2(static_cast<float>(m_tiledata_block0.width() * scale),
-                                   static_cast<float>(m_tiledata_block0.height() * scale)));
+    ImGui::Image(reinterpret_cast<ImTextureID>(my_tex_id),
+                 ImVec2(static_cast<float>(m_tiledata_block0.width() * scale),
+                        static_cast<float>(m_tiledata_block0.height() * scale)));
     ImGui::SameLine();
-    my_tex_id = static_cast<void*>(m_tiledata_block1.get_texture());
-    ImGui::Image(my_tex_id, ImVec2(static_cast<float>(m_tiledata_block1.width() * scale),
-                                   static_cast<float>(m_tiledata_block1.height() * scale)));
-    my_tex_id = static_cast<void*>(m_tiledata_block2.get_texture());
+    my_tex_id = m_tiledata_block1.get_texture();
+    ImGui::Image(reinterpret_cast<ImTextureID>(my_tex_id),
+                 ImVec2(static_cast<float>(m_tiledata_block1.width() * scale),
+                        static_cast<float>(m_tiledata_block1.height() * scale)));
+    my_tex_id = m_tiledata_block2.get_texture();
     ImGui::SameLine();
-    ImGui::Image(my_tex_id, ImVec2(static_cast<float>(m_tiledata_block2.width() * scale),
-                                   static_cast<float>(m_tiledata_block2.height() * scale)));
+    ImGui::Image(reinterpret_cast<ImTextureID>(my_tex_id),
+                 ImVec2(static_cast<float>(m_tiledata_block2.width() * scale),
+                        static_cast<float>(m_tiledata_block2.height() * scale)));
     ImGui::End();
 }
 

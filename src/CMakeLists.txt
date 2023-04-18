@@ -89,6 +89,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     target_link_options(game_boy_emulator_library PUBLIC
             # Allow allocation during runtime
             -sALLOW_MEMORY_GROWTH=1
+            -sUSE_SDL=2
             )
 endif()
 # Required for the compile time caching of tile lines.
@@ -103,8 +104,8 @@ add_executable(game_boy_emulator
         )
 # Add external vendor code as an object library so it can be excluded from clang-tidy
 add_library(imgui_bindings OBJECT
-        ../bindings/imgui_impl_sdlrenderer.cpp
-        ../bindings/imgui_impl_sdl.cpp
+        ../bindings/imgui_impl_opengl3.cpp
+        ../bindings/imgui_impl_sdl2.cpp
         )
 set_target_properties(
         imgui_bindings

@@ -8,21 +8,9 @@
 #include <cstddef>
 #include <cassert>
 
-#include "SDL_render.h"
-#include "SDL_surface.h"
-class SDL_Texture;
-class SDL_Renderer;
 template <typename PixelType, size_t Width, size_t Height>
 class Framebuffer;
 
-
-struct SdlTextureDeleter {
-    void operator()(SDL_Texture* p) {
-        if (p != nullptr) {
-            SDL_DestroyTexture(p);
-        }
-    }
-};
 
 /**
  * Couples a framebuffer to SDL rendering.
@@ -31,14 +19,14 @@ template <size_t Width, size_t Height>
 class Image {
     size_t m_width = Width;
     size_t m_height = Height;
-    std::unique_ptr<SDL_Texture, SdlTextureDeleter> m_texture;
+    GLuint m_texture;
 
 public:
     // Create image with a texture using the given renderer. If no renderer is given, init_texture
     // has to be called before upload_to_texture is used.
-    explicit Image(SDL_Renderer* sdl_renderer = nullptr);
+    explicit Image();
 
-    void init_texture(SDL_Renderer* sdl_renderer);
+    void init_texture();
 
     void upload_to_texture(const Framebuffer<graphics::gb::ColorScreen, Width, Height>& buffer);
 
@@ -46,7 +34,7 @@ public:
     [[nodiscard]] size_t height() const;
     [[nodiscard]] size_t size() const;
 
-    [[nodiscard]] SDL_Texture* get_texture() const;
+    [[nodiscard]] GLuint get_texture() const;
 
     void save_as_bitmap(std::string_view filename) const;
 };

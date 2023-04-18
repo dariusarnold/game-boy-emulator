@@ -14,6 +14,7 @@ class Joypad;
 namespace spdlog {
 class logger;
 }
+using SDL_GLContext = void*;
 #include "boost/circular_buffer.hpp"
 #include <span>
 #include <cstdint>
@@ -24,7 +25,7 @@ class Window {
     Emulator& m_emulator;
     std::shared_ptr<spdlog::logger> m_logger;
     SDL_Window* m_sdl_window = nullptr;
-    SDL_Renderer* m_sdl_renderer = nullptr;
+    SDL_GLContext m_sdl_gl_context = nullptr;
     Image<constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS> m_background_image;
     Image<constants::BACKGROUND_SIZE_PIXELS, constants::BACKGROUND_SIZE_PIXELS> m_window_image;
     Image<constants::SCREEN_RES_WIDTH, constants::SCREEN_RES_HEIGHT> m_sprites_image;

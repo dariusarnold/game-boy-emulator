@@ -11,7 +11,7 @@ class GameBoyEmulatorConan(ConanFile):
 
     def requirements(self):
         self.requires("fmt/9.1.0")
-        self.requires("imgui/1.88")
+        self.requires("imgui/1.89.4")
         self.requires("magic_enum/0.8.1")
         self.requires("spdlog/1.11.0")
         self.requires("argparse/2.9")
@@ -60,7 +60,8 @@ class GameBoyEmulatorConan(ConanFile):
 
     def imports(self):
         # Copy the imgui bindings to the package
-        self.copy("imgui_impl_sdl*", dst="bindings", src="res/bindings", root_package="imgui")
+        self.copy("imgui_impl_sdl2*", dst="bindings", src="res/bindings", root_package="imgui")
+        self.copy("imgui_impl_opengl3*", dst="bindings", src="res/bindings", root_package="imgui")
 
     def deploy(self):
         # Copy just the executable from the cache to the local filesystem

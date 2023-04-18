@@ -1,6 +1,8 @@
 #include "memorymappedfile.hpp"
 #include "io.hpp"
 
+#ifndef __EMSCRIPTEN__
+
 MemoryMappedFile::MemoryMappedFile(const std::filesystem::path& filepath, size_t file_size) :
         m_file_size(file_size) {
 
@@ -26,3 +28,5 @@ void MemoryMappedFile::sync(bool async) {
 MemoryMappedFile::~MemoryMappedFile() {
     m_mapped_region.flush(0, 0, true);
 }
+
+#endif

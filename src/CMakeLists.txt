@@ -79,12 +79,18 @@ target_include_directories(game_boy_emulator_library PUBLIC
 target_link_libraries(game_boy_emulator_library PUBLIC
         imgui::imgui
         SDL2::SDL2
-        OpenGL::GL
+        $<IF:$<PLATFORM_ID:Emscripten>,${OPENGL_LIBRARIES},OpenGL::GL>
         magic_enum::magic_enum
         spdlog::spdlog
         fmt::fmt
         boost::boost
         )
+if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    target_link_options(game_boy_emulator_library PUBLIC
+            # Allow allocation during runtime
+            -sALLOW_MEMORY_GROWTH=1
+            )
+endif()
 # Required for the compile time caching of tile lines.
 target_compile_options(game_boy_emulator_library PRIVATE
         $<$<CXX_COMPILER_ID:GNU>:-fconstexpr-ops-limit=335544320>
@@ -112,13 +118,13 @@ target_link_libraries(imgui_bindings
         PUBLIC
         imgui::imgui
         SDL2::SDL2
-        OpenGL::GL
+        $<IF:$<PLATFORM_ID:Emscripten>,${OPENGL_LIBRARIES},OpenGL::GL>
         )
 target_link_libraries(game_boy_emulator PRIVATE
         game_boy_emulator_library
         imgui_bindings
         argparse::argparse
-        nativefiledialog::nativefiledialog
+        $<$<NOT:$<PLATFORM_ID:Emscripten>>:nativefiledialog::nativefiledialog>
         )
 target_include_directories(game_boy_emulator
         PRIVATE

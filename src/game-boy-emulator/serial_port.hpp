@@ -5,6 +5,7 @@ namespace spdlog {
 class logger;
 }
 #include <memory>
+#include <string>
 
 class SerialPort {
     Emulator* m_emulator;

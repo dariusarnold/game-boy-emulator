@@ -10,7 +10,9 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
 #include "SDL.h"
+#ifndef __EMSCRIPTEN__
 #include "nfd.h"
+#endif
 
 Window::Window(Emulator& emulator) :
         m_emulator(emulator), m_logger(spdlog::get("")), m_fps_history(5 * 60, 5 * 60, 0) {
@@ -354,6 +356,7 @@ void Window::draw_vram() {
 
 void Window::draw_menubar_file() {
     if (ImGui::MenuItem("Load game")) {
+#ifndef __EMSCRIPTEN__
         nfdchar_t* outpath_ptr = nullptr;
         const auto result = NFD_OpenDialog(nullptr, nullptr, &outpath_ptr);
         const std::unique_ptr<nfdchar_t, decltype(&free)> out_path{outpath_ptr, &free};
@@ -362,6 +365,7 @@ void Window::draw_menubar_file() {
             std::filesystem::path const p{out_path.get()};
             m_emulator.get_state().new_rom_file_path = p;
         }
+#endif
     }
     if (ImGui::MenuItem("Quit")) {
         m_done = true;

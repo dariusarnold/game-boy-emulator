@@ -7,6 +7,13 @@ option(SANITIZE "Enable address and undefined behavior sanitizers" ON)
 option(TIDY "Enable clang-tidy checks" ON)
 option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang." ON)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    set(TIDY OFF)
+    set(WARNINGS_ENABLED OFF)
+    # Generate html output file
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
+endif()
+
 find_package(fmt REQUIRED)
 find_package(Catch2 REQUIRED)
 find_package(SDL2 REQUIRED)
@@ -16,7 +23,9 @@ find_package(magic_enum REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(argparse REQUIRED)
 find_package(Boost REQUIRED)
-find_package(nativefiledialog REQUIRED)
+if (NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    find_package(nativefiledialog REQUIRED)
+endif()
 
 # Enable clang-format integration by creating clang-format CMake targets
 # Add a custom CMake Modules directory

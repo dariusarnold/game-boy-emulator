@@ -18,10 +18,11 @@ class GameBoyEmulatorConan(ConanFile):
         self.requires("boost/1.80.0")
         self.requires("sdl/2.26.1")
         self.requires("catch2/2.13.6")
-        self.requires("nativefiledialog/116")
-        # Overrides for nativefiledialogs gtk dependency which cant be built with recent compilers (clang/gcc)
-        # since there are warnings as errors.
-        self.requires("gtk/system", override=True)
+        if self.settings.os != "Emscripten":
+            self.requires("nativefiledialog/116")
+            # Overrides for nativefiledialogs gtk dependency which cant be built with recent compilers (clang/gcc)
+            # since there are warnings as errors.
+            self.requires("gtk/system", override=True)
 
     def export_sources(self):
         self.copy("*", excludes=("build*", "cmake-build*"))
@@ -31,7 +32,8 @@ class GameBoyEmulatorConan(ConanFile):
 
     def configure(self):
         self.options["boost"].header_only = True
-        self.options["sdl"].nas = False
+        if self.settings.os != "Emscripten":
+            self.options["sdl"].nas = False
 
     def generate(self):
         tc = CMakeToolchain(self)

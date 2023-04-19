@@ -40,7 +40,8 @@ public:
     // Transfer content from another buffer into this framebuffer
     void take_from(void* ptr);
 
-    const void* data() const {
+    [[nodiscard]] const void* data() const {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         return reinterpret_cast<const void*>(m_buffer.data());
     }
 

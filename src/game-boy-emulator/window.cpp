@@ -18,6 +18,9 @@
 
 #ifndef __EMSCRIPTEN__
 #include "nfd.h"
+#else
+#include "emscripten_browser_file.hpp"
+#include <fstream>
 #endif
 
 Window::Window(Emulator& emulator) :
@@ -420,6 +423,24 @@ void Window::draw_menubar_file() {
             std::filesystem::path const p{out_path.get()};
             m_emulator.get_state().new_rom_file_path = p;
         }
+#else
+        /// Prompt the browser to open the file selector dialogue, and pass the file to the given handler
+        /// Accept-types are in the format ".png,.jpeg,.jpg" as per https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept
+        /// Upload handler callback signature is:
+        ///   void my_handler(std::string const &filename, std::string const &mime_type, std::string_view buffer, void *callback_data = nullptr);
+        auto callback = [](const std::string& filename, const std::string& mime_type, std::string_view buffer, void* callback_data) {
+            // Write the file to local filesystem to enable the use of the present mechanism for loading ROMs
+            std::ofstream fstream(filename, std::ios::binary);
+            fstream.write(buffer.data(), buffer.size());
+            fmt::print("File: {} ({}), {} bytes\n", filename, mime_type, buffer.size());
+            if (callback_data != nullptr) {
+                reinterpret_cast<Emulator*>(callback_data)->get_state().new_rom_file_path
+                    = filename;
+            } else {
+                fmt::print("Callback data is null");
+            }
+        };
+        emscripten_browser_file::upload("", callback, &m_emulator);
 #endif
     }
     if (ImGui::MenuItem("Quit")) {

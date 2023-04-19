@@ -89,6 +89,10 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     target_link_options(game_boy_emulator_library PUBLIC
             # Allow allocation during runtime
             -sALLOW_MEMORY_GROWTH=1
+            # Required for file picker
+            -sEXPORTED_RUNTIME_METHODS=[ccall]
+            # Also required for file picker, see https://github.com/emscripten-core/emscripten/issues/6882
+            -sEXPORTED_FUNCTIONS=[_main,_malloc,_free]
             -sUSE_SDL=2
             )
 endif()

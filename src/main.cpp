@@ -82,9 +82,11 @@ int main(int argc, char** argv) { // NOLINT
         const auto& state = emulator.get_state();
         if (state.rom_file_path.has_value()) {
             auto sucess = emulator.step();
+#ifndef __EMSCRIPTEN__
             if (!sucess) {
                 return EXIT_FAILURE;
             }
+#endif
         } else {
             // Normally the vblank interrupt would trigger this callback. But since we are in a
             // state where no game is loaded and the emulator is not running, we have to call it

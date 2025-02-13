@@ -4,15 +4,15 @@
 	"name": "C++",
 	"build": {
 		"dockerfile": "Dockerfile",
-		// Update 'VARIANT' to pick an Ubuntu OS version. Options: [bionic, focal]. Default: focal
-		// Update 'GCC_VER' to pick a gcc and g++ version. Options: [7, 8, 9, 10, 11]. Default: 11
-		// Update 'LLVM_VER' to pick clang version. Options: [10, 11, 12, 13]. Default: 13
+		// Update 'VARIANT' to pick an Ubuntu OS version. Examples: [bionic, focal]. Default: focal
+		// Update 'GCC_VER' to pick a gcc and g++ version. Examples: [7, 8, 9, 10, 11]. Default: 11
+		// Update 'LLVM_VER' to pick clang version. Options: [10, 11, 12, 13]. Example: 13
 		// Update 'USE_CLANG' to set clang as the default C and C++ compiler. Options: [1, null]. Default null
-		// "args": {
-		"VARIANT": "jammy",
-		// 	"GCC_VER": "11",
-		// 	"LLVM_VER": "13"
-		// }
+		"args": {
+			"VARIANT": "noble",
+			"GCC_VER": "14",
+			"LLVM_VER": "19"
+		}
 	},
 	"runArgs": [
 		"--cap-add=SYS_PTRACE",
@@ -28,7 +28,7 @@
 		// Persist bash history
 		"source=game-boy-emulator_bashhistory,target=/commandhistory,type=volume"
 	],
-	// Add the IDs of extensions you want installed when the container is created.
+	// Add the IDs of VsCode extensions you want installed when the container is created.
 	"extensions": [
 		"ms-vscode.cpptools",
 		"ms-vscode.cmake-tools",

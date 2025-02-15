@@ -1,31 +1,32 @@
 # [Choice] bionic (18.04), focal (20.04)
 ARG VARIANT="focal"
-FROM ubuntu:${VARIANT}
+FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
-# Restate the variant to use it later on in the llvm and cmake installations
+# Docker resets ARGs after every FROM statement, making previous ones unavailable.
+# Restate the variant to use it later on in the llvm and cmake installations.
 ARG VARIANT
 
 # Install necessary packages available from standard repos
 RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
+        # General programs
         software-properties-common wget apt-utils file zip \
         openssh-client gpg-agent socat rsync \
-        make ninja-build git \
-        python3 python3-pip
-
-# Install conan
-RUN python3 -m pip install --upgrade pip setuptools && \
-    python3 -m pip install conan && \
-    conan --version
+        # Development tools
+        git \
+        # Build tools \
+        make ninja-build \
+        # Python
+        python3 python3-pip pipx
 
 # By default, anything you run in Docker is done as superuser.
 # Conan runs some install commands as superuser, and will prepend `sudo` to
 # these commands, unless `CONAN_SYSREQUIRES_SUDO=0` is in your env variables.
-ENV CONAN_SYSREQUIRES_SUDO 0
+ENV CONAN_SYSREQUIRES_SUDO=0
 # Some packages request that Conan use the system package manager to install
 # a few dependencies. This flag allows Conan to proceed with these installations;
 # leaving this flag undefined can cause some installation failures.
-ENV CONAN_SYSREQUIRES_MODE enabled
+ENV CONAN_SYSREQUIRES_MODE=enabled
 
 # User-settable versions:
 # This Dockerfile should support gcc-[7, 8, 9, 10, 11] and clang-[10, 11, 12, 13]
@@ -79,9 +80,9 @@ RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
         doxygen graphviz ccache cppcheck
 
 # Install include-what-you-use
-ENV IWYU /home/iwyu
-ENV IWYU_BUILD ${IWYU}/build
-ENV IWYU_SRC ${IWYU}/include-what-you-use
+ENV IWYU=/home/iwyu
+ENV IWYU_BUILD=${IWYU}/build
+ENV IWYU_SRC=${IWYU}/include-what-you-use
 RUN mkdir -p ${IWYU_BUILD} && \
     git clone --branch clang_${LLVM_VER} \
         https://github.com/include-what-you-use/include-what-you-use.git \
@@ -105,7 +106,7 @@ RUN apt-get autoremove -y && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Allow the user to set compiler defaults
-ARG USE_CLANG
+ARG USE_CLANG=0
 # if --build-arg USE_CLANG=1, set CC to 'clang' or set to null otherwise.
 ENV CC=${USE_CLANG:+"clang"}
 ENV CXX=${USE_CLANG:+"clang++"}
@@ -113,21 +114,8 @@ ENV CXX=${USE_CLANG:+"clang++"}
 ENV CC=${CC:-"gcc"}
 ENV CXX=${CXX:-"g++"}
 
-ARG USERNAME=clion
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-# Create the user
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    #
-    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
-    && apt-get update \
-    && apt-get install -y sudo \
-    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
-
 # Persist bash history
-ARG USERNAME=clion
+ARG USERNAME=vscode
 RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
     && mkdir /commandhistory \
     && touch /commandhistory/.bash_history \
@@ -135,7 +123,10 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
     && echo "$SNIPPET" >> "/home/$USERNAME/.bashrc"
 
 
-RUN apt-get update \
-    && apt-get install -y xz-utils
+USER vscode
+# Install conan for vscode user
+RUN pipx install \
+    conan \
+    && pipx ensurepath
 
 CMD ["/bin/bash"]

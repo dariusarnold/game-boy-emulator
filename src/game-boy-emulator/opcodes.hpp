@@ -4,7 +4,7 @@
 
 #include <magic_enum.hpp>
 
-#include <fmt/format.h>
+#include <fmt/core.h>
 #include <cstdint>
 #include <string>
 
@@ -188,12 +188,12 @@ class fmt::formatter<opcodes::Instruction> {
 
 public:
     // Currently no custom formatting implemented
-    auto parse(fmt::format_parse_context& context) { // NOLINT
+    constexpr auto parse(fmt::format_parse_context& context) { // NOLINT
         return context.begin();
     }
 
     template <typename FormatContext>
-    auto format(const opcodes::Instruction& instruction, FormatContext& context) {
+    auto format(const opcodes::Instruction& instruction, FormatContext& context) const {
         namespace me = magic_enum;
         return fmt::format_to(context.out(), "Instruction {} {} {} {} {}",
                          me::enum_name(instruction.instruction_type),

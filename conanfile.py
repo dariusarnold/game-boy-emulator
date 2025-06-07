@@ -10,10 +10,10 @@ class GameBoyEmulatorConan(ConanFile):
     version = "0.1.0"
 
     def requirements(self):
-        self.requires("fmt/9.1.0")
+        self.requires("fmt/11.2.0")
         self.requires("imgui/1.88")
         self.requires("magic_enum/0.8.1")
-        self.requires("spdlog/1.11.0")
+        self.requires("spdlog/1.15.3")
         self.requires("argparse/2.9")
         self.requires("boost/1.80.0")
         self.requires("sdl/2.26.1")

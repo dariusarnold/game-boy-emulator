@@ -136,7 +136,7 @@ RUN \
 # See https://github.com/yaml/pyyaml/issues/736 for workaround
     echo 'Cython < 3.0' > /tmp/constraint.txt \
 && PIP_CONSTRAINT=/tmp/constraint.txt pipx install --python $(which python3.11) \
-    conan==1.58 \
+    conan==1.66 \
 && pipx ensurepath
 
 CMD ["/bin/bash"]

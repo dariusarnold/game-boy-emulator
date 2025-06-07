@@ -125,8 +125,11 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
 
 USER vscode
 # Install conan for vscode user
-RUN pipx install \
+RUN \
+# See https://github.com/yaml/pyyaml/issues/736 for workaround
+    echo 'Cython < 3.0' > /tmp/constraint.txt \
+&& PIP_CONSTRAINT=/tmp/constraint.txt pipx install \
     conan \
-    && pipx ensurepath
+&& pipx ensurepath
 
 CMD ["/bin/bash"]

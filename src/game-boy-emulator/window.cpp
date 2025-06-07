@@ -22,6 +22,11 @@ Window::Window(Emulator& emulator) :
         spdlog::error("Error: {}", SDL_GetError());
         std::exit(EXIT_FAILURE);
     }
+    // Initialize NFDe after SDL
+    if (NFD_Init() != NFD_OKAY) {
+       spdlog::error("Error: failed to initialize NFDe");
+       std::exit(EXIT_FAILURE);
+    }
 
     auto window_flags
         = static_cast<SDL_WindowFlags>(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
@@ -53,6 +58,9 @@ Window::Window(Emulator& emulator) :
 }
 
 Window::~Window() {
+    // deinitialize NFDe before SDL
+    NFD_Quit();
+
     ImGui_ImplSDLRenderer_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();

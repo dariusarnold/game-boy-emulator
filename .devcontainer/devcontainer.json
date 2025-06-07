@@ -30,7 +30,6 @@
 				// Add the IDs of VsCode extensions you want installed when the container is created.
 				"ms-vscode.cpptools",
 				"ms-vscode.cmake-tools",
-				"twxs.cmake",
 				"ms-vscode.cpptools-themes",
 				"cschlosser.doxdocgen",
 				"eamodio.gitlens",

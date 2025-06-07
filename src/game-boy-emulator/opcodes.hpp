@@ -195,7 +195,7 @@ public:
     template <typename FormatContext>
     auto format(const opcodes::Instruction& instruction, FormatContext& context) {
         namespace me = magic_enum;
-        return format_to(context.out(), "Instruction {} {} {} {} {}",
+        return fmt::format_to(context.out(), "Instruction {} {} {} {} {}",
                          me::enum_name(instruction.instruction_type),
                          me::enum_name(instruction.interaction_type),
                          me::enum_name(instruction.register_type_destination),

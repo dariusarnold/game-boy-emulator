@@ -13,7 +13,7 @@ RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
         # General programs
         software-properties-common wget apt-utils file zip \
-        openssh-client gpg-agent socat rsync \
+        openssh-client gpg-agent socat rsync pkg-config \
         # Development tools
         git \
         # Build tools \

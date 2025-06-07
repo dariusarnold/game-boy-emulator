@@ -1,6 +1,8 @@
-# [Choice] bionic (18.04), focal (20.04)
-ARG VARIANT="focal"
-FROM mcr.microsoft.com/devcontainers/base:ubuntu
+# Ubuntu version codename.
+# Examples: "noble", "jammy"
+# For full tag list, see https://mcr.microsoft.com/v2/devcontainers/base/tags/list
+ARG VARIANT
+FROM mcr.microsoft.com/devcontainers/base:${VARIANT}
 
 # Docker resets ARGs after every FROM statement, making previous ones unavailable.
 # Restate the variant to use it later on in the llvm and cmake installations.

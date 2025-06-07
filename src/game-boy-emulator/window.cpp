@@ -354,13 +354,16 @@ void Window::draw_vram() {
 
 void Window::draw_menubar_file() {
     if (ImGui::MenuItem("Load game")) {
-        nfdchar_t* outpath_ptr = nullptr;
-        const auto result = NFD_OpenDialog(nullptr, nullptr, &outpath_ptr);
-        const std::unique_ptr<nfdchar_t, decltype(&free)> out_path{outpath_ptr, &free};
+        nfdu8char_t* outpath_ptr = nullptr;
+        nfdopendialogu8args_t args = {0};
+        const auto result = NFD_OpenDialogU8_With(&outpath_ptr, &args);
+        const std::unique_ptr<nfdu8char_t, decltype(&NFD_FreePathU8)> out_path{outpath_ptr, &NFD_FreePathU8};
 
         if (result == NFD_OKAY) {
             std::filesystem::path const p{out_path.get()};
             m_emulator.get_state().new_rom_file_path = p;
+        } else {
+            spdlog::error("Error opening file picker: {}", NFD_GetError());
         }
     }
     if (ImGui::MenuItem("Quit")) {

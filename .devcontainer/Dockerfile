@@ -20,6 +20,8 @@ RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
         make ninja-build \
         # Python
         python3 python3-pip pipx
+        # Dependencies
+        libgtk-3-dev
 
 # By default, anything you run in Docker is done as superuser.
 # Conan runs some install commands as superuser, and will prepend `sudo` to

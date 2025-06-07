@@ -1,7 +1,7 @@
 # Ubuntu version codename.
 # Examples: "noble", "jammy"
 # For full tag list, see https://mcr.microsoft.com/v2/devcontainers/base/tags/list
-ARG VARIANT
+ARG VARIANT="noble"
 FROM mcr.microsoft.com/devcontainers/base:${VARIANT}
 
 # Docker resets ARGs after every FROM statement, making previous ones unavailable.

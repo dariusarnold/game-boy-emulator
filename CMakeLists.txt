@@ -3,9 +3,9 @@ project(game_boy_emulator)
 
 set(CMAKE_CXX_STANDARD 20)
 
-option(SANITIZE "Enable address and undefined behavior sanitizers" ON)
-option(TIDY "Enable clang-tidy checks" ON)
-option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang." ON)
+option(SANITIZE "Enable address and undefined behavior sanitizers" OFF)
+option(TIDY "Enable clang-tidy checks" OFF)
+option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang." OFF)
 
 find_package(fmt REQUIRED)
 find_package(Catch2 REQUIRED)

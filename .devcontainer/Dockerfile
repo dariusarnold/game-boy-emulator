@@ -123,12 +123,17 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
     && echo "$SNIPPET" >> "/home/$USERNAME/.bashrc"
 
 
+# Install Python 3.11 as a compatible version for conan 1.58
+RUN apt-get update -qq && apt-get install --no-install-recommends -yq software-properties-common \
+     && add-apt-repository ppa:deadsnakes/ppa && apt-get update -qq \
+     && apt-get install -yq --no-install-recommends python3.11
+
 USER vscode
 # Install conan for vscode user
 RUN \
 # See https://github.com/yaml/pyyaml/issues/736 for workaround
     echo 'Cython < 3.0' > /tmp/constraint.txt \
-&& PIP_CONSTRAINT=/tmp/constraint.txt pipx install \
+&& PIP_CONSTRAINT=/tmp/constraint.txt pipx install --python $(which python3.11) \
     conan==1.58 \
 && pipx ensurepath
 

@@ -9,19 +9,23 @@ FROM mcr.microsoft.com/devcontainers/base:${VARIANT}
 ARG VARIANT
 
 # Install necessary packages available from standard repos
-RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
-        # General programs
-        software-properties-common wget apt-utils file zip \
-        openssh-client gpg-agent socat rsync pkg-config \
-        # Development tools
-        git \
-        # Build tools \
-        make ninja-build \
-        # Python
-        python3 python3-pip pipx
-        # Dependencies
-        libgtk-3-dev
+RUN apt-get update -qq 
+&& export DEBIAN_FRONTEND=noninteractive \
+&& apt-get install -y --no-install-recommends \
+    # General programs
+    software-properties-common wget apt-utils file zip \
+    openssh-client gpg-agent socat rsync pkg-config nano \
+    # Development tools
+    git ccache cppcheck \
+    # Build tools \
+    make ninja-build cmake \
+    # Python
+    python3 python3-pip pipx \
+    # Dependencies
+    libgtk-3-dev \
+&& apt-get autoremove -y \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*
 
 # By default, anything you run in Docker is done as superuser.
 # Conan runs some install commands as superuser, and will prepend `sudo` to
@@ -64,25 +68,6 @@ RUN update-alternatives --install /usr/bin/clang-tidy clang-tidy $(which clang-t
 RUN update-alternatives --install /usr/bin/clang clang $(which clang-${LLVM_VER}) 100
 RUN update-alternatives --install /usr/bin/clang++ clang++ $(which clang++-${LLVM_VER}) 100
 
-# Add current cmake/ccmake, from Kitware
-ARG CMAKE_URL="https://apt.kitware.com/ubuntu/"
-ARG CMAKE_PKG=${VARIANT}
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
-        | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
-    apt-add-repository -y "deb ${CMAKE_URL} ${CMAKE_PKG} main" && \
-    apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends cmake cmake-curses-gui
-
-# Install editors
-RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
-        neovim emacs nano
-
-# Install optional dependecies
-RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
-        doxygen graphviz ccache cppcheck
-
 ## Install include-what-you-use
 #ENV IWYU=/home/iwyu
 #ENV IWYU_BUILD=${IWYU}/build
@@ -104,11 +89,6 @@ RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
 #RUN mkdir -p $(include-what-you-use -print-resource-dir 2>/dev/null)
 #RUN ln -s $(readlink -f /usr/lib/clang/${LLVM_VER}/include) \
 #    $(include-what-you-use -print-resource-dir 2>/dev/null)/include
-
-## Cleanup cached apt data we don't need anymore
-RUN apt-get autoremove -y && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
 # Allow the user to set compiler defaults
 ARG USE_CLANG=0
 # if --build-arg USE_CLANG=1, set CC to 'clang' or set to null otherwise.

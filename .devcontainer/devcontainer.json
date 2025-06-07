@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.205.2/containers/cpp
 {
-	"name": "C++",
+	"name": "game_boy_emulator_devcontainer",
 	"build": {
 		"dockerfile": "Dockerfile",
 		// Update 'VARIANT' to pick an Ubuntu OS version. Examples: [jammy, noble].
@@ -9,9 +9,9 @@
 		// Update 'LLVM_VER' to pick clang version. Options: [10, 11, 12, 13]. Example: 13
 		// Update 'USE_CLANG' to set clang as the default C and C++ compiler. Options: [1, null]. Default null
 		"args": {
-			"VARIANT": "jammy",
-			"GCC_VER": "13",
-			"LLVM_VER": "17"
+			"VARIANT": "noble",
+			"GCC_VER": "14",
+			"LLVM_VER": "20"
 		}
 	},
 	"runArgs": [

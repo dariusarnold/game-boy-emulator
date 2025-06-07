@@ -17,7 +17,7 @@ class GameBoyEmulatorConan(ConanFile):
         self.requires("argparse/2.9")
         self.requires("boost/1.80.0")
         self.requires("sdl/2.26.1")
-        self.requires("catch2/2.13.6")
+        self.requires("catch2/2.13.10")
         self.requires("portable-file-dialogs/0.1.0")
 
     def export_sources(self):

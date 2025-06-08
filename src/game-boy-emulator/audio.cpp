@@ -12,26 +12,12 @@ constexpr int BUFFER_SIZE = 4096;
 Audio::Audio(Emulator& emulator) :
         m_resampler(AUDIO_F32SYS, AUDIO_F32SYS, constants::CLOCK_SPEED_M, 44100, 2, 2),
         m_emulator(emulator) {
-    auto num_audio_devices = SDL_GetNumAudioDevices(0);
-    std::vector<const char*> device_ids(static_cast<size_t>(num_audio_devices));
-    for (auto i = 0; i < num_audio_devices; ++i) {
-        // TODO Implement device selection by user
-        const auto* name = SDL_GetAudioDeviceName(i, SDL_AUDIO_PLAYBACK);
-        device_ids[static_cast<size_t>(i)] = name;
-        spdlog::info("Detected audio device {}: {}", i, name);
-    }
-
     SDL_AudioSpec audio_spec{};
     audio_spec.freq = 44100;
     audio_spec.format = AUDIO_F32;
     audio_spec.samples = BUFFER_SIZE;
     audio_spec.channels = 2;
-    spdlog::info("Using audio device {}", device_ids[0]);
-    m_audio_ressource = AudioRessource(device_ids[0], audio_spec);
-    // Start playback on device
-    if (m_audio_ressource.is_valid()) {
-        SDL_PauseAudioDevice(m_audio_ressource.get(), 0);
-    }
+    m_audio_ressource = AudioRessource(audio_spec);
 }
 
 namespace {
@@ -63,14 +49,21 @@ bool Audio::is_working() const {
     return m_audio_ressource.is_valid();
 }
 
-AudioRessource::AudioRessource(const char* device, const SDL_AudioSpec& audio_spec) {
+AudioRessource::AudioRessource(const SDL_AudioSpec& audio_spec) {
     SDL_AudioSpec obtained{};
-    m_device_id = SDL_OpenAudioDevice(device, SDL_AUDIO_PLAYBACK, &audio_spec, &obtained, 0);
+    char* name_raw = nullptr;
+    if (SDL_GetDefaultAudioInfo(&name_raw, &obtained, SDL_AUDIO_PLAYBACK) == 0) {
+        std::unique_ptr<char, decltype(&SDL_free)> name{name_raw, &SDL_free};
+        spdlog::info("Default audio device: {}", std::string_view(name.get()));
+    }
+    m_device_id = SDL_OpenAudioDevice(nullptr, SDL_AUDIO_PLAYBACK, &audio_spec, &obtained, 0);
     assert(obtained.freq == audio_spec.freq && "Audio device configuration mismatch");
     if (m_device_id == 0) {
-        spdlog::error("Failed to open audio device: {}. Disabling audio emulation.",
-                      SDL_GetError());
+        spdlog::error("Failed to open audio device: {}. No audio output.", SDL_GetError());
+        return;
     }
+    // Playback is always paused initially, unpause
+    SDL_PauseAudioDevice(m_device_id, 0);
 }
 
 AudioRessource::~AudioRessource() {

@@ -160,7 +160,6 @@ if (WARNINGS_ENABLED)
             -Wdelete-non-virtual-dtor
             -Woverflow
             # Enabling GCC specific warning flags
-            $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
             $<$<CXX_COMPILER_ID:GNU>:-Wcast-qual>
             $<$<CXX_COMPILER_ID:GNU>:-Wcast-align=strict>
             $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
@@ -169,9 +168,7 @@ if (WARNINGS_ENABLED)
             # Initializing a class member from itself is a nasty and hard to spot bug, so we turn it
             # into a warning. Clang has the flag but wont do anything, but gcc spots the error.
             $<$<CXX_COMPILER_ID:GNU>:-Winit-self>
-            $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
             $<$<CXX_COMPILER_ID:GNU>:-Wnull-dereference>
-            $<$<CXX_COMPILER_ID:GNU>:-Wundef>
             # Disabling the errors enabled by Weverything for clang which are not useful
             # These warnings meaning is not warn me when I use something newer than this standard version but warn me
             # when I use something from the standard version which works differently when compiling with an older

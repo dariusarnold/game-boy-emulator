@@ -19,7 +19,14 @@ find_package(spdlog REQUIRED)
 find_package(argparse REQUIRED)
 find_package(Boost REQUIRED)
 
-add_subdirectory(nativefiledialog-extended)
+include(FetchContent)
+FetchContent_Declare(nativefiledialog-extended
+        # Without this clang-tidy would warn about things in the libraries header, but this requires cmake 3.25
+        SYSTEM
+        GIT_REPOSITORY https://github.com/btzy/nativefiledialog-extended.git
+        GIT_TAG v1.2.1
+        )
+FetchContent_MakeAvailable(nativefiledialog-extended)
 
 
 # Enable clang-format integration by creating clang-format CMake targets

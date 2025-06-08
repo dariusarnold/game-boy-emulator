@@ -104,8 +104,6 @@ public:
     void set_debug_function(std::function<void()> f);
     void set_audio_function(std::function<void(SampleFrame s)> f);
 
-    size_t get_cycle_count();
-
 private:
     EmulatorState m_state;
     EmulatorOptions m_options;

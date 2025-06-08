@@ -222,10 +222,6 @@ void Emulator::set_draw_function(std::function<void()> f) {
     m_draw_function = std::move(f);
 }
 
-size_t Emulator::get_cycle_count() {
-    return m_cpu->cycle_duration_previous_instruction();
-}
-
 void Emulator::set_debug_function(std::function<void()> f) {
     m_debug_function = std::move(f);
 }

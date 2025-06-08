@@ -47,8 +47,6 @@ class Cpu {
 
     opcodes::Instruction current_instruction;
     opcodes::Instruction previous_instruction;
-    // Amount of cycles executing the last instruction took.
-    size_t m_cycles_previous_instruction = 0;
 
 public:
     explicit Cpu(Emulator* emulator);
@@ -73,7 +71,6 @@ public:
 
     [[nodiscard]] opcodes::Instruction get_current_instruction() const;
     [[nodiscard]] opcodes::Instruction get_previous_instruction() const;
-    [[nodiscard]] size_t cycle_duration_previous_instruction() const;
 
     void call_isr(uint16_t isr_address);
 

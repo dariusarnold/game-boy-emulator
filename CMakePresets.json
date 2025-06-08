@@ -183,38 +183,6 @@
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
-        },
-        {
-            "name": "yocto-nxp-sdk-base",
-            "hidden": true,
-            "displayName": "NXP i.MX6UL Eval Kit",
-            "description": "SDK from Yocto for NXP i.MX6UL Eval Kit",
-            "toolchainFile": "/opt/nxp-sdk/sysroots/x86_64-pokysdk-linux/usr/share/cmake/cortexa7t2hf-neon-poky-linux-gnueabi-toolchain.cmake",
-            "generator": "Ninja",
-            "binaryDir": "build/${presetName}",
-            "cacheVariables": {
-                "ENABLE_CLANG_TIDY": "OFF",
-                "WARNINGS_AS_ERRORS": "OFF"
-            },
-            "environment": {
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            }
-        },
-        {
-            "name": "yocto-nxp-sdk-debug",
-            "displayName": "NXP i.MX6UL Eval Kit Debug",
-            "inherits": ["yocto-nxp-sdk-base"],
-            "environment": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "yocto-nxp-sdk-release",
-            "displayName": "NXP i.MX6UL Eval Kit Release",
-            "inherits": ["yocto-nxp-sdk-base"],
-            "environment": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
         }
     ],
     "testPresets": [

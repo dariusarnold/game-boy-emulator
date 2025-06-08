@@ -36,7 +36,7 @@ int main(int argc, char** argv) { // NOLINT
         game_rom_path = std::filesystem::absolute(program.get("game"));
     }
 
-    Emulator emulator({});
+    Emulator emulator{{}};
     if (boot_rom_path.has_value() and game_rom_path.has_value()) {
         emulator.load_boot_game(boot_rom_path.value(), game_rom_path.value());
     } else if (game_rom_path.has_value()) {
@@ -57,8 +57,7 @@ int main(int argc, char** argv) { // NOLINT
 
     // Main loop
     while (!window.is_done()) {
-        const auto& state = emulator.get_state();
-        if (state.rom_file_path.has_value()) {
+        if (emulator.get_state().rom_file_path.has_value()) {
             auto sucess = emulator.step();
             if (!sucess) {
                 return EXIT_FAILURE;
@@ -70,16 +69,11 @@ int main(int argc, char** argv) { // NOLINT
             window.vblank_callback();
         }
         if (emulator.get_state().new_rom_file_path.has_value()) {
+            audio.clear_queued_samples();
             auto path = emulator.get_state().new_rom_file_path.value();
-            // We need to use placement new here so the new instance is at the same address as the
-            // old one. In the constructor every component gets the address of the emulator and
-            // stores it to request functionality later on. If we constructed a temporary Emulator
-            // and overwrote the existing object, the components would store the stack address of
-            // the temporary object which would be invalid after leaving this block.
-            // TODO Improve this.
-            new (&emulator) Emulator({});
+            emulator.get_state().new_rom_file_path = std::nullopt;
+            emulator.reset_state();
             emulator.load_game(path);
-            emulator.set_draw_function([&]() { window.vblank_callback(); });
         }
     }
 

@@ -42,4 +42,5 @@ public:
     explicit Audio(Emulator& emulator);
     void callback(SampleFrame sample);
     [[nodiscard]] bool is_working() const;
+    void clear_queued_samples();
 };

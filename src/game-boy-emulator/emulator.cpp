@@ -17,6 +17,12 @@
 
 #include "spdlog/spdlog.h"
 
+void EmulatorState::reset() {
+    cycles_m = 0;
+    instructions_executed = 0;
+    frame_count = 0;
+}
+
 Emulator::Emulator(EmulatorOptions options) :
         m_options(options),
         m_address_bus(std::make_shared<AddressBus>(this)),
@@ -170,6 +176,14 @@ void Emulator::halt() {
 
 void Emulator::unhalt() {
     m_state.halted = false;
+}
+
+void Emulator::reset_state() {
+    m_state.reset();
+    // Reset all subcomponents which have mutable state that is relevant for emulation or which have side effects on
+    // destruction (such as serial port printing received data).
+    // Resetting RAM does not matter, since the game should not rely on its state on boot anyway.
+    m_serial_port = std::make_shared<SerialPort>(this);
 }
 
 const EmulatorOptions& Emulator::get_options() const {

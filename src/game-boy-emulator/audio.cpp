@@ -9,6 +9,11 @@ const int SDL_AUDIO_PLAYBACK = 0;
 constexpr int BUFFER_SIZE = 4096;
 } // namespace
 
+void Audio::clear_queued_samples() {
+    SDL_ClearQueuedAudio(m_audio_ressource.get());
+    m_resampler.clear_audio_stream();
+}
+
 Audio::Audio(Emulator& emulator) :
         m_resampler(AUDIO_F32SYS, AUDIO_F32SYS, constants::CLOCK_SPEED_M, 44100, 2, 2),
         m_emulator(emulator) {

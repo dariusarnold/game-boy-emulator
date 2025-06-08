@@ -70,4 +70,8 @@ public:
     void flush_queue() {
         SDL_AudioStreamFlush(m_audio_stream);
     }
+
+    void clear_audio_stream() {
+        SDL_AudioStreamClear(m_audio_stream);
+    }
 };

@@ -46,6 +46,8 @@ struct EmulatorState {
     // When changing the game the new path is stored here before the new game is loaded.
     std::optional<std::filesystem::path> new_rom_file_path;
     std::string game_title;
+
+    void reset();
 };
 
 /**
@@ -72,6 +74,7 @@ public:
     void set_interrupts_enabled(bool enabled);
     void halt();
     void unhalt();
+    void reset_state();
 
     [[nodiscard]] std::string get_cpu_debug_state() const;
     [[nodiscard]] CpuDebugState get_debug_state() const;

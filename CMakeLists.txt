@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 option(SANITIZE "Enable address and undefined behavior sanitizers" OFF)
 option(TIDY "Enable clang-tidy checks" OFF)
 option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang." OFF)
+option(WARNINGS_AS_ERRORS "Treat any compiler warning as an error." OFF)
 
 find_package(fmt REQUIRED)
 find_package(Catch2 REQUIRED)

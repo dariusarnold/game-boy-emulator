@@ -128,9 +128,17 @@ target_include_directories(game_boy_emulator
 install(TARGETS game_boy_emulator)
 
 if (WARNINGS_ENABLED)
-    target_compile_options(game_boy_emulator_library PRIVATE
+    message(STATUS "Enabling warnings")
+    # Collect warnings in library to reuse for multiple targets
+    add_library(warnings_list INTERFACE)
+    if (WARNINGS_AS_ERRORS)
+        message(STATUS "Treating warnings as errors")
+        target_compile_options(warnings_list INTERFACE -Werror)
+    endif()
+    target_link_libraries(game_boy_emulator PRIVATE warnings_list)
+    target_link_libraries(game_boy_emulator_library PRIVATE warnings_list)
+    target_compile_options(warnings_list INTERFACE
             $<$<CXX_COMPILER_ID:GNU>:-fstrict-enums>
-            -Werror
             # Catchalls to avoid listing many single warnings
             -Wall
             -Wextra

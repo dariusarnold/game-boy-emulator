@@ -9,23 +9,23 @@ FROM mcr.microsoft.com/devcontainers/base:${VARIANT}
 ARG VARIANT
 
 # Install necessary packages available from standard repos
-RUN apt-get update -qq 
-&& export DEBIAN_FRONTEND=noninteractive \
-&& apt-get install -y --no-install-recommends \
-    # General programs
-    software-properties-common wget apt-utils file zip \
-    openssh-client gpg-agent socat rsync pkg-config nano \
-    # Development tools
-    git ccache cppcheck \
-    # Build tools \
-    make ninja-build cmake \
-    # Python
-    python3 python3-pip pipx \
-    # Dependencies
-    libgtk-3-dev \
-&& apt-get autoremove -y \
-&& apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends \
+        # General programs
+        software-properties-common wget apt-utils file zip \
+        openssh-client gpg-agent socat rsync pkg-config nano \
+        # Development tools
+        git ccache cppcheck \
+        # Build tools \
+        make ninja-build cmake \
+        # Python
+        python3 python3-pip pipx \
+        # Dependencies
+        libgtk-3-dev \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # By default, anything you run in Docker is done as superuser.
 # Conan runs some install commands as superuser, and will prepend `sudo` to
@@ -41,9 +41,9 @@ ENV CONAN_SYSREQUIRES_MODE=enabled
 # Earlier versions of clang will require significant modifications to the IWYU section
 ARG GCC_VER="11"
 # Add gcc-${GCC_VER}
-RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
-    apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test \
+    && apt-get update -qq export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends \
         gcc-${GCC_VER} g++-${GCC_VER} gdb
 
 # Set gcc-${GCC_VER} as default gcc
@@ -54,10 +54,10 @@ ARG LLVM_VER="13"
 # Add clang-${LLVM_VER}
 ARG LLVM_URL="http://apt.llvm.org/${VARIANT}/"
 ARG LLVM_PKG="llvm-toolchain-${VARIANT}-${LLVM_VER}"
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - 2>/dev/null && \
-    add-apt-repository -y "deb ${LLVM_URL} ${LLVM_PKG} main" && \
-    apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - 2>/dev/null \
+    && add-apt-repository -y "deb ${LLVM_URL} ${LLVM_PKG} main" \
+    && apt-get update -qq export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends \
         clang-${LLVM_VER} lldb-${LLVM_VER} lld-${LLVM_VER} clangd-${LLVM_VER} \
         llvm-${LLVM_VER}-dev libclang-${LLVM_VER}-dev clang-tidy-${LLVM_VER}
 
@@ -109,6 +109,6 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
 USER vscode
 # Install conan for vscode user
 RUN pipx install conan \
-&& pipx ensurepath
+    && pipx ensurepath
 
 CMD ["/bin/bash"]

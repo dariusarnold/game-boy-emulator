@@ -10,7 +10,7 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
 #include "SDL.h"
-#include "nfd.h"
+#include "nfd.hpp"
 
 Window::Window(Emulator& emulator) :
         m_emulator(emulator), m_logger(spdlog::get("")), m_fps_history(5 * 60, 5 * 60, 0) {
@@ -362,15 +362,13 @@ void Window::draw_vram() {
 
 void Window::draw_menubar_file() {
     if (ImGui::MenuItem("Load game")) {
-        nfdu8char_t* outpath_ptr = nullptr;
-        nfdopendialogu8args_t args = {0};
-        const auto result = NFD_OpenDialogU8_With(&outpath_ptr, &args);
-        const std::unique_ptr<nfdu8char_t, decltype(&NFD_FreePathU8)> out_path{outpath_ptr, &NFD_FreePathU8};
-
+        NFD::UniquePath out_path;
+        const auto result = NFD::OpenDialog(out_path);
         if (result == NFD_OKAY) {
+            spdlog::info("Loading game {}", *out_path.get());
             std::filesystem::path const p{out_path.get()};
             m_emulator.get_state().new_rom_file_path = p;
-        } else {
+        } else if (result == NFD_ERROR) {
             spdlog::error("Error opening file picker: {}", NFD_GetError());
         }
     }

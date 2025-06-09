@@ -1,7 +1,5 @@
 #pragma once
 
-#include <array>
-
 struct EmulatorOptions {
     // Used for unit test cpu state comparison. Fix LY (0xFF44) constantly at the given value if
     // this value is non negative.
@@ -14,9 +12,9 @@ struct EmulatorOptions {
     bool draw_debug_sprites = true;
     // Draw the complete tile map of the PPU
     bool draw_debug_tiles = true;
-    // Controls fast forward
+    // Controls fast-forward
     bool fast_forward = false;
-    // Fast forward multiplier
+    // Fast-forward multiplier
     int game_speed = 1;
     bool sound_enabled = true;
     // Global sound volume

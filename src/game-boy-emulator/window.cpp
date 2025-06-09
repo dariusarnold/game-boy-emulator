@@ -292,7 +292,7 @@ void Window::vblank_callback() {
     const auto& options = m_emulator.get_options();
     const auto& game = m_emulator.get_ppu()->get_game();
     if (options.fast_forward) {
-        if (state.frame_count % options.game_speed == 0) {
+        if (state.frame_count % static_cast<size_t>(options.game_speed) == 0) {
             m_game_image.upload_to_texture(game);
             draw_frame();
         }
@@ -327,7 +327,7 @@ void Window::draw_info() {
     ImGui::PlotLines("FPS", &m_fps_history[0], static_cast<int>(m_fps_history.size()), 0,
                      fmt::format("{} FPS", avg_fps).c_str(), 0, 120, ImVec2{500, 100});
     m_previous_ticks = current_ticks;
-    for (int i = 0; i < 8; ++i) {
+    for (size_t i = 0; i < 8; ++i) {
         const std::string_view key_state = m_pressed_keys[i] ? "Down" : "Up";
         auto name = magic_enum::enum_name(magic_enum::enum_value<Joypad::Keys>(i));
         ImGui::Text("%s", fmt::format("{}: {}", name, key_state).c_str()); // NOLINT

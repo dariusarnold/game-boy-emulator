@@ -34,7 +34,7 @@ class GameBoyEmulatorConan(ConanFile):
         tc = CMakeToolchain(self)
         tc.generate()
         # Workaround to be able to build the consumer (game_boy_emulator) with both Debug and Release while the
-        # dependencies are built with whatever built type (most likeley Release) and still be able to use find_package
+        # dependencies are built with whatever built type (most likely Release) and still be able to use find_package
         # to find the dependencies.
         deps = CMakeDeps(self)
         deps.configuration = "Release"

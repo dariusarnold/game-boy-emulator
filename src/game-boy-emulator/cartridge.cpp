@@ -14,16 +14,18 @@
 
 #include "fmt/format.h"
 #include "magic_enum.hpp"
-
-#include <utility>
 #include <spdlog/spdlog.h>
 
-namespace {
-const int CARTRIDGE_TYPE_OFFSET = 0x147;
-const int TITLE_BEGIN = 0x134;
-const int TITLE_END = 0x143;
-const int TITLE_SIZE = TITLE_END - TITLE_BEGIN;
-} // namespace
+#include <ranges>
+#include <utility>
+
+namespace cartridge {
+
+namespace constants {// See https://gbdev.io/pandocs/The_Cartridge_Header.html for values
+    constexpr int CARTRIDGE_TYPE_OFFSET = 0x147;
+    constexpr int TITLE_BEGIN = 0x134;
+    constexpr int TITLE_END = 0x143;
+}
 
 Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
         m_emulator(emulator), m_logger(spdlog::get("")) {
@@ -36,6 +38,7 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
     std::span<uint8_t> ram;
     if (ram_size_info.size_bytes != 0) {
         // Memory map cartridge RAM as a file to emulate the battery backed RAM.
+        assert(m_emulator->get_state().rom_file_path.has_value() && "No path to rom file during cartridge creation!");
         auto ram_file_path = m_emulator->get_state().rom_file_path.value();
         auto ram_file_name = ram_file_path.filename().string().append(".ram");
         ram_file_path = ram_file_path.replace_filename(ram_file_name);
@@ -46,7 +49,7 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
 
     auto rom_size = Mbc::read_rom_size_info(rom);
     // Initialize after size check to avoid potential out-of-bounds access.
-    m_cartridge_type = get_cartridge_type(rom);
+    m_cartridge_type = get_type(rom);
     m_logger->info("Detected MBC type {}, ROM {} bytes, {} banks, RAM {} bytes, {} banks",
                    magic_enum::enum_name(m_cartridge_type), rom_size.size_bytes, rom_size.num_banks,
                    ram_size_info.size_bytes, ram_size_info.num_banks);
@@ -93,8 +96,8 @@ void Cartridge::write_byte(uint16_t address, uint8_t value) {
     m_mbc->write_byte(address, value);
 };
 
-Cartridge::CartridgeType Cartridge::get_cartridge_type(const std::vector<uint8_t>& rom) {
-    auto val = rom[CARTRIDGE_TYPE_OFFSET];
+CartridgeType get_type(const std::vector<uint8_t>& rom) {
+    auto val = rom[constants::CARTRIDGE_TYPE_OFFSET];
     if (magic_enum::enum_contains<CartridgeType>(val)) {
         return CartridgeType{val};
     }
@@ -107,14 +110,18 @@ void Cartridge::sync() {
     }
 }
 
-std::string Cartridge::get_title(const std::vector<uint8_t>& rom) const {
-    std::string title(TITLE_SIZE, '\0');
-    auto s = std::span(rom).subspan<TITLE_BEGIN, TITLE_SIZE>();
-    std::copy(s.begin(), s.end(), title.begin());
-    std::erase_if(title, [](auto c) { return !std::isprint(c); });
-    return title;
+std::string get_title(const std::vector<uint8_t>& rom) {
+    assert(rom.size() >= TITLE_END && "Too small size ROM passed to get_title");
+    constexpr int TITLE_LEN = constants::TITLE_END - constants::TITLE_BEGIN + 1;
+    auto title_bytes_span = std::span(rom.data() + constants::TITLE_BEGIN, TITLE_LEN);
+    return title_bytes_span
+        | std::views::filter([](auto c){ return std::isprint(c); })
+        | std::ranges::to<std::string>();
+
 }
 
 // We need a destructor for the outer class to be defined where the MemoryMappedFile is complete.
 // Otherwise the unique_ptr won't compile for incomplete types.
 Cartridge::~Cartridge() = default;
+
+}

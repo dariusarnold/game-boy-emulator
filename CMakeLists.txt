@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(game_boy_emulator)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(SANITIZE "Enable address and undefined behavior sanitizers" OFF)

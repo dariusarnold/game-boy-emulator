@@ -25,6 +25,7 @@ add_executable(game_boy_emulator_tests EXCLUDE_FROM_ALL
         test_mooneye_mbc5.cpp
         test_mooneye_oam_dma.cpp
         test_dmg_acid2.cpp
+        test_cartridge.cpp
         )
 
 target_link_libraries(game_boy_emulator_tests PRIVATE

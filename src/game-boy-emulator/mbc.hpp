@@ -4,7 +4,6 @@ namespace spdlog {
 class logger;
 }
 #include "cartridge_info.hpp"
-#include <cstdint>
 #include <vector>
 #include <memory>
 #include <span>

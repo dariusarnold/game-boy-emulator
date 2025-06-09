@@ -17,7 +17,9 @@ class Apu;
 class Ppu;
 class AddressBus;
 class BootRom;
-class Cartridge;
+namespace cartridge {
+    class Cartridge;
+}
 class Timer;
 class SerialPort;
 class InterruptHandler;
@@ -87,7 +89,7 @@ public:
     [[nodiscard]] std::shared_ptr<BootRom> get_boot_rom() const;
     [[nodiscard]] std::shared_ptr<Ppu> get_ppu() const;
     [[nodiscard]] std::shared_ptr<Cpu> get_cpu() const;
-    [[nodiscard]] std::shared_ptr<Cartridge> get_cartridge() const;
+    [[nodiscard]] std::shared_ptr<cartridge::Cartridge> get_cartridge() const;
     [[nodiscard]] std::shared_ptr<InterruptHandler> get_interrupt_handler() const;
     [[nodiscard]] std::shared_ptr<Timer> get_timer() const;
     [[nodiscard]] std::shared_ptr<SerialPort> get_serial_port() const;
@@ -103,7 +105,7 @@ public:
 private:
     EmulatorState m_state;
     EmulatorOptions m_options;
-    std::shared_ptr<Cartridge> m_cartridge;
+    std::shared_ptr<cartridge::Cartridge> m_cartridge;
     std::shared_ptr<BootRom> m_boot_rom;
     std::shared_ptr<AddressBus> m_address_bus;
     std::shared_ptr<Ram> m_ram;

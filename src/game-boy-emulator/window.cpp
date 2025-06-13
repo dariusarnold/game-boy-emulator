@@ -323,13 +323,10 @@ void Window::draw_game() {
 void Window::draw_info() {
     const auto& state = m_emulator.get_state();
     auto& options = m_emulator.get_options();
-    ImGui::Begin("Info", &options.draw_info_window, ImGuiWindowFlags_NoResize);
-    auto current_ticks = SDL_GetTicks64();
-    auto ms_since_last_frame = current_ticks - m_previous_ticks;
-    auto fps = 0.f;
-    if (ms_since_last_frame != 0) {
-        fps = 1000.f / static_cast<float>(ms_since_last_frame);
-    }
+    ImGui::Begin("Info", &options.draw_info_window, ImGuiWindowFlags_AlwaysAutoResize);
+    const auto current_ticks = SDL_GetTicks64();
+    const auto ms_since_last_frame = current_ticks - m_previous_ticks;
+    const auto fps = (ms_since_last_frame != 0) ? 1000.f / static_cast<float>(ms_since_last_frame) : 0.f;
     m_fps_history.push_back(fps);
     // ImGui requires continuous storage of the data to be plotted, which would require a costly linearize call.
     // Use getter to avoid that.
@@ -337,10 +334,9 @@ void Window::draw_info() {
         auto* buffer = static_cast<boost::circular_buffer<float>*>(data);
         return (*buffer)[index];
     };
-    auto avg_fps = std::accumulate(m_fps_history.end() - 5, m_fps_history.end(), 0.) / 5;
+    const auto avg_fps = std::accumulate(m_fps_history.end() - 5, m_fps_history.end(), 0.) / 5;
     ImGui::PlotLines("FPS", getter, &m_fps_history, static_cast<int>(m_fps_history.size()), 0,
-                     fmt::format("{:.1f} FPS", avg_fps).c_str(), 0, 120, ImVec2{500, 100});
-    m_previous_ticks = current_ticks;
+                     fmt::format("FPS: {:.1f} ({:.1f} ms)", avg_fps, static_cast<float>(ms_since_last_frame)).c_str(), 0, 120, ImVec2{500, 100});
     for (size_t i = 0; i < 8; ++i) {
         const std::string_view key_state = m_pressed_keys[i] ? "Down" : "Up";
         auto name = magic_enum::enum_name(magic_enum::enum_value<Joypad::Keys>(i));

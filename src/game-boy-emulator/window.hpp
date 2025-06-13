@@ -5,8 +5,8 @@
 #include "graphics.hpp"
 #include "constants.h"
 class SDL_Window;
-class SDL_Renderer;
-class SDL_Texture;
+struct  SDL_Renderer;
+struct  SDL_Texture;
 union SDL_Event;
 class Emulator;
 struct EmulatorState;

@@ -9,7 +9,7 @@ class SDL_Renderer;
 class SDL_Texture;
 union SDL_Event;
 class Emulator;
-class EmulatorState;
+struct EmulatorState;
 class Joypad;
 namespace spdlog {
 class logger;

@@ -29,7 +29,7 @@ namespace {
 // Scale input value logarithmically to account for the perception of volume.
 // A logarithmic scale gives the perception of a linear volume change.
 float calc_volume_log(float volume) {
-    return (std::exp(volume) - 1.f) / (std::exp(1.f) - 1.f);
+    return (std::exp(volume) - 1.f) / (std::numbers::e_v<float> - 1.f);
 }
 } // namespace
 
@@ -58,7 +58,7 @@ AudioRessource::AudioRessource(const SDL_AudioSpec& audio_spec) {
     SDL_AudioSpec obtained{};
     char* name_raw = nullptr;
     if (SDL_GetDefaultAudioInfo(&name_raw, &obtained, SDL_AUDIO_PLAYBACK) == 0) {
-        std::unique_ptr<char, decltype(&SDL_free)> name{name_raw, &SDL_free};
+        const std::unique_ptr<char, decltype(&SDL_free)> name{name_raw, &SDL_free};
         spdlog::info("Default audio device: {}", std::string_view(name.get()));
     }
     m_device_id = SDL_OpenAudioDevice(nullptr, SDL_AUDIO_PLAYBACK, &audio_spec, &obtained, 0);

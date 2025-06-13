@@ -322,7 +322,7 @@ void Cpu::set_register_value(opcodes::RegisterType register_type, uint16_t value
     }
 }
 
-uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) {
+uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) const {
     switch (register_type) {
     case opcodes::RegisterType::A:
         return registers.a;
@@ -354,7 +354,10 @@ uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) {
         return registers.hl;
     case opcodes::RegisterType::None:
         abort_execution<LogicError>(
-            fmt::format("Unknown register value {}", magic_enum::enum_name(register_type)));
+            fmt::format("Invalid register type {}", magic_enum::enum_name(register_type)));
+        default:
+        abort_execution<LogicError>(
+            fmt::format("Unknown register value {}", std::to_underlying(register_type)));
     }
     // See comment in instructionJR.
     __builtin_unreachable();
@@ -497,7 +500,7 @@ opcodes::InstructionType get_instruction_cb(uint8_t cb_opcode) {
         return opcodes::InstructionType::CB_BIT;
     }
     // The following blocks are smaller (8 blocks with 8 instructions each).
-    uint8_t index = cb_opcode / 8;
+    const uint8_t index = cb_opcode / 8;
     return CB_INSTRUCTION_BLOCKS[index];
 }
 } // namespace
@@ -664,7 +667,7 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
 }
 
 void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
-    bool jump_condition = check_condition(instruction.condition_type);
+    const bool jump_condition = check_condition(instruction.condition_type);
     if (!jump_condition) {
         return;
     }
@@ -756,7 +759,7 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
 }
 
 void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
-    bool condition_met = check_condition(instruction.condition_type);
+    const bool condition_met = check_condition(instruction.condition_type);
     if (condition_met) {
         m_emulator->elapse_cycle();
         push_word_on_stack(registers.pc);
@@ -792,7 +795,7 @@ void Cpu::instructionPOP(opcodes::Instruction instruction) {
 }
 
 void Cpu::instructionRET(opcodes::Instruction instruction) {
-    bool condition_met = check_condition(instruction.condition_type);
+    const bool condition_met = check_condition(instruction.condition_type);
     if (instruction.condition_type != opcodes::ConditionType::None) {
         m_emulator->elapse_cycle();
     }

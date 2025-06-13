@@ -28,8 +28,7 @@ Window::Window(Emulator& emulator) :
        std::exit(EXIT_FAILURE);
     }
 
-    auto window_flags
-        = static_cast<SDL_WindowFlags>(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    const unsigned int window_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     m_sdl_window = SDL_CreateWindow("game boy emulator", SDL_WINDOWPOS_UNDEFINED,
                                     SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
     m_sdl_renderer = SDL_CreateRenderer(m_sdl_window, -1,
@@ -122,7 +121,7 @@ void Window::draw_frame() {
     }
 
     // Rendering
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    const ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     ImGui::Render();
     SDL_SetRenderDrawColor(m_sdl_renderer, static_cast<Uint8>(clear_color.x * 255),
                            static_cast<Uint8>(clear_color.y * 255),
@@ -185,6 +184,10 @@ void Window::handle_user_keyboard_input(const SDL_Event& event,
                     m_emulator.get_options().game_speed--;
                 }
                 m_emulator.get_options().fast_forward = m_emulator.get_options().game_speed > 1;
+                break;
+            default:
+                // Other keys not handled by emulator.
+                break;
             }
         }
         if (event.type == SDL_KEYUP) {
@@ -223,6 +226,9 @@ void Window::handle_user_keyboard_input(const SDL_Event& event,
                 break;
             case KEY_HOLD_FAST_FORWARD:
                 toggle(m_emulator.get_options().fast_forward);
+                break;
+            default:
+                // Other keys not handled by emulator.
                 break;
             }
         }
@@ -465,7 +471,7 @@ void Window::draw_menubar_settings() {
         draw_menubar_settings_speed(options);
     }
     if (ImGui::BeginMenu("Sound")) {
-        float volume = m_emulator.get_options().volume;
+        const float volume = m_emulator.get_options().volume;
         draw_menubar_settings_sound(options, volume);
     }
 

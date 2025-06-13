@@ -76,7 +76,7 @@ public:
 
 private:
     template <typename T>
-    [[noreturn]] void abort_execution(std::string_view msg) {
+    [[noreturn]] void abort_execution(std::string_view msg) const {
         auto complete_msg = fmt::format("CPU ERROR: {}", msg);
         throw T{complete_msg};
     }
@@ -118,7 +118,7 @@ private:
     std::optional<uint16_t> fetch_data(opcodes::Instruction instruction);
 
     void set_register_value(opcodes::RegisterType register_type, uint16_t value);
-    uint16_t get_register_value(opcodes::RegisterType register_type);
+    [[nodiscard]] uint16_t get_register_value(opcodes::RegisterType register_type) const;
 
     // Helper which puts a value onto the stack in right endian order and elapsing two cycles.
     void push_word_on_stack(uint16_t x);
@@ -214,7 +214,7 @@ uint8_t op_code_to_bit(uint8_t opcode_byte);
 
 template <typename F>
 bool was_half_carry(uint8_t a, uint8_t b, const F& operation) {
-    bool hc = operation((a & 0xf), (b & 0xf)) & 0x10;
+    const bool hc = operation((a & 0xf), (b & 0xf)) & 0x10;
     return hc;
 }
 
@@ -224,12 +224,12 @@ inline bool was_half_carry_word(uint16_t a, uint16_t b) {
 
 template <typename F>
 bool was_carry(uint8_t a, uint8_t b, const F& operation) {
-    bool c = operation(static_cast<uint16_t>(a), static_cast<uint16_t>(b)) & 0x100;
+    const bool c = operation(static_cast<uint16_t>(a), static_cast<uint16_t>(b)) & 0x100;
     return c;
 }
 
 inline bool was_carry_word(uint16_t a, uint16_t b) {
-    unsigned result = a + b;
+    const unsigned result = a + b;
     return (result & 0x10000) != 0;
 }
 

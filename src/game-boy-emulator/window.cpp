@@ -12,8 +12,12 @@
 #include "SDL.h"
 #include "nfd.hpp"
 
+namespace {
+    constexpr int FPS_HISTORY_SIZE = 5 * 60;
+}
+
 Window::Window(Emulator& emulator) :
-        m_emulator(emulator), m_logger(spdlog::get("")), m_fps_history(5 * 60, 5 * 60, 0) {
+        m_emulator(emulator), m_logger(spdlog::get("")), m_fps_history(FPS_HISTORY_SIZE, 0) {
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a
     // minority of Windows systems, depending on whether SDL_INIT_GAMECONTROLLER is enabled or

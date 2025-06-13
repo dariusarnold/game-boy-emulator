@@ -18,7 +18,7 @@ find_package(magic_enum REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(argparse REQUIRED)
 find_package(Boost REQUIRED)
-
+# Nativefiledialog-extend is not yet availabe in Conan Center
 include(FetchContent)
 FetchContent_Declare(nativefiledialog-extended
         # Without this clang-tidy would warn about things in the libraries header, but this requires cmake 3.25
@@ -29,10 +29,11 @@ FetchContent_Declare(nativefiledialog-extended
 FetchContent_MakeAvailable(nativefiledialog-extended)
 
 
-# Enable clang-format integration by creating clang-format CMake targets
-# Add a custom CMake Modules directory
+# Add a custom CMake Modules directory to find the modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
-set(CLANG_FORMAT_EXCLUDE_PATTERNS "src/bindings" ${CMAKE_BINARY_DIR})
+# Exclude automatically copied imgui bindings directory and build directory.
+set(CLANG_FORMAT_EXCLUDE_PATTERNS "bindings" ${CMAKE_BINARY_DIR})
+# Enable clang-format integration by creating clang-format CMake targets
 find_package(ClangFormat)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL Clang AND CLANG_TIDY)

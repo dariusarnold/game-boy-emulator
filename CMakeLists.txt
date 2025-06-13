@@ -8,6 +8,7 @@ option(SANITIZE "Enable address and undefined behavior sanitizers" OFF)
 option(CLANG_TIDY "Enable clang-tidy checks" OFF)
 option(WARNINGS_ENABLED "Enable compiler warnings for all targets. Works for GNU and Clang." OFF)
 option(WARNINGS_AS_ERRORS "Treat any compiler warning as an error." OFF)
+option(USE_CCACHE "Use the ccache compiler cache to speed up compilation" OFF)
 
 find_package(fmt REQUIRED)
 find_package(Catch2 REQUIRED)
@@ -44,6 +45,10 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL Clang AND CLANG_TIDY)
     include(clang-tidy)
 else()
     message(STATUS "clang-tidy is only active for clang, disabling checks")
+endif ()
+
+if (USE_CCACHE)
+    include(ccache)
 endif ()
 
 if (SANITIZE)

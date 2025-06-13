@@ -331,10 +331,14 @@ void Window::draw_info() {
         fps = 1000.f / static_cast<float>(ms_since_last_frame);
     }
     m_fps_history.push_back(fps);
-    // ImGui requires continuous storage of the data to be plotted.
-    m_fps_history.linearize();
+    // ImGui requires continuous storage of the data to be plotted, which would require a costly linearize call.
+    // Use getter to avoid that.
+    auto getter = [](void* data, int index) -> float {
+        auto* buffer = static_cast<boost::circular_buffer<float>*>(data);
+        return (*buffer)[index];
+    };
     auto avg_fps = std::accumulate(m_fps_history.end() - 5, m_fps_history.end(), 0.) / 5;
-    ImGui::PlotLines("FPS", &m_fps_history[0], static_cast<int>(m_fps_history.size()), 0,
+    ImGui::PlotLines("FPS", getter, &m_fps_history, static_cast<int>(m_fps_history.size()), 0,
                      fmt::format("{:.1f} FPS", avg_fps).c_str(), 0, 120, ImVec2{500, 100});
     m_previous_ticks = current_ticks;
     for (size_t i = 0; i < 8; ++i) {

@@ -40,7 +40,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL Clang AND CLANG_TIDY)
     # compiler option to increase constexpr evaluation limit (fconstexpr-ops-limit), which clang does not know (it has
     # a different option). But this flag leads to cland-diagnostics-error and the workaround would be manually removing
     # it from the compilation database. Instead activate clang-tidy only for clang.
-    message(STATUS "Checking with clang-tidy was enabled")
     include(clang-tidy)
 else()
     message(STATUS "clang-tidy is only active for clang, disabling checks")

@@ -25,6 +25,7 @@ class GameBoyEmulatorConan(ConanFile):
 
     def layout(self):
         cmake_layout(self)
+        self.folders.build_folder_vars = ["settings.compiler", "settings.build_type"]
 
     def configure(self):
         self.options["boost"].header_only = True

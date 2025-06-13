@@ -342,10 +342,19 @@ void Window::draw_info() {
         auto name = magic_enum::enum_name(magic_enum::enum_value<Joypad::Keys>(i));
         ImGui::Text("%s", fmt::format("{}: {}", name, key_state).c_str()); // NOLINT
     }
+    if (current_ticks >= m_last_ips_update_ticks + 1000) {
+        m_logger->info("Difference to 1000 ms: {}", current_ticks - m_last_ips_update_ticks);
+        m_instructions_per_second = state.instructions_executed - m_last_instructions_executed;
+        m_last_instructions_executed = state.instructions_executed;
+        m_last_ips_update_ticks = current_ticks;
+    }
+    ImGui::Text("Instructions/sec: %.2f k", m_instructions_per_second / 1'000.0);
     // NOLINTNEXTLINE
     ImGui::Text("%s", fmt::format("{} instructions elapsed", state.instructions_executed).c_str());
     ImGui::Text("Speed %d", options.game_speed); // NOLINT
     ImGui::End();
+    // Store for next iteration
+    m_previous_ticks = current_ticks;
 }
 
 void Window::draw_vram() {

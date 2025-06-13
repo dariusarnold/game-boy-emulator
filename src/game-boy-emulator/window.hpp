@@ -39,10 +39,15 @@ class Window {
           constants::SPRITE_VIEWER_HEIGHT * constants::PIXELS_PER_TILE>
         m_tiledata_block2;
     bool m_done = false;
-    size_t m_previous_ticks = 0;
 
+    //TODO Refactor this out into an info widget containg history and providing the statistics data while keeping
+    // display formatting in Window.
+    size_t m_previous_ticks = 0;
     std::array<bool, 8> m_pressed_keys{};
     boost::circular_buffer<float> m_fps_history;
+    uint64_t m_last_ips_update_ticks = 0;
+    uint64_t m_last_instructions_executed = 0;
+    double   m_instructions_per_second = 0.0;
 
     void handle_user_keyboard_input(const SDL_Event& event, const std::shared_ptr<Joypad>& joypad);
 

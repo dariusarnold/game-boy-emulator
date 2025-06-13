@@ -14,6 +14,7 @@
 
 namespace {
     constexpr int FPS_HISTORY_SIZE = 5 * 60;
+    constexpr int NUM_SAMPLES_FOR_FPS_AVERAGE = std::min(60, FPS_HISTORY_SIZE);
 }
 
 Window::Window(Emulator& emulator) :
@@ -334,7 +335,7 @@ void Window::draw_info() {
         auto* buffer = static_cast<boost::circular_buffer<float>*>(data);
         return (*buffer)[index];
     };
-    const auto avg_fps = std::accumulate(m_fps_history.end() - 5, m_fps_history.end(), 0.) / 5;
+    const auto avg_fps = std::accumulate(m_fps_history.end() - NUM_SAMPLES_FOR_FPS_AVERAGE, m_fps_history.end(), 0.) / NUM_SAMPLES_FOR_FPS_AVERAGE;
     ImGui::PlotLines("FPS", getter, &m_fps_history, static_cast<int>(m_fps_history.size()), 0,
                      fmt::format("FPS: {:.1f} ({:.1f} ms)", avg_fps, static_cast<float>(ms_since_last_frame)).c_str(), 0, 120, ImVec2{500, 100});
     for (size_t i = 0; i < 8; ++i) {
@@ -343,7 +344,6 @@ void Window::draw_info() {
         ImGui::Text("%s", fmt::format("{}: {}", name, key_state).c_str()); // NOLINT
     }
     if (current_ticks >= m_last_ips_update_ticks + 1000) {
-        m_logger->info("Difference to 1000 ms: {}", current_ticks - m_last_ips_update_ticks);
         m_instructions_per_second = state.instructions_executed - m_last_instructions_executed;
         m_last_instructions_executed = state.instructions_executed;
         m_last_ips_update_ticks = current_ticks;

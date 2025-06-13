@@ -335,7 +335,7 @@ void Window::draw_info() {
     m_fps_history.linearize();
     auto avg_fps = std::accumulate(m_fps_history.end() - 5, m_fps_history.end(), 0.) / 5;
     ImGui::PlotLines("FPS", &m_fps_history[0], static_cast<int>(m_fps_history.size()), 0,
-                     fmt::format("{} FPS", avg_fps).c_str(), 0, 120, ImVec2{500, 100});
+                     fmt::format("{:.1f} FPS", avg_fps).c_str(), 0, 120, ImVec2{500, 100});
     m_previous_ticks = current_ticks;
     for (size_t i = 0; i < 8; ++i) {
         const std::string_view key_state = m_pressed_keys[i] ? "Down" : "Up";

@@ -31,7 +31,7 @@ class GameBoyEmulatorConan(ConanFile):
         self.options["sdl"].nas = False
 
     def generate(self):
-        tc = CMakeToolchain(self)
+        tc = CMakeToolchain(self, generator="Ninja")
         tc.generate()
         # Workaround to be able to build the consumer (game_boy_emulator) with both Debug and Release while the
         # dependencies are built with whatever built type (most likely Release) and still be able to use find_package
@@ -46,7 +46,7 @@ class GameBoyEmulatorConan(ConanFile):
         cmake = CMake(self)
         # Since conan is mostly used for releases, we dont want sanitizers enabled and we dont want to run clang-tidy
         # during the build since it is slow (and was run in CI for the commit already).
-        cmake.configure(variables={"SANITIZE": "OFF", "TIDY": "OFF"})
+        cmake.configure(variables={"SANITIZE": "OFF", "TIDY": "OFF", "CMAKE_GENERATOR": "Ninja"})
         cmake.build()
 
     def package(self):

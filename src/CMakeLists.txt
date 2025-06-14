@@ -120,11 +120,6 @@ target_link_libraries(game_boy_emulator PRIVATE
         argparse::argparse
         nfd
         )
-target_include_directories(game_boy_emulator
-        PRIVATE
-        bindings
-        )
-
 install(TARGETS game_boy_emulator)
 
 if (WARNINGS_ENABLED)

@@ -182,13 +182,13 @@ Instruction get_instruction_by_value(uint8_t value);
  * Formatted output for Instructions
  */
 template <>
-class fmt::formatter<opcodes::Instruction> {
+struct fmt::formatter<opcodes::Instruction> {
 
     std::string format_string;
 
 public:
     // Currently no custom formatting implemented
-    constexpr auto parse(fmt::format_parse_context& context) { // NOLINT
+    constexpr auto parse(fmt::format_parse_context& context) {
         return context.begin();
     }
 

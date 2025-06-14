@@ -347,7 +347,7 @@ void Window::draw_info() {
     for (size_t i = 0; i < 8; ++i) {
         const std::string_view key_state = m_pressed_keys[i] ? "Down" : "Up";
         auto name = magic_enum::enum_name(magic_enum::enum_value<Joypad::Keys>(i));
-        ImGui::Text("%s", fmt::format("{}: {}", name, key_state).c_str()); // NOLINT
+        ImGui::Text("%s", fmt::format("{}: {}", name, key_state).c_str());
     }
     if (current_ticks >= m_last_ips_update_ticks + 1000) {
         m_instructions_per_second = static_cast<double>(state.instructions_executed - m_last_instructions_executed);
@@ -355,9 +355,8 @@ void Window::draw_info() {
         m_last_ips_update_ticks = current_ticks;
     }
     ImGui::Text("Instructions/sec: %.2f k", m_instructions_per_second / 1'000.0);
-    // NOLINTNEXTLINE
     ImGui::Text("%s", fmt::format("{} instructions elapsed", state.instructions_executed).c_str());
-    ImGui::Text("Speed %d", options.game_speed); // NOLINT
+    ImGui::Text("Speed %d", options.game_speed);
     ImGui::End();
     // Store for next iteration
     m_previous_ticks = current_ticks;

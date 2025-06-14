@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <cassert>
 #include <array>
+#include <ranges>
 #include <span>
 #include <vector>
 
@@ -353,34 +354,30 @@ void Ppu::draw_sprites_line() {
         return a.m_x_position < b.m_x_position;
     });
     // Reverse order so the objects first in OAM stay (because they have higher priority).
-    // std::ranges::reverse_view doesn't work in clang 15, so we use the iterator alternative. To
-    // stop clang-tidy from complaining, disable just that warning.
-    // NOLINTNEXTLINE(modernize-loop-convert)
-    for (auto oam_entry = visible_sprites.rbegin(); oam_entry != visible_sprites.rend();
-         ++oam_entry) {
+    for (const auto& oam_entry: std::ranges::reverse_view(visible_sprites)) {
         // Skip offscreen sprites
-        if (oam_entry->m_y_position == 0 || oam_entry->m_y_position >= 160
-            || oam_entry->m_x_position == 0 || oam_entry->m_x_position >= 168) {
+        if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
+            || oam_entry.m_x_position == 0 || oam_entry.m_x_position >= 168) {
             continue;
         }
 
-        auto sprite_data = get_sprite_tile(oam_entry->m_tile_index);
+        auto sprite_data = get_sprite_tile(oam_entry.m_tile_index);
         auto tile = graphics::gb::tile_to_gb_color(sprite_data);
-        auto palette_bit = bitmanip::is_bit_set(oam_entry->m_flags, 4);
+        auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
         auto palette = palette_bit ? obj_palette_1 : obj_palette_0;
 
         // Y position in sprite (0...15)
-        const auto sprite_y = screen_y - (oam_entry->m_y_position - 16);
+        const auto sprite_y = screen_y - (oam_entry.m_y_position - 16);
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
-            auto x = static_cast<int>(oam_entry->m_x_position + sprite_x) - 8;
-            auto y = static_cast<int>(oam_entry->m_y_position + sprite_y) - 16;
+            auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
+            auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
             if (x < 0 || y < 0 || x >= static_cast<int>(m_game_framebuffer.width())
                 || y >= static_cast<int>(m_game_framebuffer.height())) {
                 // This pixel of the sprite is hidden
                 continue;
             }
             auto pixel_index
-                = calculate_pixel_index(*oam_entry, sprite_x, static_cast<size_t>(sprite_y), 8);
+                = calculate_pixel_index(oam_entry, sprite_x, static_cast<size_t>(sprite_y), 8);
             auto pixel_color = tile[pixel_index];
             if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
                 // Color 0 is transparent for sprites, so those pixels are not drawn.
@@ -393,7 +390,7 @@ void Ppu::draw_sprites_line() {
             // For this comparison the unmapped color should be used.
             auto existing_color
                 = m_game_framebuffer.get_pixel(static_cast<size_t>(x), static_cast<size_t>(y));
-            if (bg_window_over_sprite(*oam_entry)
+            if (bg_window_over_sprite(oam_entry)
                 && existing_color != graphics::gb::ColorScreen::White) {
                 continue;
             }
@@ -427,34 +424,32 @@ void Ppu::draw_tall_sprites_line() {
         return a.m_x_position < b.m_x_position;
     });
     // Reverse order so the objects first in OAM stay (because they have higher priority).
-    // NOLINTNEXTLINE(modernize-loop-convert)
-    for (auto oam_entry = visible_sprites.rbegin(); oam_entry != visible_sprites.rend();
-         ++oam_entry) {
+    for (auto oam_entry: std::ranges::reverse_view(visible_sprites)) {
         // Skip sprites which are completly offscreen
-        if (oam_entry->m_y_position == 0 || oam_entry->m_y_position >= 160
-            || oam_entry->m_x_position == 0 || oam_entry->m_x_position >= 168) {
+        if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
+            || oam_entry.m_x_position == 0 || oam_entry.m_x_position >= 168) {
             continue;
         }
 
-        auto tile_index = oam_entry->m_tile_index & 0xFE;
+        auto tile_index = oam_entry.m_tile_index & 0xFE;
         auto sprite_data = get_tall_sprite_tile(tile_index);
         // TODO Only convert the required line from the tile (accounting for x-flip/y-flip).
         auto tile = graphics::gb::tile_to_gb_color(sprite_data);
-        auto palette_bit = bitmanip::is_bit_set(oam_entry->m_flags, 4);
+        auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
         auto palette = palette_bit ? obj_palette_1 : obj_palette_0;
 
         // Y position in sprite (0...15)
-        const auto sprite_y = screen_y - (oam_entry->m_y_position - 16);
+        const auto sprite_y = screen_y - (oam_entry.m_y_position - 16);
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
-            auto x = static_cast<int>(oam_entry->m_x_position + sprite_x) - 8;
-            auto y = static_cast<int>(oam_entry->m_y_position + sprite_y) - 16;
+            auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
+            auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
             if (x < 0 || y < 0 || x >= static_cast<int>(m_game_framebuffer.width())
                 || y >= static_cast<int>(m_game_framebuffer.height())) {
                 // This pixel of the sprite is hidden
                 continue;
             }
             auto pixel_index
-                = calculate_pixel_index(*oam_entry, sprite_x, static_cast<size_t>(sprite_y), 16);
+                = calculate_pixel_index(oam_entry, sprite_x, static_cast<size_t>(sprite_y), 16);
             auto pixel_color = tile[pixel_index];
             if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
                 // Color 0 is transparent for sprites, so those pixels are not drawn.
@@ -467,7 +462,7 @@ void Ppu::draw_tall_sprites_line() {
             // For this comparison the unmapped color should be used.
             auto existing_color
                 = m_game_framebuffer.get_pixel(static_cast<size_t>(x), static_cast<size_t>(y));
-            if (bg_window_over_sprite(*oam_entry)
+            if (bg_window_over_sprite(oam_entry)
                 && existing_color != graphics::gb::ColorScreen::White) {
                 continue;
             }

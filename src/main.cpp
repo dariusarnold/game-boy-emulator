@@ -14,7 +14,7 @@
 #include <spdlog/common.h>
 
 
-int main(int argc, char** argv) { // NOLINT
+int main(int argc, char** argv) { // NOLINT(bugprone-exception-escape)
     argparse::ArgumentParser program("game boy emulator");
     program.add_argument("--game").help("Path to game ROM file to run.");
     program.add_argument("--boot").default_value("").help("Path to boot ROM file.");

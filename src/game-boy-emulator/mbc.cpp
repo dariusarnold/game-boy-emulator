@@ -50,22 +50,23 @@ RomInfo Mbc::read_rom_size_info(std::span<uint8_t> rom) {
     if (val > 0x8) {
         throw LogicError("Invalid value for ROM size");
     }
-    return {static_cast<size_t>((32 * 1024) * (1 << val)), static_cast<size_t>(1 << (val + 1))};
+    return {.size_bytes = static_cast<size_t>((32 * 1024) * (1 << val)),
+            .num_banks = static_cast<size_t>(1 << (val + 1))};
 }
 
 RamInfo Mbc::read_ram_size_info(std::span<uint8_t> rom) {
     auto val = rom[RAM_SIZE];
     switch (val) {
     case 0:
-        return {0, 0};
+        return {.size_bytes = 0, .num_banks = 0};
     case 2:
-        return {8 * 1024, 1};
+        return {.size_bytes = 8 * 1024, .num_banks = 1};
     case 3:
-        return {32 * 1024, 4};
+        return {.size_bytes = 32 * 1024, .num_banks = 4};
     case 4:
-        return {128 * 1024, 16};
+        return {.size_bytes = 128 * 1024, .num_banks = 16};
     case 5:
-        return {64 * 1024, 8};
+        return {.size_bytes = 64 * 1024, .num_banks = 8};
     default:
         throw LogicError("Invalid value for RAM size");
     }

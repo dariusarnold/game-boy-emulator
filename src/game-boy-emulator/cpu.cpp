@@ -251,20 +251,20 @@ std::string Cpu::get_minimal_debug_state() {
 }
 
 CpuDebugState Cpu::get_debug_state() {
-    return {registers.a,
-            registers.f,
-            registers.b,
-            registers.c,
-            registers.d,
-            registers.e,
-            registers.h,
-            registers.l,
-            registers.sp,
-            registers.pc,
-            {m_emulator->get_bus()->read_byte(registers.pc),
-             m_emulator->get_bus()->read_byte(registers.pc + 1),
-             m_emulator->get_bus()->read_byte(registers.pc + 2),
-             m_emulator->get_bus()->read_byte(registers.pc + 3)}};
+    return {.a = registers.a,
+            .f = registers.f,
+            .b = registers.b,
+            .c = registers.c,
+            .d = registers.d,
+            .e = registers.e,
+            .h = registers.h,
+            .l = registers.l,
+            .sp = registers.sp,
+            .pc = registers.pc,
+            .mem_pc = {m_emulator->get_bus()->read_byte(registers.pc),
+                       m_emulator->get_bus()->read_byte(registers.pc + 1),
+                       m_emulator->get_bus()->read_byte(registers.pc + 2),
+                       m_emulator->get_bus()->read_byte(registers.pc + 3)}};
 }
 
 opcodes::Instruction Cpu::get_current_instruction() const {

@@ -19,6 +19,7 @@ void Cpu::step() {
     }
     auto data = fetched.value_or(0);
     m_logger->debug("Executing {}", current_instruction);
+#pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (current_instruction.instruction_type) {
     case opcodes::InstructionType::LD:
     case opcodes::InstructionType::LDD:
@@ -227,6 +228,8 @@ std::optional<uint16_t> Cpu::fetch_data(opcodes::Instruction instruction) {
         registers.pc++;
         m_emulator->elapse_cycle();
         return bitmanip::word_from_bytes(high_byte, low_byte);
+    default:
+        assert(false && "Invalid interaction type");
     }
     // See comment in instructionJR.
     __builtin_unreachable();
@@ -691,6 +694,8 @@ bool Cpu::check_condition(opcodes::ConditionType condition_type) const {
         return is_flag_set(flags::zero);
     case opcodes::ConditionType::Carry:
         return is_flag_set(flags::carry);
+    default:
+        assert(false && "Invalid condition type");
     }
     // GCCs Wreturn-type warns here, because it assumes programmers use the whole range of the
     // undlerlying type of the enum. Since I don't want to have a default statement, which would

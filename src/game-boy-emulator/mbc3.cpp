@@ -43,6 +43,8 @@ uint8_t Mbc3::read_byte(uint16_t address) const {
             return m_rtc.m_days_low;
         case RtcRegisterValue::RTC_DH:
             return m_rtc.m_days_high_and_flags;
+        default:
+            assert(false && "Unknown RTC register");
         }
     }
     throw LogicError(fmt::format("Cartridge trying to read from {:04X}", address));
@@ -125,6 +127,8 @@ void Mbc3::write_values(uint16_t address, uint8_t value) {
             case RtcRegisterValue::RTC_DH:
                 m_rtc.m_days_high_and_flags = value;
                 break;
+            default:
+                assert(false && "Unknown RTC register");
             }
         }
     }

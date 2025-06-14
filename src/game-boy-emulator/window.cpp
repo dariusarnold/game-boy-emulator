@@ -333,7 +333,7 @@ void Window::draw_info() {
     // Use getter to avoid that.
     auto getter = [](void* data, int index) -> float {
         auto* buffer = static_cast<boost::circular_buffer<float>*>(data);
-        return (*buffer)[index];
+        return (*buffer)[static_cast<boost::circular_buffer<float>::size_type>(index)];
     };
     const auto avg_fps = std::accumulate(m_fps_history.end() - NUM_SAMPLES_FOR_FPS_AVERAGE, m_fps_history.end(), 0.) / NUM_SAMPLES_FOR_FPS_AVERAGE;
     ImGui::PlotLines("FPS", getter, &m_fps_history, static_cast<int>(m_fps_history.size()), 0,

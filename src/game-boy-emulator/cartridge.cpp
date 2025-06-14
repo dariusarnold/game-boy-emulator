@@ -56,6 +56,7 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
     auto title = get_title(rom);
     m_emulator->get_state().game_title = title;
     m_logger->info("Game {}", title);
+#pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (m_cartridge_type) {
     case CartridgeType::ROM_ONLY:
         if (rom.size() != memmap::CartridgeRomSize) {

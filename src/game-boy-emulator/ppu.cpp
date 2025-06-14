@@ -108,6 +108,9 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
     case PpuMode::VBlank_1:
         do_mode1_vblank();
         break;
+    default:
+        assert(false && "Invalid PpuMode value");
+        break;
     }
 
     // Update LYC coincidence flag in LCDSTAT register.
@@ -268,6 +271,8 @@ Ppu::get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_
             address_offset = memmap::TileMap1Size;
         }
         break;
+    default:
+        assert(false && "Invalid TileType");
     }
     auto tile_map_index = address_offset + tile_map_x + tile_map_y * 32;
     auto tile_index = m_tile_maps[tile_map_index];

@@ -74,4 +74,4 @@ namespace cartridge {
     [[nodiscard]] std::string get_title(const std::vector<uint8_t>& rom);
 
     [[nodiscard]] CartridgeType get_type(const std::vector<uint8_t>& rom);
-}
+} // namespace cartridge

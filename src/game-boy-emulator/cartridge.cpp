@@ -124,4 +124,4 @@ std::string get_title(const std::vector<uint8_t>& rom) {
 // Otherwise the unique_ptr won't compile for incomplete types.
 Cartridge::~Cartridge() = default;
 
-}
+} // namespace cartridge

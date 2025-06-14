@@ -133,7 +133,6 @@ if (WARNINGS_ENABLED)
     target_link_libraries(game_boy_emulator PRIVATE warnings_list)
     target_link_libraries(game_boy_emulator_library PRIVATE warnings_list)
     target_compile_options(warnings_list INTERFACE
-            $<$<CXX_COMPILER_ID:GNU>:-fstrict-enums>
             # Catchalls to avoid listing many single warnings
             -Wall
             -Wextra
@@ -162,6 +161,13 @@ if (WARNINGS_ENABLED)
             -Wimplicit-fallthrough
             -Wdelete-non-virtual-dtor
             -Woverflow
+            # Wswitch-enum warns when an enum value is not explicitly handled in a switch, even when a default statement
+            # is present.
+            # Wswitch-default enforces a default statement in switch cases.
+            # This enforces all cases to be handled explicitly. The default is used to catch any out of range values,
+            # for example passed in from int casts.
+            -Wswitch-enum
+            -Wswitch-default
             # Enabling GCC specific warning flags
             $<$<CXX_COMPILER_ID:GNU>:-Wcast-qual>
             $<$<CXX_COMPILER_ID:GNU>:-Wcast-align=strict>
@@ -188,9 +194,8 @@ if (WARNINGS_ENABLED)
             $<$<CXX_COMPILER_ID:Clang>:-Wno-gnu-anonymous-struct>
             $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-prototypes>
             $<$<CXX_COMPILER_ID:Clang>:-Wno-implicit-int-conversion>
-            # This warns when an enum value is not explicitly handled in a switch, even when a default statement
-            # handles the enum.
-            $<$<CXX_COMPILER_ID:Clang>:-Wno-switch-enum>
             $<$<CXX_COMPILER_ID:Clang>:-Wno-ctad-maybe-unsupported>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-covered-switch-default>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-unsafe-buffer-usage>
             )
 endif()

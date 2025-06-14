@@ -344,7 +344,7 @@ void Window::draw_info() {
         ImGui::Text("%s", fmt::format("{}: {}", name, key_state).c_str()); // NOLINT
     }
     if (current_ticks >= m_last_ips_update_ticks + 1000) {
-        m_instructions_per_second = state.instructions_executed - m_last_instructions_executed;
+        m_instructions_per_second = static_cast<double>(state.instructions_executed - m_last_instructions_executed);
         m_last_instructions_executed = state.instructions_executed;
         m_last_ips_update_ticks = current_ticks;
     }

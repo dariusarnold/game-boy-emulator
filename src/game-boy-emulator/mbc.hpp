@@ -1,8 +1,6 @@
 #pragma once
 
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 #include "cartridge_info.hpp"
 #include <vector>
 #include <memory>

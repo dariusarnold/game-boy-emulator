@@ -2,11 +2,14 @@
 
 #include "memorymap.hpp"
 #include "exceptions.hpp"
-#include "bitmanipulation.hpp"
+
+#include "spdlog/logger.h"
 #include "fmt/format.h"
-#include "spdlog/spdlog.h"
 #include "magic_enum.hpp"
+
 #include <cassert>
+#include <cstdint>
+#include <cstddef>
 
 
 uint8_t Mbc3::read_byte(uint16_t address) const {

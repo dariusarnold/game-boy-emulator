@@ -1,4 +1,5 @@
 #include "bitmanipulation.hpp"
+#include "constants.h"
 #include <cassert>
 
 namespace bitmanip {

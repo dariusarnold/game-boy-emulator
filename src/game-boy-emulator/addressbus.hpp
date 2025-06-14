@@ -1,9 +1,7 @@
 #pragma once
 
 class Emulator;
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 #include <cstdint>
 #include <memory>
 

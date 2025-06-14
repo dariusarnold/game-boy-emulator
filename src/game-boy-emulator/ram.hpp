@@ -6,9 +6,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 class Emulator;
 
 

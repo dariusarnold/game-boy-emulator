@@ -1,8 +1,6 @@
 #pragma once
 
-#include "memorymap.hpp"
 #include "image.hpp"
-#include "graphics.hpp"
 #include "constants.h"
 class SDL_Window;
 struct  SDL_Renderer;
@@ -11,13 +9,9 @@ union SDL_Event;
 class Emulator;
 struct EmulatorState;
 class Joypad;
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 #include "boost/circular_buffer.hpp"
-#include <span>
 #include <cstdint>
-#include <vector>
 
 
 class Window {

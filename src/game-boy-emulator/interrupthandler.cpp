@@ -6,6 +6,8 @@
 
 #include "magic_enum.hpp"
 #include "spdlog/spdlog.h"
+#include <cstdint>
+#include <array>
 
 InterruptHandler::InterruptHandler(Emulator* emulator) :
         m_emulator(emulator), m_logger(spdlog::get("")) {}

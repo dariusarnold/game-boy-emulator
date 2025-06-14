@@ -1,9 +1,11 @@
 #include "cpu.hpp"
 #include "addressbus.hpp"
 #include "bitmanipulation.hpp"
+#include "constants.h"
 #include "emulator.hpp"
 #include "exceptions.hpp"
 
+#include "opcodes.hpp"
 #include "spdlog/spdlog.h"
 
 

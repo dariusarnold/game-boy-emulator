@@ -1,7 +1,13 @@
 #include "mbc.hpp"
 
+#include "cartridge_info.hpp"
 #include "spdlog/spdlog.h"
 #include "exceptions.hpp"
+#include <spdlog/logger.h>
+#include <vector>
+#include <span>
+#include <utility>
+#include <memory>
 
 namespace {
 const int ROM_SIZE = 0x148;

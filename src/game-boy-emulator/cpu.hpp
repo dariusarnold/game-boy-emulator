@@ -12,9 +12,7 @@
 #include <array>
 #include <cstdint>
 
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 class Emulator;
 
 

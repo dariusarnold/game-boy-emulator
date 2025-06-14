@@ -1,8 +1,11 @@
+#include <array>
 #include <cassert>
+#include <cstdint>
+#include <span>
+#include <cstddef>
 #include "graphics.hpp"
 #include "bitmanipulation.hpp"
-
-#include "SDL.h"
+#include <magic_enum.hpp>
 #include "SDL_opengl.h"
 
 namespace graphics::render {

@@ -7,9 +7,11 @@
 #include "spdlog/spdlog.h"
 #include "argparse/argparse.hpp"
 
+#include <exception>
 #include <filesystem>
 #include <optional>
 #include <cstdlib>
+#include <spdlog/common.h>
 
 
 int main(int argc, char** argv) { // NOLINT

@@ -1,12 +1,17 @@
 #include "timer.hpp"
 
+#include "constants.h"
 #include "emulator.hpp"
 #include "exceptions.hpp"
 #include "bitmanipulation.hpp"
 #include "interrupthandler.hpp"
 
 #include "spdlog/spdlog.h"
+#include <fmt/format.h>
 
+#include <array>
+#include <cstdint>
+#include <cstddef>
 #include <limits>
 
 

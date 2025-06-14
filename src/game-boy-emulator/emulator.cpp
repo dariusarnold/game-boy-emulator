@@ -1,11 +1,11 @@
 #include "emulator.hpp"
 
-#include <utility>
 #include "addressbus.hpp"
 #include "bootrom.hpp"
 #include "cartridge.hpp"
 #include "cpu.hpp"
 #include "exceptions.hpp"
+#include "options.hpp"
 #include "ppu.hpp"
 #include "ram.hpp"
 #include "timer.hpp"
@@ -16,6 +16,8 @@
 #include "io.hpp"
 
 #include "spdlog/spdlog.h"
+
+#include <utility>
 
 void EmulatorState::reset() {
     cycles_m = 0;

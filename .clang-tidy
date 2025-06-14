@@ -35,6 +35,15 @@ Checks:
   - '-fuchsia-statically-constructed-objects'
   - '-cppcoreguidelines-avoid-magic-numbers'
   - '-readability-magic-numbers'
+  - '-misc-non-private-member-variables-in-classes'
+  - '-boost-use-ranges' # We have std::ranges available
+  # ImGui::Text is vararg
+  - '-cppcoreguidelines-pro-type-vararg'
+  - '-hicpp-vararg'
+  # Makes no sense with when enforcing default case with compiler warnings
+  - '-clang-diagnostic-covered-switch-default'
+  # Not compatible with using forward declarations, which is done for compile speedup
+  - '-misc-include-cleaner'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 FormatStyle: file

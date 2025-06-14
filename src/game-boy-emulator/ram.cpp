@@ -1,9 +1,10 @@
 #include "ram.hpp"
-#include "bitmanipulation.hpp"
 #include "emulator.hpp"
 #include "exceptions.hpp"
 
+#include <cstdint>
 #include <fmt/format.h>
+#include "memorymap.hpp"
 #include "spdlog/spdlog.h"
 
 Ram::Ram(Emulator* emulator) : m_emulator(emulator), m_logger(spdlog::get("")) {}

@@ -1,5 +1,10 @@
 #include "memorymappedfile.hpp"
 #include "io.hpp"
+#include <filesystem>
+#include <cstddef>
+#include <span>
+#include <cstdint>
+#include <bit>
 
 MemoryMappedFile::MemoryMappedFile(const std::filesystem::path& filepath, size_t file_size) :
         m_file_size(file_size) {

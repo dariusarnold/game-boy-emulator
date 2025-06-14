@@ -1,4 +1,6 @@
 #include "opcodes.hpp"
+#include <array>
+#include <cstdint>
 
 namespace opcodes {
 

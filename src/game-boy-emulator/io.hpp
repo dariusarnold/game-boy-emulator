@@ -7,9 +7,7 @@
 #include <array>
 #include <fstream>
 #include <vector>
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 
 
 class EmulatorIo {

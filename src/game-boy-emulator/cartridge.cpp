@@ -4,13 +4,11 @@
 #include "emulator.hpp"
 #include "memorymap.hpp"
 #include "exceptions.hpp"
-#include "bitmanipulation.hpp"
 #include "nombc.hpp"
 #include "mbc.hpp"
 #include "mbc1.hpp"
 #include "mbc3.hpp"
 #include "mbc5.hpp"
-#include "io.hpp"
 
 #include "fmt/format.h"
 #include "magic_enum.hpp"

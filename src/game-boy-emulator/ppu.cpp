@@ -1,17 +1,25 @@
 #include "ppu.hpp"
+#include "constants.h"
 #include "exceptions.hpp"
+#include "framebuffer.hpp"
 #include "memorymap.hpp"
 #include "emulator.hpp"
 #include "interrupthandler.hpp"
-#include "addressbus.hpp"
 #include "bitmanipulation.hpp"
 #include "graphics.hpp"
+#include "ppu_registers.hpp"
 
 #include "fmt/format.h"
 #include "spdlog/spdlog.h"
 #include "magic_enum.hpp"
 
+#include <cstdint>
+#include <cstddef>
+#include <cassert>
+#include <algorithm>
+#include <array>
 #include <span>
+#include <vector>
 
 Ppu::Ppu(Emulator* emulator) :
         m_registers(emulator->get_options().stub_ly_value),

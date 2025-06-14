@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstdint>
 #include "nombc.hpp"
 #include "memorymap.hpp"
 #include "exceptions.hpp"

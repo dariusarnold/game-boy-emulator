@@ -1,16 +1,22 @@
-#include <numeric>
 #include "window.hpp"
-#include "graphics.hpp"
 #include "emulator.hpp"
 #include "ppu.hpp"
 #include "joypad.hpp"
 
+#include "fmt/format.h"
+#include "magic_enum.hpp"
 #include "spdlog/spdlog.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
-#include "SDL.h"
 #include "nfd.hpp"
+
+#include <filesystem>
+#include <numeric>
+#include <string_view>
+#include <algorithm>
+#include <cstdlib>
+#include <memory>
 
 namespace {
     constexpr int FPS_HISTORY_SIZE = 5 * 60;

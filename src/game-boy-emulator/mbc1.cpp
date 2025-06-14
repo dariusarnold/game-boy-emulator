@@ -1,11 +1,17 @@
 #include "mbc1.hpp"
 
+#include "mbc.hpp"
 #include "memorymap.hpp"
 #include "bitmanipulation.hpp"
 #include "exceptions.hpp"
 #include "fmt/format.h"
-#include "spdlog/spdlog.h"
 #include <cassert>
+#include <cstdint>
+#include <vector>
+#include <span>
+#include <utility>
+#include <cmath>
+#include "spdlog/logger.h"
 
 
 namespace {

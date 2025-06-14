@@ -23,9 +23,7 @@ namespace cartridge {
 class Timer;
 class SerialPort;
 class InterruptHandler;
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 struct CpuDebugState;
 class Joypad;
 

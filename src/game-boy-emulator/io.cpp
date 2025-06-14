@@ -1,6 +1,16 @@
 #include "io.hpp"
+#include <optional>
+#include <array>
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
+#include <ios>
+#include <bit>
+#include <cstddef>
+#include <algorithm>
 #include <vector>
 #include <iterator>
+#include "constants.h"
 #include "spdlog/spdlog.h"
 
 

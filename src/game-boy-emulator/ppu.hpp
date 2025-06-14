@@ -5,11 +5,8 @@
 #include "constants.h"
 #include "framebuffer.hpp"
 #include "dmatransfer.hpp"
-#include "bitmanipulation.hpp"
 class Emulator;
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 #include <array>
 #include <span>
 #include <memory>

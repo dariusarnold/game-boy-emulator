@@ -255,7 +255,7 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Ppu::get_tile(uint8_t tile_index) 
     if (static_cast<int8_t>(tile_index) >= 0) {
         // Skip the first 256 sprites (block 0 and 1) and index into block 2.
         size_t const index_begin
-            = 256 * constants::BYTES_PER_TILE + tile_index * constants::BYTES_PER_TILE;
+            = (256 * constants::BYTES_PER_TILE) + (tile_index * constants::BYTES_PER_TILE);
         return std::span<uint8_t, constants::BYTES_PER_TILE>{m_tile_data.data() + index_begin,
                                                              constants::BYTES_PER_TILE};
     }
@@ -282,7 +282,7 @@ Ppu::get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_
     default:
         assert(false && "Invalid TileType");
     }
-    auto tile_map_index = address_offset + tile_map_x + tile_map_y * 32;
+    auto tile_map_index = address_offset + tile_map_x + (tile_map_y * 32);
     auto tile_index = m_tile_maps[tile_map_index];
     return get_tile(tile_index);
 }
@@ -526,7 +526,7 @@ void Ppu::draw_window_line() {
         auto tile_pixel_x = in_window_x % constants::PIXELS_PER_TILE;
         auto tile_pixel_y = m_window_internal_line_counter % constants::PIXELS_PER_TILE;
         auto tile_line
-            = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[tile_pixel_y * 2 + 1]);
+            = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[(tile_pixel_y * 2) + 1]);
         auto color_index = tile_line[tile_pixel_x];
         auto color = palette[static_cast<size_t>(color_index)];
         auto screencolor = graphics::gb::to_screen_color(color);
@@ -567,7 +567,7 @@ void Ppu::draw_background_line() {
         auto tile = get_tile_from_map(TileType::Background, tile_index_x, tile_index_y);
         // The tile provides an 8 pixel line from 2 bytes
         auto tile_line
-            = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[tile_pixel_y * 2 + 1]);
+            = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[(tile_pixel_y * 2) + 1]);
         auto color_index = tile_line[tile_pixel_x];
         auto color_gb = palette[magic_enum::enum_integer(color_index)];
         auto screen_color = graphics::gb::to_screen_color(color_gb);
@@ -577,12 +577,12 @@ void Ppu::draw_background_line() {
 
 std::span<uint8_t, constants::BYTES_PER_TILE> Ppu::get_sprite_tile(uint8_t tile_index) {
     return std::span<uint8_t, constants::BYTES_PER_TILE>{
-        m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE, constants::BYTES_PER_TILE};
+        m_tile_data.begin() + (tile_index * constants::BYTES_PER_TILE), constants::BYTES_PER_TILE};
 }
 
 std::span<uint8_t, constants::BYTES_PER_TILE * 2> Ppu::get_tall_sprite_tile(uint8_t tile_index) {
     return std::span<uint8_t, constants::BYTES_PER_TILE * 2>{
-        m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE,
+        m_tile_data.begin() + (tile_index * constants::BYTES_PER_TILE),
         constants::BYTES_PER_TILE * 2};
 };
 
@@ -599,11 +599,11 @@ void Ppu::draw_background_debug() {
             auto tile = get_tile_from_map(TileType::Background, tile_x, tile_y);
             // The tile provides an 8 pixel line from 2 bytes
             auto tile_line
-                = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[in_tile_y * 2 + 1]);
+                = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[(in_tile_y * 2) + 1]);
             // Map the colors using the current palette and transfer this tiles line to the buffer
             for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
                 auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
-                auto screen_x = tile_x * 8 + tile_line_x;
+                auto screen_x = (tile_x * 8) + tile_line_x;
                 m_background_framebuffer.set_pixel(screen_x, screen_y,
                                                    graphics::gb::to_screen_color(pixel));
             }
@@ -627,11 +627,11 @@ void Ppu::draw_window_debug() {
             size_t const in_tile_y = screen_y % 8;
             // The tile provides an 8 pixel line from 2 bytes
             auto tile_line
-                = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[in_tile_y * 2 + 1]);
+                = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[(in_tile_y * 2) + 1]);
             // Map the colors using the current palette and transfer this tiles line to the buffer
             for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
                 auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
-                auto screen_x = tile_x * 8 + tile_line_x;
+                auto screen_x = (tile_x * 8) + tile_line_x;
                 m_window_framebuffer.set_pixel(screen_x, screen_y,
                                                graphics::gb::to_screen_color(pixel));
             }
@@ -655,17 +655,17 @@ void Ppu::draw_vram_debug() {
     for (unsigned block = 0; block < 3; ++block) {
         for (unsigned tile_x = 0; tile_x < 16; ++tile_x) {
             for (unsigned tile_y = 0; tile_y < 8; ++tile_y) {
-                auto tile_index = tile_x + tile_y * 16;
+                auto tile_index = tile_x + (tile_y * 16);
                 auto tile = get_tile(block, tile_index);
                 auto tile_color = graphics::gb::tile_to_gb_color(tile);
                 // Transfer the tile to the framebuffer.
                 // The framebuffer is 16x8 tiles or 128x64 pixels
                 for (unsigned in_tile_x = 0; in_tile_x < 8; ++in_tile_x) {
                     for (unsigned in_tile_y = 0; in_tile_y < 8; ++in_tile_y) {
-                        auto in_tile_index = in_tile_y * 8 + in_tile_x;
+                        auto in_tile_index = (in_tile_y * 8) + in_tile_x;
                         auto color = tile_color[in_tile_index];
-                        auto x = tile_x * 8 + in_tile_x;
-                        auto y = tile_y * 8 + in_tile_y;
+                        auto x = (tile_x * 8) + in_tile_x;
+                        auto y = (tile_y * 8) + in_tile_y;
                         auto screen_color = graphics::gb::to_screen_color(
                             static_cast<graphics::gb::ColorGb>(color));
                         buffers[block]->set_pixel(x, y, screen_color);
@@ -685,7 +685,7 @@ Ppu::get_tiledata() {
 }
 
 std::span<uint8_t, 16> Ppu::get_tile(unsigned int block, unsigned int index_in_block) {
-    auto start = index_in_block * 16 + block * 128 * 16;
+    auto start = (index_in_block * 16) + (block * 128 * 16);
     auto end = start + 16;
     return std::span<uint8_t, 16>{m_tile_data.data() + start, m_tile_data.data() + end};
 }

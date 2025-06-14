@@ -84,7 +84,7 @@ std::array<UnmappedColorGb, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_dat
         // 2 bytes represent one 8 pixel wide row in the tile
         auto row = graphics::gb::convert_tile_line(tile_data[i], tile_data[i + 1]);
         for (size_t j = 0; j < row.size(); j++) {
-            auto index = (i / 2) * 8 + j;
+            auto index = ((i / 2) * 8) + j;
             out[index] = row[j];
         }
     }
@@ -97,7 +97,7 @@ std::array<UnmappedColorGb, 128> tile_to_gb_color(std::span<uint8_t, 32> tile_da
         // 2 bytes represent one 8 pixel wide row in the tile
         auto row = graphics::gb::convert_tile_line(tile_data[i], tile_data[i + 1]);
         for (size_t j = 0; j < row.size(); j++) {
-            auto index = (i / 2) * 8 + j;
+            auto index = ((i / 2) * 8) + j;
             out[index] = row[j];
         }
     }
@@ -108,7 +108,7 @@ TileIndex::TileIndex(size_t tile_width_pixels, size_t tile_height_pixels) :
         m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
 
 size_t graphics::gb::TileIndex::pixel_index(size_t x, size_t y) const {
-    return x + y * m_tile_width;
+    return x + (y * m_tile_width);
 }
 
 TileIndexMirrorHorizontal::TileIndexMirrorHorizontal(size_t tile_width_pixels,
@@ -116,7 +116,7 @@ TileIndexMirrorHorizontal::TileIndexMirrorHorizontal(size_t tile_width_pixels,
         m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
 
 size_t TileIndexMirrorHorizontal::pixel_index(size_t x, size_t y) const {
-    return m_tile_width - 1 - x + y * m_tile_width;
+    return m_tile_width - 1 - x + (y * m_tile_width);
 }
 
 TileIndexMirrorVertical::TileIndexMirrorVertical(size_t tile_width_pixels,
@@ -125,7 +125,7 @@ TileIndexMirrorVertical::TileIndexMirrorVertical(size_t tile_width_pixels,
 
 
 size_t TileIndexMirrorVertical::pixel_index(size_t x, size_t y) const {
-    return x + (m_tile_height - 1 - y) * m_tile_width;
+    return x + ((m_tile_height - 1 - y) * m_tile_width);
 }
 
 TileIndexMirrorBothAxes::TileIndexMirrorBothAxes(size_t tile_width_pixels,
@@ -133,7 +133,7 @@ TileIndexMirrorBothAxes::TileIndexMirrorBothAxes(size_t tile_width_pixels,
         m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
 
 size_t TileIndexMirrorBothAxes::pixel_index(size_t x, size_t y) const {
-    return m_tile_height * m_tile_width - (x + y * m_tile_width) - 1;
+    return (m_tile_height * m_tile_width) - (x + y * m_tile_width) - 1;
 }
 
 } // namespace graphics::gb

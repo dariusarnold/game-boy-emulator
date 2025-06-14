@@ -1099,7 +1099,7 @@ uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {
     //
     // First map higher nibble 0x -> 0, 1x -> 2, 2x -> 4, 3x -> 6
     // Then add 1 if we are in the right half of the table
-    return ((opcode_byte & 0xF0) >> constants::NIBBLE_SIZE) * 2
+    return (((opcode_byte & 0xF0) >> constants::NIBBLE_SIZE) * 2)
            + ((opcode_byte & 0x0F) / constants::BYTE_SIZE);
 }
 

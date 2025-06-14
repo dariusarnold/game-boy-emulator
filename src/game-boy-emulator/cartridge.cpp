@@ -9,6 +9,7 @@
 #include "mbc1.hpp"
 #include "mbc3.hpp"
 #include "mbc5.hpp"
+#include "io.hpp"
 
 #include "fmt/format.h"
 #include "magic_enum.hpp"
@@ -25,53 +26,56 @@ namespace constants {// See https://gbdev.io/pandocs/The_Cartridge_Header.html f
     constexpr int TITLE_END = 0x143;
 }
 
-Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
+Cartridge::Cartridge(Emulator* emulator, const std::filesystem::path& rom_file_path) :
         m_emulator(emulator), m_logger(spdlog::get("")) {
-    if (rom.size() < memmap::CartridgeHeaderEnd) {
-        throw LogicError(
-            fmt::format("ROM only {} bytes, does not contain cartridge header", rom.size()));
+    EmulatorIo io;
+    auto rom_bytes = io.load_rom_file(rom_file_path);
+    if (!rom_bytes.has_value()) {
+        throw LoadError(fmt::format("Failed to load {}", rom_file_path.string()));
     }
-    auto ram_size_info = Mbc::read_ram_size_info(rom);
+    if (rom_bytes->size() < memmap::CartridgeHeaderEnd) {
+        throw LogicError(
+            fmt::format("ROM only {} bytes, does not contain cartridge header", rom_bytes->size()));
+    }
 
+    auto ram_size_info = Mbc::read_ram_size_info(rom_bytes.value());
     std::span<uint8_t> ram;
     if (ram_size_info.size_bytes != 0) {
         // Memory map cartridge RAM as a file to emulate the battery backed RAM.
-        assert(m_emulator->get_state().rom_file_path.has_value() && "No path to rom file during cartridge creation!");
-        auto ram_file_path = m_emulator->get_state().rom_file_path.value();
-        auto ram_file_name = ram_file_path.filename().string().append(".ram");
-        ram_file_path = ram_file_path.replace_filename(ram_file_name);
+        auto ram_file_path = rom_file_path;
+        ram_file_path.replace_extension(".gb.ram");
         m_ram_file = std::make_unique<MemoryMappedFile>(ram_file_path, ram_size_info.size_bytes);
         m_logger->info("Opening {} as cartridge RAM file", ram_file_path.string());
         ram = m_ram_file->get_data();
     }
 
-    auto rom_size = Mbc::read_rom_size_info(rom);
+    auto rom_size = Mbc::read_rom_size_info(rom_bytes.value());
     // Initialize after size check to avoid potential out-of-bounds access.
-    m_cartridge_type = get_type(rom);
+    m_cartridge_type = get_type(rom_bytes.value());
     m_logger->info("Detected MBC type {}, ROM {} bytes, {} banks, RAM {} bytes, {} banks",
                    magic_enum::enum_name(m_cartridge_type), rom_size.size_bytes, rom_size.num_banks,
                    ram_size_info.size_bytes, ram_size_info.num_banks);
-    auto title = get_title(rom);
+    auto title = get_title(rom_bytes.value());
     m_emulator->get_state().game_title = title;
     m_logger->info("Game {}", title);
 #pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (m_cartridge_type) {
     case CartridgeType::ROM_ONLY:
-        if (rom.size() != memmap::CartridgeRomSize) {
+        if (rom_bytes->size() != memmap::CartridgeRomSize) {
             throw LogicError("Invalid ROM size");
         }
-        m_mbc = std::make_unique<NoMbc>(std::move(rom), ram);
+        m_mbc = std::make_unique<NoMbc>(std::move(rom_bytes.value()), ram);
         break;
     case CartridgeType::MBC1:
     case CartridgeType::MBC1_RAM:
     case CartridgeType::MBC1_RAM_BATTERY:
-        m_mbc = std::make_unique<Mbc1>(std::move(rom), ram);
+        m_mbc = std::make_unique<Mbc1>(std::move(rom_bytes.value()), ram);
         break;
     case CartridgeType::MBC3:
     case CartridgeType::MBC3_RAM:
     case CartridgeType::MBC3_RAM_BATTERY:
     case CartridgeType::MBC3_TIMER_RAM_BATTERY:
-        m_mbc = std::make_unique<Mbc3>(std::move(rom), ram);
+        m_mbc = std::make_unique<Mbc3>(std::move(rom_bytes.value()), ram);
         break;
     case CartridgeType::MBC5:
     case CartridgeType::MBC5_RAM:
@@ -79,7 +83,7 @@ Cartridge::Cartridge(Emulator* emulator, std::vector<uint8_t> rom) :
     case CartridgeType::MBC5_RUMBLE_RAM_BATTERY:
     case CartridgeType::MBC5_RUMBLE:
     case CartridgeType::MBC5_RUMBLE_RAM:
-        m_mbc = std::make_unique<Mbc5>(std::move(rom), ram);
+        m_mbc = std::make_unique<Mbc5>(std::move(rom_bytes.value()), ram);
         break;
     default:
         throw NotImplementedError(fmt::format("Cartridge type {} not implemented",

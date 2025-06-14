@@ -70,9 +70,10 @@ int main(int argc, char** argv) { // NOLINT
             // manually for the UI to render
             window.vblank_callback();
         }
-        if (emulator.get_state().new_rom_file_path.has_value()) {
+        const auto& state = emulator.get_state();
+        if (state.new_rom_file_path.has_value()) {
             audio.clear_queued_samples();
-            auto path = emulator.get_state().new_rom_file_path.value();
+            auto path = state.new_rom_file_path.value();
             emulator.get_state().new_rom_file_path = std::nullopt;
             emulator.reset_state();
             emulator.load_game(path);

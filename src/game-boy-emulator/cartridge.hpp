@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 
 class Emulator;
 #include "spdlog/fwd.h"
@@ -47,7 +48,7 @@ namespace cartridge {
 
     class Cartridge {
     public:
-        Cartridge(Emulator* emulator, std::vector<uint8_t> rom);
+        Cartridge(Emulator* emulator, const std::filesystem::path& rom_file_path);
         ~Cartridge();
         // Sadly, to keep the forward declarations for Mbc and MemoryMappedFile, a destructor for
         // Cartridge is required to be defined. This triggers warnings about the rule of five, to

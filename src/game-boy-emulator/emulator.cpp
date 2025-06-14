@@ -39,13 +39,8 @@ Emulator::Emulator(EmulatorOptions options) :
         m_logger(spdlog::get("")) {}
 
 void Emulator::load_game(const std::filesystem::path& rom_path) {
-    EmulatorIo io;
-    auto rom = io.load_rom_file(rom_path);
-    if (!rom.has_value()) {
-        throw LoadError(fmt::format("Failed to load {}", rom_path.string()));
-    }
     m_state.rom_file_path = rom_path;
-    m_cartridge = std::make_shared<cartridge::Cartridge>(this, rom.value());
+    m_cartridge = std::make_shared<cartridge::Cartridge>(this, rom_path);
     m_cpu->set_initial_state();
     m_state.is_booting = false;
 }
@@ -63,13 +58,8 @@ void Emulator::load_boot(const std::filesystem::path& rom_path) {
 void Emulator::load_boot_game(const std::filesystem::path& boot_rom_path,
                               const std::filesystem::path& game_rom_path) {
     load_boot(boot_rom_path);
-    EmulatorIo io;
-    auto rom = io.load_rom_file(game_rom_path);
-    if (!rom.has_value()) {
-        throw LoadError(fmt::format("Failed to load {}", game_rom_path.string()));
-    }
     m_state.rom_file_path = game_rom_path;
-    m_cartridge = std::make_shared<cartridge::Cartridge>(this, rom.value());
+    m_cartridge = std::make_shared<cartridge::Cartridge>(this, game_rom_path);
 }
 
 void Emulator::run() {

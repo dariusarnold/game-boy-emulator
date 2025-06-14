@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <array>
 
-enum class PpuMode {
+enum class PpuMode: uint8_t {
     HBlank_0 = 0,
     VBlank_1 = 1,
     OamScan_2 = 2,
@@ -38,14 +38,14 @@ public:
 
 
     // Values are the bits in the STAT register representing the STAT interrupt enable flag
-    enum class StatInterruptSource {
+    enum class StatInterruptSource: uint8_t {
         HBlank = 3,
         VBlank = 4,
         Oam = 5,
         LycEqualsLy = 6,
     };
 
-    enum class BgWinAddressMode {
+    enum class BgWinAddressMode: uint8_t {
         /*
          * BG/Window tile IDs:
          * 0-127 in 8000-87FF
@@ -60,14 +60,14 @@ public:
         Signed,
     };
 
-    enum class TileMapAddressRange {
+    enum class TileMapAddressRange: uint8_t {
         // Use tile map at 9800-9BFF
         Low,
         // Use tile map at 9C00-9FFF
         High,
     };
 
-    enum class LcdcBits {
+    enum class LcdcBits: uint8_t {
         BgWindowEnablePriority = 0,
         ObjEnable = 1,
         ObjSize = 2,
@@ -78,7 +78,7 @@ public:
         LcdAndPpuEnable = 7,
     };
 
-    enum class LcdStatBits {
+    enum class LcdStatBits: uint8_t {
         LycEqualsLy = 2,
     };
 

@@ -22,7 +22,7 @@ class Mbc3 : public Mbc {
     // Only 2 bits, (0x4000-0x5FFF)
     uint8_t m_ram_bank_number = 0;
 
-    enum class RamOrRtcMapped {
+    enum class RamOrRtcMapped: uint8_t {
         RamMapped,
         RtcMapped,
     };
@@ -31,7 +31,7 @@ class Mbc3 : public Mbc {
     Rtc m_rtc{};
 
     // Value required to map the corresponding RTC register to A000-BFFF
-    enum class RtcRegisterValue {
+    enum class RtcRegisterValue: uint8_t {
         RTC_S = 0x08,
         RTC_M = 0x09,
         RTC_H = 0x0A,

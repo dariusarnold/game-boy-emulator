@@ -11,7 +11,7 @@
 
 namespace opcodes {
 
-enum class InstructionType {
+enum class InstructionType: uint8_t {
     NONE,
     NOP,
     LD,
@@ -96,7 +96,7 @@ enum class InstructionType {
     CCF,
 };
 
-enum class RegisterType {
+enum class RegisterType: uint8_t {
     None,
     A,
     B,
@@ -133,7 +133,7 @@ enum class RegisterType {
  * Fixed offsets are implemented as instruction type LDH.
  * 11 is implemented as instruction type LDHL
  */
-enum class InteractionType {
+enum class InteractionType: uint8_t {
     None,
     // Operate on a single register
     Register,
@@ -157,7 +157,7 @@ enum class InteractionType {
     Register_AddressWord,
 };
 
-enum class ConditionType {
+enum class ConditionType: uint8_t {
     None,
     NonZero,
     Zero,

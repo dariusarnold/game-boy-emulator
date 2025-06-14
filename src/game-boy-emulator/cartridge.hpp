@@ -15,7 +15,7 @@ namespace cartridge {
     // For example, memory bank controllers (MBCs) are used to expand the available address space by bank
     // switching.
     // See https://gbdev.io/pandocs/The_Cartridge_Header.html#0147--cartridge-type for values
-    enum class CartridgeType {
+    enum class CartridgeType: uint8_t {
         ROM_ONLY = 0x0,
         MBC1 = 0x1,
         MBC1_RAM = 0x2,

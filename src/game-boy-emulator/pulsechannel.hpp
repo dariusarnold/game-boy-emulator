@@ -16,7 +16,7 @@ class PulseChannel : public AudioChannel {
     // After how many 128 Hz frequency sweep ticks should the wavelength change
     // Bit 4..6 of NR10
     [[nodiscard]] uint8_t get_wavelength_sweep_pace() const;
-    enum class SweepDirection {
+    enum class SweepDirection: uint8_t {
         Increase,
         Decrease,
     };

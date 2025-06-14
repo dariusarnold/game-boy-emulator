@@ -1,8 +1,11 @@
 #include "audio.hpp"
 #include "constants.h"
 #include "emulator.hpp"
+
 #include <SDL_audio.h>
 #include "spdlog/spdlog.h"
+
+#include <algorithm>
 
 namespace {
 const int SDL_AUDIO_PLAYBACK = 0;
@@ -38,15 +41,17 @@ void Audio::callback(SampleFrame sample) {
     // Only submit to the actual audio playback if a good amount of samples are available since
     // queuing data involves locks on SDLs side.
     if (m_resampler.available_samples() >= BUFFER_SIZE) {
-        auto resampled_data = m_resampler.get_resampled_data();
+        std::array<SampleFrame, BUFFER_SIZE> buffer;
+        [[maybe_unused]] auto resample_rc = m_resampler.get_resampled_data(buffer);
+        assert(resample_rc == 4096 && fmt::format("Audio resampler returned {}", resample_rc));
         auto volume
             = calc_volume_log(m_emulator.get_options().volume) * constants::FIXED_VOLUME_SCALE;
-        std::for_each(resampled_data.begin(), resampled_data.end(), [volume](SampleFrame& sf) {
+        std::ranges::for_each(buffer, [volume](SampleFrame& sf) {
             sf.left *= volume;
             sf.right *= volume;
         });
-        SDL_QueueAudio(m_audio_ressource.get(), resampled_data.data(),
-                       static_cast<Uint32>(get_buffersize_bytes(resampled_data)));
+        SDL_QueueAudio(m_audio_ressource.get(), buffer.data(),
+                       static_cast<Uint32>(get_buffersize_bytes(buffer)));
     }
 }
 

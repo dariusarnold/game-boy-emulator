@@ -13,10 +13,10 @@
 #include "spdlog/spdlog.h"
 #include "magic_enum.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstddef>
 #include <cassert>
-#include <algorithm>
 #include <array>
 #include <span>
 #include <vector>
@@ -349,9 +349,9 @@ void Ppu::draw_sprites_line() {
     // coordinates, the object located first in OAM has the higher priority.
     // Initially visible_sprites is ordered by OAM order. Sort by x coordinate but use stable_sort
     // to keep the relative order from OAM for the same x coordinates.
-    std::stable_sort(
-        visible_sprites.begin(), visible_sprites.end(),
-        [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
+    std::ranges::stable_sort(visible_sprites, [](const OamEntry& a, const OamEntry& b) {
+        return a.m_x_position < b.m_x_position;
+    });
     // Reverse order so the objects first in OAM stay (because they have higher priority).
     // std::ranges::reverse_view doesn't work in clang 15, so we use the iterator alternative. To
     // stop clang-tidy from complaining, disable just that warning.
@@ -423,9 +423,9 @@ void Ppu::draw_tall_sprites_line() {
     // coordinates, the object located first in OAM has the higher priority.
     // Initially visible_sprites is ordered by OAM order. Sort by x coordinate but use stable_sort
     // to keep the relative order from OAM for the same x coordinates.
-    std::stable_sort(
-        visible_sprites.begin(), visible_sprites.end(),
-        [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
+    std::ranges::stable_sort(visible_sprites, [](const OamEntry& a, const OamEntry& b) {
+        return a.m_x_position < b.m_x_position;
+    });
     // Reverse order so the objects first in OAM stay (because they have higher priority).
     // NOLINTNEXTLINE(modernize-loop-convert)
     for (auto oam_entry = visible_sprites.rbegin(); oam_entry != visible_sprites.rend();

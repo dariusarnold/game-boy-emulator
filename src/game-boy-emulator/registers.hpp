@@ -65,7 +65,7 @@ public:
             // No format string was specified
             return context.begin();
         }
-        const auto* it = std::find(context.begin(), context.end(), '}');
+        const auto* it = std::ranges::find(context, '}');
         if (it != context.end()) {
             format_string.assign(context.begin(), it);
             return it;

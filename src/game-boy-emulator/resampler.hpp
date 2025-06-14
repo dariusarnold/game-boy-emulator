@@ -59,12 +59,6 @@ public:
         return SDL_AudioStreamGet(m_audio_stream, buffer.data(),
                                   static_cast<int>(buffer.size_bytes()));
     }
-    std::vector<Sample> get_resampled_data() {
-        const auto buffer_size = available_samples();
-        std::vector<Sample> buffer(buffer_size);
-        get_resampled_data(std::span{buffer});
-        return buffer;
-    }
 
     // Force flush all data from the stream to be available for output.
     void flush_queue() {

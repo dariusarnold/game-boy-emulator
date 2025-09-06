@@ -16,7 +16,6 @@ class GameBoyEmulatorConan(ConanFile):
         self.requires("spdlog/1.15.3")
         self.requires("argparse/2.9")
         self.requires("boost/1.80.0")
-        self.requires("sdl/2.26.1")
         self.requires("catch2/2.13.10")
         self.requires("portable-file-dialogs/0.1.0")
 
@@ -29,7 +28,6 @@ class GameBoyEmulatorConan(ConanFile):
 
     def configure(self):
         self.options["boost"].header_only = True
-        self.options["sdl"].nas = False
 
     def generate(self):
         tc = CMakeToolchain(self, generator="Ninja")

@@ -22,7 +22,7 @@ RUN apt-get update -qq \
         # Python
         python3 python3-pip pipx \
         # Dependencies
-        libgtk-3-dev \
+        libgtk-3-dev libsdl2-dev \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

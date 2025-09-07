@@ -107,10 +107,12 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
     && touch /commandhistory/.bash_history \
     && chown -R $USERNAME /commandhistory \
     && echo "$SNIPPET" >> "/home/$USERNAME/.bashrc"
-
+ 
 USER vscode
 # Install conan for vscode user
 RUN pipx install conan \
     && pipx ensurepath
+# Absolute path neccessary to avoid executable is not found error during build.
+RUN /home/vscode/.local/bin/conan config install https://github.com/dariusarnold/conan-profiles.git
 
 CMD ["/bin/bash"]

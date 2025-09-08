@@ -9,9 +9,15 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Build dev container
+      - name: Build dev conainer
         uses: devcontainers/ci@v0.3
         with:
           imageName: gb_devcontainer
           push: never
+
+      - name: Build game_boy_emulator
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: gb_devcontainer
           runCmd: ./conan_build.sh
+          push: never

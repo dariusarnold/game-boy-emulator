@@ -13,6 +13,5 @@ jobs:
         uses: devcontainers/ci@v0.3
         with:
           imageName: gb_devcontainer
-          configFile: ./.devcontainer/devcontainer.json
-          push: false
+          push: never
           runCmd: ./conan_build.sh

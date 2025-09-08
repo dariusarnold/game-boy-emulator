@@ -1,6 +1,7 @@
 from conan import ConanFile
 from conan.tools.cmake import cmake_layout, CMakeDeps, CMakeToolchain, CMake
-
+from conan.tools.files import copy
+import pathlib
 
 class GameBoyEmulatorConan(ConanFile):
     name = "game_boy_emulator"
@@ -30,6 +31,12 @@ class GameBoyEmulatorConan(ConanFile):
         self.options["boost"].header_only = True
 
     def generate(self):
+        # Copy the imgui bindings to bindings directory for CMake build
+        imgui = self.dependencies["imgui"]
+        source_dir = pathlib.Path(imgui.package_folder) / "res" / "bindings"
+        target_dir = pathlib.Path(self.source_path) / "bindings"
+        copy(self, pattern="imgui_impl_sdl*", src=source_dir, dst=target_dir)
+
         tc = CMakeToolchain(self, generator="Ninja")
         tc.generate()
         # Workaround to be able to build the consumer (game_boy_emulator) with both Debug and Release while the
@@ -51,10 +58,6 @@ class GameBoyEmulatorConan(ConanFile):
     def package(self):
         cmake = CMake(self)
         cmake.install()
-
-    def imports(self):
-        # Copy the imgui bindings to the package
-        self.copy("imgui_impl_sdl*", dst="bindings", src="res/bindings", root_package="imgui")
 
     def deploy(self):
         # Copy just the executable from the cache to the local filesystem

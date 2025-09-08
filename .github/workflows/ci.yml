@@ -1,50 +1,18 @@
 name: continuous integration
-run-name: Build with Clang and GCC
+run-name: Build with GCC
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-22.04
-
-    strategy:
-      matrix:
-        profile: [gcc-12, clang-14]
+    runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/workflows/actions/setup
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build dev container
+        uses: devcontainers/ci@v0.3
         with:
-          conanprofile: ${{ matrix.profile }}
-
-      - name: Configure
-        shell: bash
-        run: cmake --preset linux-x86_64-${{ matrix.profile }}-release -G Ninja
-
-      - name: Build
-        shell: bash
-        run: cmake --build --preset linux-x86_64-${{ matrix.profile }}-release --target game_boy_emulator
-
-  test:
-    runs-on: ubuntu-22.04
-
-    strategy:
-      matrix:
-        profile: [gcc-12, clang-14]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: ./.github/workflows/actions/setup
-        with:
-          conanprofile: ${{ matrix.profile }}
-
-      - name: Configure
-        shell: bash
-        run: cmake --preset linux-x86_64-${{ matrix.profile }}-release -G Ninja
-
-      - name: Build
-        shell: bash
-        run: cmake --build --preset linux-x86_64-${{ matrix.profile }}-release --target game_boy_emulator_tests
-
-      - name: Test
-        shell: bash
-        run: ctest --output-on-failure --progress --test-dir build/linux-x86_64-${{ matrix.profile }}-release/src/tests
+          imageName: gb_devcontainer
+          configFile: ./.devcontainer/devcontainer.json
+          push: false
+          runCmd: ./conan_build.sh

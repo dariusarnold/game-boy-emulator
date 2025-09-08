@@ -52,7 +52,7 @@ class GameBoyEmulatorConan(ConanFile):
         cmake = CMake(self)
         # Since conan is mostly used for releases, we dont want sanitizers enabled and we dont want to run clang-tidy
         # during the build since it is slow (and was run in CI for the commit already).
-        cmake.configure(variables={"SANITIZE": "OFF", "TIDY": "OFF", "CMAKE_GENERATOR": "Ninja"})
+        cmake.configure(variables={"SANITIZE": "OFF", "CLANG_TIDY": "OFF", "CMAKE_GENERATOR": "Ninja"})
         cmake.build()
 
     def package(self):

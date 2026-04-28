@@ -42,6 +42,8 @@
 	"mounts": [
 		// Persist bash history
 		"source=game-boy-emulator_bashhistory,target=/commandhistory,type=volume"
+		// Mount $HOME into container
+		//,"source=${localEnv:HOME},target=/host-home,type=bind,consistency=cached"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

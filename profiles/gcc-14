@@ -1,0 +1,18 @@
+include(_common)
+include(_linux_x86_64_release)
+
+{% set cc = "/usr/bin/gcc-14" %}
+{% set cxx = "/usr/bin/g++-14" %}
+
+[settings]
+compiler=gcc
+compiler.version=14
+compiler.cppstd=gnu23
+compiler.libcxx=libstdc++11
+
+[conf]
+tools.build:compiler_executables={"c": "{{ cc }}", "cpp": "{{ cxx }}"}
+
+[buildenv]
+CC={{ cc }}
+CXX={{ cxx }}

@@ -110,7 +110,7 @@ USER vscode
 # Install conan for vscode user
 RUN pipx install conan \
     && pipx ensurepath
-# Absolute path neccessary to avoid executable is not found error during build.
-RUN /home/vscode/.local/bin/conan config install https://github.com/dariusarnold/conan-profiles.git
-
+COPY --chown=vscode:vscode profiles /tmp/conan-config/profiles
+RUN /home/vscode/.local/bin/conan config install /tmp/conan-config \
+    && rm -rf /tmp/conan-config
 CMD ["/bin/bash"]

@@ -114,7 +114,7 @@ void Cartridge::sync() {
 }
 
 std::string get_title(const std::vector<uint8_t>& rom) {
-    assert(rom.size() >= TITLE_END && "Too small size ROM passed to get_title");
+    assert(rom.size() >= constants::TITLE_END && "Too small size ROM passed to get_title");
     constexpr int TITLE_LEN = constants::TITLE_END - constants::TITLE_BEGIN + 1;
     return rom
         | std::views::drop(constants::TITLE_BEGIN)

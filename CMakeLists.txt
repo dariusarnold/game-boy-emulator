@@ -57,5 +57,7 @@ if (SANITIZE)
     add_link_options(-fsanitize=address,undefined)
 endif ()
 
+enable_testing()
+
 add_subdirectory(src)
 add_subdirectory(src/tests)

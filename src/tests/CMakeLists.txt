@@ -45,6 +45,4 @@ add_custom_target(copy_test_dependencies ALL
 )
 add_dependencies(game_boy_emulator_tests copy_test_dependencies)
 
-enable_testing()
-
 add_test(NAME game_boy_emulator_tests COMMAND game_boy_emulator_tests)

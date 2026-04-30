@@ -1,0 +1,33 @@
+name: release
+run-name: Create github release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build dev container
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: gb_devcontainer
+          push: never
+
+      - name: Build package
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: gb_devcontainer
+          runCmd: conan create . --profile:host=profiles/gcc-14 --profile:build=profiles/gcc-14 --build=missing
+          push: never
+
+      - name: Release
+        uses: softprops/action-gh-release@v2

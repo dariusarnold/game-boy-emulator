@@ -26,7 +26,7 @@ jobs:
         uses: devcontainers/ci@v0.3
         with:
           imageName: gb_devcontainer
-          runCmd: conan create . --profile:host=profiles/gcc-14 --profile:build=profiles/gcc-14 --build=missing
+          runCmd: ./conan_build.sh --package
           push: never
 
       - name: Release

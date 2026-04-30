@@ -9,7 +9,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Build dev conainer
+      - name: Build dev container
         uses: devcontainers/ci@v0.3
         with:
           imageName: gb_devcontainer
@@ -19,5 +19,5 @@ jobs:
         uses: devcontainers/ci@v0.3
         with:
           imageName: gb_devcontainer
-          runCmd: ./conan_build.sh
+          runCmd: ./conan_build.sh profiles/gcc-14 Release
           push: never

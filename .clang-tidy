@@ -1,8 +1,51 @@
 ---
-Checks: '*,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-llvmlibc-implementation-in-namespace,-llvmlibc-callee-namespace,-llvmlibc-restrict-system-libc-headers,-llvm-header-guard,-llvm-include-order,-modernize-use-trailing-return-type,-google-readability-todo,-hicpp-signed-bitwise,-readability-identifier-length,-fuchsia-trailing-return,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-macro-usage,-bugprone-macro-parentheses,-fuchsia-default-arguments-calls,-hicpp-uppercase-literal-suffix,-readability-uppercase-literal-suffix,-llvm-namespace-comment,-altera-unroll-loops,-altera-id-dependent-backward-branch,-altera-struct-pack-align,-cppcoreguidelines-pro-type-union-access,-bugprone-implicit-widening-of-multiplication-result,-concurrency-mt-unsafe,-fuchsia-default-arguments-declarations,-bugprone-easily-swappable-parameters,-readability-suspicious-call-argument,-fuchsia-overloaded-operator,-readability-convert-member-functions-to-static,-fuchsia-statically-constructed-objects'
+Checks:
+  # First enable all checks, then disable individual undesirable checks
+  - '*'
+  # Specific for their original project, not outside projects
+  - '-llvmlibc-*'
+  - '-llvm-header-guard'
+  - '-llvm-include-order'
+  - '-google-readability-todo'
+  # A syntactic choice I don't care to enforce and it has limitations
+  - '-modernize-use-trailing-return-type'
+  - '-fuchsia-trailing-return'
+  # Bad check: https://stackoverflow.com/questions/50399090/use-of-a-signed-integer-operand-with-a-binary-bitwise-operator-when-using-un/58845898#58845898
+  - '-hicpp-signed-bitwise'
+  # Checks are too strict, have limitations or not useful to enforce
+  - '-readability-identifier-length'
+  - '-cppcoreguidelines-pro-bounds-constant-array-index'
+  - '-cppcoreguidelines-macro-usage'
+  - '-bugprone-macro-parentheses'
+  - '-fuchsia-default-arguments-calls'
+  - '-hicpp-uppercase-literal-suffix'
+  - '-readability-uppercase-literal-suffix'
+  - '-llvm-namespace-comment'
+  - '-altera-unroll-loops'
+  - '-altera-id-dependent-backward-branch'
+  - '-altera-struct-pack-align'
+  - '-cppcoreguidelines-pro-type-union-access'
+  - '-bugprone-implicit-widening-of-multiplication-result'
+  - '-concurrency-mt-unsafe'
+  - '-fuchsia-default-arguments-declarations'
+  - '-bugprone-easily-swappable-parameters'
+  - '-readability-suspicious-call-argument'
+  - '-fuchsia-overloaded-operator'
+  - '-readability-convert-member-functions-to-static'
+  - '-fuchsia-statically-constructed-objects'
+  - '-cppcoreguidelines-avoid-magic-numbers'
+  - '-readability-magic-numbers'
+  - '-misc-non-private-member-variables-in-classes'
+  - '-boost-use-ranges' # We have std::ranges available
+  # ImGui::Text is vararg
+  - '-cppcoreguidelines-pro-type-vararg'
+  - '-hicpp-vararg'
+  # Makes no sense with when enforcing default case with compiler warnings
+  - '-clang-diagnostic-covered-switch-default'
+  # Not compatible with using forward declarations, which is done for compile speedup
+  - '-misc-include-cleaner'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
-AnalyzeTemporaryDtors: false
 FormatStyle: file
 CheckOptions:
   - key: llvm-else-after-return.WarnOnConditionVariables

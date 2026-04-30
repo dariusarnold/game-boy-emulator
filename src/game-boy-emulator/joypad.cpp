@@ -4,6 +4,7 @@
 #include "emulator.hpp"
 #include "interrupthandler.hpp"
 #include <cstddef>
+#include <cstdint>
 
 void Joypad::press_key(Joypad::Keys key) {
     set_key_state(key, KeyStatus::Pressed);

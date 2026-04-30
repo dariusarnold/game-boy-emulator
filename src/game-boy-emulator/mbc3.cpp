@@ -2,11 +2,14 @@
 
 #include "memorymap.hpp"
 #include "exceptions.hpp"
-#include "bitmanipulation.hpp"
+
+#include "spdlog/logger.h"
 #include "fmt/format.h"
-#include "spdlog/spdlog.h"
 #include "magic_enum.hpp"
+
 #include <cassert>
+#include <cstdint>
+#include <cstddef>
 
 
 uint8_t Mbc3::read_byte(uint16_t address) const {
@@ -17,7 +20,7 @@ uint8_t Mbc3::read_byte(uint16_t address) const {
     }
     if (memmap::is_in(address, memmap::CartridgeRomBankSwitchable)) {
         const auto address_in_rom = address - memmap::CartridgeRomBankSwitchableBegin
-                                    + m_rom_bank_number * memmap::CartridgeRomBankSwitchableSize;
+                                    + (m_rom_bank_number * memmap::CartridgeRomBankSwitchableSize);
         assert(address_in_rom < static_cast<int>(get_rom().size())
                && "Read ROM switchable bank out of bounds");
         return get_rom()[static_cast<size_t>(address_in_rom)];
@@ -26,7 +29,7 @@ uint8_t Mbc3::read_byte(uint16_t address) const {
         if (m_ram_or_rtc_mapped == RamOrRtcMapped::RamMapped) {
             // Ram mapped, access it
             const auto address_in_ram = address - memmap::CartridgeRamBegin
-                                        + m_ram_bank_number * memmap::CartridgeRamSize;
+                                        + (m_ram_bank_number * memmap::CartridgeRamSize);
             assert(address_in_ram < static_cast<int>(get_ram().size())
                    && "Read RAM switchable bank out of bounds");
             return get_ram()[static_cast<size_t>(address_in_ram)];
@@ -43,6 +46,8 @@ uint8_t Mbc3::read_byte(uint16_t address) const {
             return m_rtc.m_days_low;
         case RtcRegisterValue::RTC_DH:
             return m_rtc.m_days_high_and_flags;
+        default:
+            assert(false && "Unknown RTC register");
         }
     }
     throw LogicError(fmt::format("Cartridge trying to read from {:04X}", address));
@@ -103,7 +108,7 @@ void Mbc3::write_values(uint16_t address, uint8_t value) {
         if (m_ram_or_rtc_mapped == RamOrRtcMapped::RamMapped) {
             // Access RAM
             const auto address_in_ram = address - memmap::CartridgeRamBegin
-                                        + m_ram_bank_number * memmap::CartridgeRamSize;
+                                        + (m_ram_bank_number * memmap::CartridgeRamSize);
             assert(address_in_ram < static_cast<int>(get_ram().size())
                    && "Write to cartridge RAM bank out of bounds");
             get_ram()[static_cast<size_t>(address_in_ram)] = value;
@@ -125,6 +130,8 @@ void Mbc3::write_values(uint16_t address, uint8_t value) {
             case RtcRegisterValue::RTC_DH:
                 m_rtc.m_days_high_and_flags = value;
                 break;
+            default:
+                assert(false && "Unknown RTC register");
             }
         }
     }

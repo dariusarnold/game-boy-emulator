@@ -1,5 +1,7 @@
 #include "dmatransfer.hpp"
+#include "addressbus.hpp"
 #include "bitmanipulation.hpp"
+#include "constants.h"
 #include "memorymap.hpp"
 
 OamDmaTransfer::OamDmaTransfer(std::shared_ptr<AddressBus> address_bus,

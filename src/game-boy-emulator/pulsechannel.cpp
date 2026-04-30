@@ -1,7 +1,10 @@
 #include "pulsechannel.hpp"
+#include "audiochannel.hpp"
 #include "bitmanipulation.hpp"
+#include <array>
 #include <cmath>
 #include <cassert>
+#include <cstdint>
 
 namespace {
 const std::array<std::array<int, 8>, 4> WAVE_DUTY_CYCLES{

@@ -1,6 +1,8 @@
 #include "ppu_registers.hpp"
 #include "bitmanipulation.hpp"
 #include "graphics.hpp"
+#include <cstdint>
+#include <array>
 
 uint8_t PpuRegisters::get_register_value(PpuRegisters::Register r) const {
     if (r == Register::LyRegister && m_fix_ly_register_value > 0) {

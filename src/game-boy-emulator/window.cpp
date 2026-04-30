@@ -1,19 +1,30 @@
-#include <numeric>
 #include "window.hpp"
-#include "graphics.hpp"
 #include "emulator.hpp"
 #include "ppu.hpp"
 #include "joypad.hpp"
 
+#include "fmt/format.h"
+#include "magic_enum.hpp"
 #include "spdlog/spdlog.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
-#include "SDL.h"
-#include "nfd.h"
+#include "nfd.hpp"
+
+#include <filesystem>
+#include <numeric>
+#include <string_view>
+#include <algorithm>
+#include <cstdlib>
+#include <memory>
+
+namespace {
+    constexpr int FPS_HISTORY_SIZE = 5 * 60;
+    constexpr int NUM_SAMPLES_FOR_FPS_AVERAGE = std::min(60, FPS_HISTORY_SIZE);
+}
 
 Window::Window(Emulator& emulator) :
-        m_emulator(emulator), m_logger(spdlog::get("")), m_fps_history(5 * 60, 5 * 60, 0) {
+        m_emulator(emulator), m_logger(spdlog::get("")), m_fps_history(FPS_HISTORY_SIZE, 0) {
     // Setup SDL
     // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a
     // minority of Windows systems, depending on whether SDL_INIT_GAMECONTROLLER is enabled or
@@ -22,9 +33,13 @@ Window::Window(Emulator& emulator) :
         spdlog::error("Error: {}", SDL_GetError());
         std::exit(EXIT_FAILURE);
     }
+    // Initialize NFDe after SDL
+    if (NFD_Init() != NFD_OKAY) {
+       spdlog::error("Error: failed to initialize NFDe");
+       std::exit(EXIT_FAILURE);
+    }
 
-    auto window_flags
-        = static_cast<SDL_WindowFlags>(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    const unsigned int window_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     m_sdl_window = SDL_CreateWindow("game boy emulator", SDL_WINDOWPOS_UNDEFINED,
                                     SDL_WINDOWPOS_UNDEFINED, 1280, 720, window_flags);
     m_sdl_renderer = SDL_CreateRenderer(m_sdl_window, -1,
@@ -53,6 +68,9 @@ Window::Window(Emulator& emulator) :
 }
 
 Window::~Window() {
+    // deinitialize NFDe before SDL
+    NFD_Quit();
+
     ImGui_ImplSDLRenderer_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
@@ -114,7 +132,7 @@ void Window::draw_frame() {
     }
 
     // Rendering
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    const ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     ImGui::Render();
     SDL_SetRenderDrawColor(m_sdl_renderer, static_cast<Uint8>(clear_color.x * 255),
                            static_cast<Uint8>(clear_color.y * 255),
@@ -177,6 +195,10 @@ void Window::handle_user_keyboard_input(const SDL_Event& event,
                     m_emulator.get_options().game_speed--;
                 }
                 m_emulator.get_options().fast_forward = m_emulator.get_options().game_speed > 1;
+                break;
+            default:
+                // Other keys not handled by emulator.
+                break;
             }
         }
         if (event.type == SDL_KEYUP) {
@@ -215,6 +237,9 @@ void Window::handle_user_keyboard_input(const SDL_Event& event,
                 break;
             case KEY_HOLD_FAST_FORWARD:
                 toggle(m_emulator.get_options().fast_forward);
+                break;
+            default:
+                // Other keys not handled by emulator.
                 break;
             }
         }
@@ -284,7 +309,7 @@ void Window::vblank_callback() {
     const auto& options = m_emulator.get_options();
     const auto& game = m_emulator.get_ppu()->get_game();
     if (options.fast_forward) {
-        if (state.frame_count % options.game_speed == 0) {
+        if (state.frame_count % static_cast<size_t>(options.game_speed) == 0) {
             m_game_image.upload_to_texture(game);
             draw_frame();
         }
@@ -305,29 +330,36 @@ void Window::draw_game() {
 void Window::draw_info() {
     const auto& state = m_emulator.get_state();
     auto& options = m_emulator.get_options();
-    ImGui::Begin("Info", &options.draw_info_window, ImGuiWindowFlags_NoResize);
-    auto current_ticks = SDL_GetTicks64();
-    auto ms_since_last_frame = current_ticks - m_previous_ticks;
-    auto fps = 0.f;
-    if (ms_since_last_frame != 0) {
-        fps = 1000.f / static_cast<float>(ms_since_last_frame);
-    }
+    ImGui::Begin("Info", &options.draw_info_window, ImGuiWindowFlags_AlwaysAutoResize);
+    const auto current_ticks = SDL_GetTicks64();
+    const auto ms_since_last_frame = current_ticks - m_previous_ticks;
+    const auto fps = (ms_since_last_frame != 0) ? 1000.f / static_cast<float>(ms_since_last_frame) : 0.f;
     m_fps_history.push_back(fps);
-    // ImGui requires continuous storage of the data to be plotted.
-    m_fps_history.linearize();
-    auto avg_fps = std::accumulate(m_fps_history.end() - 5, m_fps_history.end(), 0.) / 5;
-    ImGui::PlotLines("FPS", &m_fps_history[0], static_cast<int>(m_fps_history.size()), 0,
-                     fmt::format("{} FPS", avg_fps).c_str(), 0, 120, ImVec2{500, 100});
-    m_previous_ticks = current_ticks;
-    for (int i = 0; i < 8; ++i) {
+    // ImGui requires continuous storage of the data to be plotted, which would require a costly linearize call.
+    // Use getter to avoid that.
+    auto getter = [](void* data, int index) -> float {
+        auto* buffer = static_cast<boost::circular_buffer<float>*>(data);
+        return (*buffer)[static_cast<boost::circular_buffer<float>::size_type>(index)];
+    };
+    const auto avg_fps = std::accumulate(m_fps_history.end() - NUM_SAMPLES_FOR_FPS_AVERAGE, m_fps_history.end(), 0.) / NUM_SAMPLES_FOR_FPS_AVERAGE;
+    ImGui::PlotLines("FPS", getter, &m_fps_history, static_cast<int>(m_fps_history.size()), 0,
+                     fmt::format("FPS: {:.1f} ({:.1f} ms)", avg_fps, static_cast<float>(ms_since_last_frame)).c_str(), 0, 120, ImVec2{500, 100});
+    for (size_t i = 0; i < 8; ++i) {
         const std::string_view key_state = m_pressed_keys[i] ? "Down" : "Up";
         auto name = magic_enum::enum_name(magic_enum::enum_value<Joypad::Keys>(i));
-        ImGui::Text("%s", fmt::format("{}: {}", name, key_state).c_str()); // NOLINT
+        ImGui::Text("%s", fmt::format("{}: {}", name, key_state).c_str());
     }
-    // NOLINTNEXTLINE
+    if (current_ticks >= m_last_ips_update_ticks + 1000) {
+        m_instructions_per_second = static_cast<double>(state.instructions_executed - m_last_instructions_executed);
+        m_last_instructions_executed = state.instructions_executed;
+        m_last_ips_update_ticks = current_ticks;
+    }
+    ImGui::Text("Instructions/sec: %.2f k", m_instructions_per_second / 1'000.0);
     ImGui::Text("%s", fmt::format("{} instructions elapsed", state.instructions_executed).c_str());
-    ImGui::Text("Speed %d", options.game_speed); // NOLINT
+    ImGui::Text("Speed %d", options.game_speed);
     ImGui::End();
+    // Store for next iteration
+    m_previous_ticks = current_ticks;
 }
 
 void Window::draw_vram() {
@@ -354,13 +386,14 @@ void Window::draw_vram() {
 
 void Window::draw_menubar_file() {
     if (ImGui::MenuItem("Load game")) {
-        nfdchar_t* outpath_ptr = nullptr;
-        const auto result = NFD_OpenDialog(nullptr, nullptr, &outpath_ptr);
-        const std::unique_ptr<nfdchar_t, decltype(&free)> out_path{outpath_ptr, &free};
-
+        NFD::UniquePath out_path;
+        const auto result = NFD::OpenDialog(out_path);
         if (result == NFD_OKAY) {
+            spdlog::info("Loading game {}", *out_path.get());
             std::filesystem::path const p{out_path.get()};
             m_emulator.get_state().new_rom_file_path = p;
+        } else if (result == NFD_ERROR) {
+            spdlog::error("Error opening file picker: {}", NFD_GetError());
         }
     }
     if (ImGui::MenuItem("Quit")) {
@@ -456,7 +489,7 @@ void Window::draw_menubar_settings() {
         draw_menubar_settings_speed(options);
     }
     if (ImGui::BeginMenu("Sound")) {
-        float volume = m_emulator.get_options().volume;
+        const float volume = m_emulator.get_options().volume;
         draw_menubar_settings_sound(options, volume);
     }
 

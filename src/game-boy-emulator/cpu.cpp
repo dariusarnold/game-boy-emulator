@@ -1,9 +1,11 @@
 #include "cpu.hpp"
 #include "addressbus.hpp"
 #include "bitmanipulation.hpp"
+#include "constants.h"
 #include "emulator.hpp"
 #include "exceptions.hpp"
 
+#include "opcodes.hpp"
 #include "spdlog/spdlog.h"
 
 
@@ -19,6 +21,7 @@ void Cpu::step() {
     }
     auto data = fetched.value_or(0);
     m_logger->debug("Executing {}", current_instruction);
+#pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (current_instruction.instruction_type) {
     case opcodes::InstructionType::LD:
     case opcodes::InstructionType::LDD:
@@ -128,7 +131,6 @@ void Cpu::step() {
                         magic_enum::enum_name(current_instruction.instruction_type)));
     }
     auto end_cycles = m_emulator->get_state().cycles_m;
-    m_cycles_previous_instruction = end_cycles - start_cycles;
     m_logger->debug("Took {} M cycles", end_cycles - start_cycles);
     m_emulator->elapse_instruction();
 }
@@ -228,6 +230,8 @@ std::optional<uint16_t> Cpu::fetch_data(opcodes::Instruction instruction) {
         registers.pc++;
         m_emulator->elapse_cycle();
         return bitmanip::word_from_bytes(high_byte, low_byte);
+    default:
+        assert(false && "Invalid interaction type");
     }
     // See comment in instructionJR.
     __builtin_unreachable();
@@ -249,20 +253,20 @@ std::string Cpu::get_minimal_debug_state() {
 }
 
 CpuDebugState Cpu::get_debug_state() {
-    return {registers.a,
-            registers.f,
-            registers.b,
-            registers.c,
-            registers.d,
-            registers.e,
-            registers.h,
-            registers.l,
-            registers.sp,
-            registers.pc,
-            {m_emulator->get_bus()->read_byte(registers.pc),
-             m_emulator->get_bus()->read_byte(registers.pc + 1),
-             m_emulator->get_bus()->read_byte(registers.pc + 2),
-             m_emulator->get_bus()->read_byte(registers.pc + 3)}};
+    return {.a = registers.a,
+            .f = registers.f,
+            .b = registers.b,
+            .c = registers.c,
+            .d = registers.d,
+            .e = registers.e,
+            .h = registers.h,
+            .l = registers.l,
+            .sp = registers.sp,
+            .pc = registers.pc,
+            .mem_pc = {m_emulator->get_bus()->read_byte(registers.pc),
+                       m_emulator->get_bus()->read_byte(registers.pc + 1),
+                       m_emulator->get_bus()->read_byte(registers.pc + 2),
+                       m_emulator->get_bus()->read_byte(registers.pc + 3)}};
 }
 
 opcodes::Instruction Cpu::get_current_instruction() const {
@@ -271,10 +275,6 @@ opcodes::Instruction Cpu::get_current_instruction() const {
 
 opcodes::Instruction Cpu::get_previous_instruction() const {
     return previous_instruction;
-}
-
-size_t Cpu::cycle_duration_previous_instruction() const {
-    return m_cycles_previous_instruction;
 }
 
 void Cpu::set_register_value(opcodes::RegisterType register_type, uint16_t value) {
@@ -327,7 +327,7 @@ void Cpu::set_register_value(opcodes::RegisterType register_type, uint16_t value
     }
 }
 
-uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) {
+uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) const {
     switch (register_type) {
     case opcodes::RegisterType::A:
         return registers.a;
@@ -359,7 +359,10 @@ uint16_t Cpu::get_register_value(opcodes::RegisterType register_type) {
         return registers.hl;
     case opcodes::RegisterType::None:
         abort_execution<LogicError>(
-            fmt::format("Unknown register value {}", magic_enum::enum_name(register_type)));
+            fmt::format("Invalid register type {}", magic_enum::enum_name(register_type)));
+        default:
+        abort_execution<LogicError>(
+            fmt::format("Unknown register value {}", std::to_underlying(register_type)));
     }
     // See comment in instructionJR.
     __builtin_unreachable();
@@ -502,7 +505,7 @@ opcodes::InstructionType get_instruction_cb(uint8_t cb_opcode) {
         return opcodes::InstructionType::CB_BIT;
     }
     // The following blocks are smaller (8 blocks with 8 instructions each).
-    uint8_t index = cb_opcode / 8;
+    const uint8_t index = cb_opcode / 8;
     return CB_INSTRUCTION_BLOCKS[index];
 }
 } // namespace
@@ -669,7 +672,7 @@ void Cpu::instructionCB(uint8_t cb_opcode) {
 }
 
 void Cpu::instructionJR(opcodes::Instruction instruction, uint8_t data) {
-    bool jump_condition = check_condition(instruction.condition_type);
+    const bool jump_condition = check_condition(instruction.condition_type);
     if (!jump_condition) {
         return;
     }
@@ -693,6 +696,8 @@ bool Cpu::check_condition(opcodes::ConditionType condition_type) const {
         return is_flag_set(flags::zero);
     case opcodes::ConditionType::Carry:
         return is_flag_set(flags::carry);
+    default:
+        assert(false && "Invalid condition type");
     }
     // GCCs Wreturn-type warns here, because it assumes programmers use the whole range of the
     // undlerlying type of the enum. Since I don't want to have a default statement, which would
@@ -761,7 +766,7 @@ void Cpu::instructionINCDEC(opcodes::Instruction instruction) {
 }
 
 void Cpu::instructionCALL(opcodes::Instruction instruction, uint16_t data) {
-    bool condition_met = check_condition(instruction.condition_type);
+    const bool condition_met = check_condition(instruction.condition_type);
     if (condition_met) {
         m_emulator->elapse_cycle();
         push_word_on_stack(registers.pc);
@@ -797,7 +802,7 @@ void Cpu::instructionPOP(opcodes::Instruction instruction) {
 }
 
 void Cpu::instructionRET(opcodes::Instruction instruction) {
-    bool condition_met = check_condition(instruction.condition_type);
+    const bool condition_met = check_condition(instruction.condition_type);
     if (instruction.condition_type != opcodes::ConditionType::None) {
         m_emulator->elapse_cycle();
     }
@@ -1094,7 +1099,7 @@ uint8_t internal::op_code_to_bit(uint8_t opcode_byte) {
     //
     // First map higher nibble 0x -> 0, 1x -> 2, 2x -> 4, 3x -> 6
     // Then add 1 if we are in the right half of the table
-    return ((opcode_byte & 0xF0) >> constants::NIBBLE_SIZE) * 2
+    return (((opcode_byte & 0xF0) >> constants::NIBBLE_SIZE) * 2)
            + ((opcode_byte & 0x0F) / constants::BYTE_SIZE);
 }
 

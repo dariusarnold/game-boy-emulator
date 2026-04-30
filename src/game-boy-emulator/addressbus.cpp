@@ -3,7 +3,6 @@
 #include "bootrom.hpp"
 #include "cartridge.hpp"
 #include "emulator.hpp"
-#include "exceptions.hpp"
 #include "ppu.hpp"
 #include "memorymap.hpp"
 #include "ram.hpp"
@@ -14,6 +13,7 @@
 #include "joypad.hpp"
 
 #include "spdlog/spdlog.h"
+#include <cstdint>
 
 
 AddressBus::AddressBus(Emulator* emulator) : m_emulator(emulator), m_logger(spdlog::get("")) {}

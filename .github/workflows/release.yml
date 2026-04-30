@@ -1,12 +1,19 @@
-name: continuous integration
-run-name: Build with GCC
-on: [push]
+name: release
+run-name: Create github release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
 jobs:
-  build:
+  release:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Check out repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Build dev container
@@ -15,9 +22,12 @@ jobs:
           imageName: gb_devcontainer
           push: never
 
-      - name: Build game_boy_emulator
+      - name: Build package
         uses: devcontainers/ci@v0.3
         with:
           imageName: gb_devcontainer
-          runCmd: ./conan_build.sh profiles/gcc-14 Release
+          runCmd: ./conan_build.sh --package
           push: never
+
+      - name: Release
+        uses: softprops/action-gh-release@v2

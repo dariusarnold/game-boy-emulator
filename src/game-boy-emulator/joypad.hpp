@@ -10,7 +10,7 @@ class Joypad {
     uint8_t m_register = 0b00111111;
 
     // The key pad is multiplexed in a 2 x 4 matrix
-    enum class BitValues {
+    enum class BitValues: uint8_t {
         RightOrA = 0,
         LeftOrB = 1,
         UpOrSelect = 2,
@@ -19,7 +19,7 @@ class Joypad {
         SelectActionButtons = 5,
     };
 
-    enum class KeyStatus {
+    enum class KeyStatus: uint8_t {
         Pressed = 0,
         Released = 1,
     };
@@ -33,7 +33,7 @@ class Joypad {
 public:
     explicit Joypad(Emulator* emulator);
 
-    enum class Keys {
+    enum class Keys: uint8_t {
         // Movement buttons
         Right = 0,
         Left = 1,

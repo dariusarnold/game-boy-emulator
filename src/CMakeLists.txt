@@ -97,8 +97,8 @@ add_executable(game_boy_emulator
         )
 # Add external vendor code as an object library so it can be excluded from clang-tidy
 add_library(imgui_bindings OBJECT
-        ../bindings/imgui_impl_sdlrenderer.cpp
-        ../bindings/imgui_impl_sdl.cpp
+        ${PROJECT_SOURCE_DIR}/bindings/imgui_impl_sdlrenderer.cpp
+        ${PROJECT_SOURCE_DIR}/bindings/imgui_impl_sdl.cpp
         )
 set_target_properties(
         imgui_bindings
@@ -107,7 +107,7 @@ set_target_properties(
 target_include_directories(imgui_bindings
         SYSTEM
         PUBLIC
-        ../bindings)
+        ${PROJECT_SOURCE_DIR}/bindings)
 target_link_libraries(imgui_bindings
         PUBLIC
         imgui::imgui
@@ -118,19 +118,21 @@ target_link_libraries(game_boy_emulator PRIVATE
         game_boy_emulator_library
         imgui_bindings
         argparse::argparse
-        nativefiledialog::nativefiledialog
+        nfd
         )
-target_include_directories(game_boy_emulator
-        PRIVATE
-        bindings
-        )
-
 install(TARGETS game_boy_emulator)
 
 if (WARNINGS_ENABLED)
-    target_compile_options(game_boy_emulator_library PRIVATE
-            $<$<CXX_COMPILER_ID:GNU>:-fstrict-enums>
-            -Werror
+    message(STATUS "Enabling warnings")
+    # Collect warnings in library to reuse for multiple targets
+    add_library(warnings_list INTERFACE)
+    if (WARNINGS_AS_ERRORS)
+        message(STATUS "Treating warnings as errors")
+        target_compile_options(warnings_list INTERFACE -Werror)
+    endif()
+    target_link_libraries(game_boy_emulator PRIVATE warnings_list)
+    target_link_libraries(game_boy_emulator_library PRIVATE warnings_list)
+    target_compile_options(warnings_list INTERFACE
             # Catchalls to avoid listing many single warnings
             -Wall
             -Wextra
@@ -159,8 +161,14 @@ if (WARNINGS_ENABLED)
             -Wimplicit-fallthrough
             -Wdelete-non-virtual-dtor
             -Woverflow
+            # Wswitch-enum warns when an enum value is not explicitly handled in a switch, even when a default statement
+            # is present.
+            # Wswitch-default enforces a default statement in switch cases.
+            # This enforces all cases to be handled explicitly. The default is used to catch any out of range values,
+            # for example passed in from int casts.
+            -Wswitch-enum
+            -Wswitch-default
             # Enabling GCC specific warning flags
-            $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
             $<$<CXX_COMPILER_ID:GNU>:-Wcast-qual>
             $<$<CXX_COMPILER_ID:GNU>:-Wcast-align=strict>
             $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches>
@@ -169,9 +177,7 @@ if (WARNINGS_ENABLED)
             # Initializing a class member from itself is a nasty and hard to spot bug, so we turn it
             # into a warning. Clang has the flag but wont do anything, but gcc spots the error.
             $<$<CXX_COMPILER_ID:GNU>:-Winit-self>
-            $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op>
             $<$<CXX_COMPILER_ID:GNU>:-Wnull-dereference>
-            $<$<CXX_COMPILER_ID:GNU>:-Wundef>
             # Disabling the errors enabled by Weverything for clang which are not useful
             # These warnings meaning is not warn me when I use something newer than this standard version but warn me
             # when I use something from the standard version which works differently when compiling with an older
@@ -188,9 +194,8 @@ if (WARNINGS_ENABLED)
             $<$<CXX_COMPILER_ID:Clang>:-Wno-gnu-anonymous-struct>
             $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-prototypes>
             $<$<CXX_COMPILER_ID:Clang>:-Wno-implicit-int-conversion>
-            # This warns when an enum value is not explicitly handled in a switch, even when a default statement
-            # handles the enum.
-            $<$<CXX_COMPILER_ID:Clang>:-Wno-switch-enum>
             $<$<CXX_COMPILER_ID:Clang>:-Wno-ctad-maybe-unsupported>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-covered-switch-default>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-unsafe-buffer-usage>
             )
 endif()

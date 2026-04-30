@@ -1,17 +1,18 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.205.2/containers/cpp
 {
-	"name": "C++",
+	"name": "game_boy_emulator_devcontainer",
 	"build": {
+		"context": "..",
 		"dockerfile": "Dockerfile",
-		// Update 'VARIANT' to pick an Ubuntu OS version. Examples: [bionic, focal]. Default: focal
-		// Update 'GCC_VER' to pick a gcc and g++ version. Examples: [7, 8, 9, 10, 11]. Default: 11
-		// Update 'LLVM_VER' to pick clang version. Options: [10, 11, 12, 13]. Example: 13
+		// Update 'VARIANT' to pick an Ubuntu OS version. Examples: [jammy, noble].
+		// Update 'GCC_VER' to pick a gcc and g++ version. Default: 14
+		// Update 'LLVM_VER' to pick clang version. Default: 20
 		// Update 'USE_CLANG' to set clang as the default C and C++ compiler. Options: [1, null]. Default null
 		"args": {
-			"VARIANT": "jammy",
-			"GCC_VER": "13",
-			"LLVM_VER": "19"
+			"VARIANT": "noble",
+			"GCC_VER": "14",
+			"LLVM_VER": "20"
 		}
 	},
 	"runArgs": [
@@ -30,7 +31,6 @@
 				// Add the IDs of VsCode extensions you want installed when the container is created.
 				"ms-vscode.cpptools",
 				"ms-vscode.cmake-tools",
-				"twxs.cmake",
 				"ms-vscode.cpptools-themes",
 				"cschlosser.doxdocgen",
 				"eamodio.gitlens",
@@ -43,6 +43,8 @@
 	"mounts": [
 		// Persist bash history
 		"source=game-boy-emulator_bashhistory,target=/commandhistory,type=volume"
+		// Mount $HOME into container
+		//,"source=${localEnv:HOME},target=/host-home,type=bind,consistency=cached"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

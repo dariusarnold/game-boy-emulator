@@ -11,8 +11,6 @@
  * This works on little endian only, for big endian the order of bytes has to be
  * swapped.
  */
-// Disabled due to false positive https://github.com/llvm/llvm-project/issues/54748
-// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init,hicpp-member-init,-warnings-as-errors)
 struct Registers {
     uint16_t sp = 0, pc = 0;
     union {
@@ -40,9 +38,6 @@ struct Registers {
         };
     };
 };
-// NOLINTEND(cppcoreguidelines-pro-type-member-init,hicpp-member-init,-warnings-as-errors)
-
-#include <fmt/core.h>
 
 /**
  * Formatted output for Registers.
@@ -50,7 +45,7 @@ struct Registers {
  * Example: {:sp} would print the stack pointer
  */
 template <>
-class fmt::formatter<Registers> {
+struct fmt::formatter<Registers> {
 
     std::string format_string;
 
@@ -65,7 +60,7 @@ public:
             // No format string was specified
             return context.begin();
         }
-        const auto* it = std::find(context.begin(), context.end(), '}');
+        const auto* it = std::ranges::find(context, '}');
         if (it != context.end()) {
             format_string.assign(context.begin(), it);
             return it;

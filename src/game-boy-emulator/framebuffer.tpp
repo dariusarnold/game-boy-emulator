@@ -7,7 +7,7 @@ Framebuffer<PixelType, Width, Height>::Framebuffer(PixelType fill) :
 
 template <typename PixelType, size_t Width, size_t Height>
 size_t Framebuffer<PixelType, Width, Height>::pixel_index(size_t x, size_t y) const {
-    return x + y * m_width;
+    return x + (y * m_width);
 }
 
 template <typename PixelType, size_t Width, size_t Height>

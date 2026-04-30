@@ -6,6 +6,8 @@
 
 #include "magic_enum.hpp"
 #include "spdlog/spdlog.h"
+#include <cstdint>
+#include <array>
 
 InterruptHandler::InterruptHandler(Emulator* emulator) :
         m_emulator(emulator), m_logger(spdlog::get("")) {}
@@ -67,7 +69,7 @@ void InterruptHandler::handle_interrupts() {
                 bitmanip::unset(m_interrupt_request_flags, i);
                 auto address = ISR_ADDRESS[i];
                 m_logger->debug("Serving interrupt {}",
-                                magic_enum::enum_name(static_cast<InterruptType>(i)));
+                                magic_enum::enum_name(static_cast<InterruptType>(1<<i)));
                 m_emulator->get_cpu()->call_isr(address);
             }
             break;

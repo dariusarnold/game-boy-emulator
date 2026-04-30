@@ -22,8 +22,8 @@ A game boy emulator written in C++ and built with Conan and CMake.
 - Tested with UBSanitizer, LeakSanitizer and AddressSanitizer
 - Required clang-tidy checks
 - Dependency management using Conan
-  - Currently conan 1.X is supported (version 1.59.0 at time of writing)
-- Builds on Linux (clang, gcc) and Windows (Mingw)
+  - Currently conan 2.X is supported
+- Builds on Linux (clang, gcc)
 - Github Actions based pipeline (builds with clang, gcc and runs the tests)
 
 ### Building

@@ -4,14 +4,14 @@
 
 #include <magic_enum.hpp>
 
-#include <fmt/format.h>
+#include <fmt/core.h>
 #include <cstdint>
 #include <string>
 
 
 namespace opcodes {
 
-enum class InstructionType {
+enum class InstructionType: uint8_t {
     NONE,
     NOP,
     LD,
@@ -96,7 +96,7 @@ enum class InstructionType {
     CCF,
 };
 
-enum class RegisterType {
+enum class RegisterType: uint8_t {
     None,
     A,
     B,
@@ -133,7 +133,7 @@ enum class RegisterType {
  * Fixed offsets are implemented as instruction type LDH.
  * 11 is implemented as instruction type LDHL
  */
-enum class InteractionType {
+enum class InteractionType: uint8_t {
     None,
     // Operate on a single register
     Register,
@@ -157,7 +157,7 @@ enum class InteractionType {
     Register_AddressWord,
 };
 
-enum class ConditionType {
+enum class ConditionType: uint8_t {
     None,
     NonZero,
     Zero,
@@ -182,20 +182,20 @@ Instruction get_instruction_by_value(uint8_t value);
  * Formatted output for Instructions
  */
 template <>
-class fmt::formatter<opcodes::Instruction> {
+struct fmt::formatter<opcodes::Instruction> {
 
     std::string format_string;
 
 public:
     // Currently no custom formatting implemented
-    auto parse(fmt::format_parse_context& context) { // NOLINT
+    constexpr auto parse(fmt::format_parse_context& context) {
         return context.begin();
     }
 
     template <typename FormatContext>
-    auto format(const opcodes::Instruction& instruction, FormatContext& context) {
+    auto format(const opcodes::Instruction& instruction, FormatContext& context) const {
         namespace me = magic_enum;
-        return format_to(context.out(), "Instruction {} {} {} {} {}",
+        return fmt::format_to(context.out(), "Instruction {} {} {} {} {}",
                          me::enum_name(instruction.instruction_type),
                          me::enum_name(instruction.interaction_type),
                          me::enum_name(instruction.register_type_destination),

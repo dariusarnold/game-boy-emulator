@@ -5,11 +5,8 @@
 #include "constants.h"
 #include "framebuffer.hpp"
 #include "dmatransfer.hpp"
-#include "bitmanipulation.hpp"
 class Emulator;
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 #include <array>
 #include <span>
 #include <memory>
@@ -80,7 +77,7 @@ class Ppu {
 
     std::span<uint8_t, 16> get_tile(unsigned block, unsigned index_in_block);
 
-    enum class TileType { Background, Window };
+    enum class TileType: uint8_t { Background, Window };
     // Get one background or window tile from vram using the tile index.
     std::span<uint8_t, constants::BYTES_PER_TILE> get_tile(uint8_t tile_index);
     // Get one background or window tile from vram using tile coordinates (of 32x32)

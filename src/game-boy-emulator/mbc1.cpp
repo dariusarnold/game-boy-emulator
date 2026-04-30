@@ -1,11 +1,17 @@
 #include "mbc1.hpp"
 
+#include "mbc.hpp"
 #include "memorymap.hpp"
 #include "bitmanipulation.hpp"
 #include "exceptions.hpp"
 #include "fmt/format.h"
-#include "spdlog/spdlog.h"
 #include <cassert>
+#include <cstdint>
+#include <vector>
+#include <span>
+#include <utility>
+#include <cmath>
+#include "spdlog/logger.h"
 
 
 namespace {
@@ -26,13 +32,13 @@ uint8_t Mbc1::read_byte(uint16_t address) const {
         if (m_banking_mode_select == 1) {
             bank_number = static_cast<uint32_t>(m_bank2 << 5);
         }
-        uint32_t address_in_rom = get_address_in_rom(address, bank_number);
+        const uint32_t address_in_rom = get_address_in_rom(address, bank_number);
         assert(address_in_rom < get_rom().size() && "Read ROM fixed bank out of bounds");
         return get_rom()[address_in_rom];
     }
     if (memmap::is_in(address, memmap::CartridgeRomBankSwitchable)) {
         auto bank_number = static_cast<uint32_t>((m_bank2 << 5) | m_bank1);
-        uint32_t address_in_rom = get_address_in_rom(address, bank_number);
+        const uint32_t address_in_rom = get_address_in_rom(address, bank_number);
         assert(address_in_rom < get_rom().size() && "Read ROM switchable bank out of bounds");
         return get_rom()[address_in_rom];
     }
@@ -41,7 +47,7 @@ uint8_t Mbc1::read_byte(uint16_t address) const {
             get_logger()->error("Read from disabled cartridge RAM in MBC1");
             return 0xFF;
         }
-        uint32_t address_in_ram = get_address_in_ram(address);
+        const uint32_t address_in_ram = get_address_in_ram(address);
         assert(address_in_ram < get_ram().size() && "Read to cartridge RAM bank out of bounds");
         return get_ram()[address_in_ram];
     }

@@ -1,8 +1,11 @@
+#include <array>
 #include <cassert>
+#include <cstdint>
+#include <span>
+#include <cstddef>
 #include "graphics.hpp"
 #include "bitmanipulation.hpp"
-
-#include "SDL.h"
+#include <magic_enum.hpp>
 #include "SDL_opengl.h"
 
 namespace graphics::render {
@@ -31,24 +34,25 @@ void load_texture_rgba(const uint32_t* data, int width, int height, GLuint* out_
 } // namespace graphics::render
 
 namespace {
-
 constexpr std::array<std::array<graphics::gb::UnmappedColorGb, 8>, 256 * 256> cache{
-    []() consteval {std::array<std::array<graphics::gb::UnmappedColorGb, 8>, 256 * 256> arr{};
-for (unsigned b1 = 0; b1 <= 255; ++b1) {
-    for (unsigned b2 = 0; b2 <= 255; ++b2) {
-        auto index = bitmanip::word_from_bytes(b1, b2);
-        for (uint8_t i = 0; i < 8; ++i) {
-            auto msb = bitmanip::bit_value(b2, i);
-            auto lsb = bitmanip::bit_value(b1, i);
-            arr[index][7 - i] = static_cast<graphics::gb::UnmappedColorGb>((msb << 1) + lsb);
+    // Initialize with immediately invoked lambda
+    []() consteval {
+        // Force pre-compution at compile time to avoid computing at runtime.
+        // This gives around a 10% rendering speedup.
+        std::array<std::array<graphics::gb::UnmappedColorGb, 8>, 256 * 256> arr{};
+        for (unsigned b1 = 0; b1 <= 255; ++b1) {
+            for (unsigned b2 = 0; b2 <= 255; ++b2) {
+                auto index = bitmanip::word_from_bytes(b1, b2);
+                for (uint8_t i = 0; i < 8; ++i) {
+                    auto msb = bitmanip::bit_value(b2, i);
+                    auto lsb = bitmanip::bit_value(b1, i);
+                    arr[index][7 - i] = static_cast<graphics::gb::UnmappedColorGb>((msb << 1) + lsb);
+                }
+            }
         }
-    }
-}
-return arr;
-} // namespace
-()
-}
-;
+        return arr;
+    }()
+};
 
 const std::array<graphics::gb::UnmappedColorGb, 8>& get_cached_tile_line(uint8_t byte1,
                                                                          uint8_t byte2) {
@@ -80,7 +84,7 @@ std::array<UnmappedColorGb, 64> tile_to_gb_color(std::span<uint8_t, 16> tile_dat
         // 2 bytes represent one 8 pixel wide row in the tile
         auto row = graphics::gb::convert_tile_line(tile_data[i], tile_data[i + 1]);
         for (size_t j = 0; j < row.size(); j++) {
-            auto index = (i / 2) * 8 + j;
+            auto index = ((i / 2) * 8) + j;
             out[index] = row[j];
         }
     }
@@ -93,7 +97,7 @@ std::array<UnmappedColorGb, 128> tile_to_gb_color(std::span<uint8_t, 32> tile_da
         // 2 bytes represent one 8 pixel wide row in the tile
         auto row = graphics::gb::convert_tile_line(tile_data[i], tile_data[i + 1]);
         for (size_t j = 0; j < row.size(); j++) {
-            auto index = (i / 2) * 8 + j;
+            auto index = ((i / 2) * 8) + j;
             out[index] = row[j];
         }
     }
@@ -104,7 +108,7 @@ TileIndex::TileIndex(size_t tile_width_pixels, size_t tile_height_pixels) :
         m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
 
 size_t graphics::gb::TileIndex::pixel_index(size_t x, size_t y) const {
-    return x + y * m_tile_width;
+    return x + (y * m_tile_width);
 }
 
 TileIndexMirrorHorizontal::TileIndexMirrorHorizontal(size_t tile_width_pixels,
@@ -112,7 +116,7 @@ TileIndexMirrorHorizontal::TileIndexMirrorHorizontal(size_t tile_width_pixels,
         m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
 
 size_t TileIndexMirrorHorizontal::pixel_index(size_t x, size_t y) const {
-    return m_tile_width - 1 - x + y * m_tile_width;
+    return m_tile_width - 1 - x + (y * m_tile_width);
 }
 
 TileIndexMirrorVertical::TileIndexMirrorVertical(size_t tile_width_pixels,
@@ -121,7 +125,7 @@ TileIndexMirrorVertical::TileIndexMirrorVertical(size_t tile_width_pixels,
 
 
 size_t TileIndexMirrorVertical::pixel_index(size_t x, size_t y) const {
-    return x + (m_tile_height - 1 - y) * m_tile_width;
+    return x + ((m_tile_height - 1 - y) * m_tile_width);
 }
 
 TileIndexMirrorBothAxes::TileIndexMirrorBothAxes(size_t tile_width_pixels,
@@ -129,7 +133,7 @@ TileIndexMirrorBothAxes::TileIndexMirrorBothAxes(size_t tile_width_pixels,
         m_tile_width(tile_width_pixels), m_tile_height(tile_height_pixels) {}
 
 size_t TileIndexMirrorBothAxes::pixel_index(size_t x, size_t y) const {
-    return m_tile_height * m_tile_width - (x + y * m_tile_width) - 1;
+    return (m_tile_height * m_tile_width) - (x + y * m_tile_width) - 1;
 }
 
 } // namespace graphics::gb

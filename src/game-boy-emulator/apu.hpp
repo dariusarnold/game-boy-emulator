@@ -1,8 +1,6 @@
 #pragma once
 
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 #include "pulsechannel.hpp"
 #include "wavechannel.hpp"
 #include "noisechannel.hpp"

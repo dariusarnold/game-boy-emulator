@@ -1,11 +1,20 @@
 #include "mbc5.hpp"
 
+#include "mbc.hpp"
 #include "memorymap.hpp"
 #include "bitmanipulation.hpp"
 #include "exceptions.hpp"
+
 #include "fmt/format.h"
-#include "spdlog/spdlog.h"
+#include "spdlog/logger.h"
+
 #include <cassert>
+#include <vector>
+#include <cstdint>
+#include <span>
+#include <utility>
+#include <cmath>
+#include <cstddef>
 
 
 Mbc5::Mbc5(std::vector<uint8_t> rom, std::span<uint8_t> ram) :

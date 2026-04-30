@@ -2,7 +2,9 @@
 #include "emulator.hpp"
 #include "interrupthandler.hpp"
 #include "exceptions.hpp"
+
 #include "spdlog/spdlog.h"
+#include <fmt/format.h>
 
 SerialPort::SerialPort(Emulator* emulator) : m_emulator(emulator), m_logger(spdlog::get("")) {}
 

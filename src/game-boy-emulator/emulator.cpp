@@ -1,11 +1,11 @@
 #include "emulator.hpp"
 
-#include <utility>
 #include "addressbus.hpp"
 #include "bootrom.hpp"
 #include "cartridge.hpp"
 #include "cpu.hpp"
 #include "exceptions.hpp"
+#include "options.hpp"
 #include "ppu.hpp"
 #include "ram.hpp"
 #include "timer.hpp"
@@ -16,6 +16,14 @@
 #include "io.hpp"
 
 #include "spdlog/spdlog.h"
+
+#include <utility>
+
+void EmulatorState::reset() {
+    cycles_m = 0;
+    instructions_executed = 0;
+    frame_count = 0;
+}
 
 Emulator::Emulator(EmulatorOptions options) :
         m_options(options),
@@ -31,13 +39,8 @@ Emulator::Emulator(EmulatorOptions options) :
         m_logger(spdlog::get("")) {}
 
 void Emulator::load_game(const std::filesystem::path& rom_path) {
-    EmulatorIo io;
-    auto rom = io.load_rom_file(rom_path);
-    if (!rom.has_value()) {
-        throw LoadError(fmt::format("Failed to load {}", rom_path.string()));
-    }
     m_state.rom_file_path = rom_path;
-    m_cartridge = std::make_shared<Cartridge>(this, rom.value());
+    m_cartridge = std::make_shared<cartridge::Cartridge>(this, rom_path);
     m_cpu->set_initial_state();
     m_state.is_booting = false;
 }
@@ -55,13 +58,8 @@ void Emulator::load_boot(const std::filesystem::path& rom_path) {
 void Emulator::load_boot_game(const std::filesystem::path& boot_rom_path,
                               const std::filesystem::path& game_rom_path) {
     load_boot(boot_rom_path);
-    EmulatorIo io;
-    auto rom = io.load_rom_file(game_rom_path);
-    if (!rom.has_value()) {
-        throw LoadError(fmt::format("Failed to load {}", game_rom_path.string()));
-    }
     m_state.rom_file_path = game_rom_path;
-    m_cartridge = std::make_shared<Cartridge>(this, rom.value());
+    m_cartridge = std::make_shared<cartridge::Cartridge>(this, game_rom_path);
 }
 
 void Emulator::run() {
@@ -134,7 +132,7 @@ opcodes::Instruction Emulator::get_previous_instruction() const {
     return m_cpu->get_previous_instruction();
 }
 
-std::shared_ptr<Cartridge> Emulator::get_cartridge() const {
+std::shared_ptr<cartridge::Cartridge> Emulator::get_cartridge() const {
     return m_cartridge;
 }
 
@@ -172,6 +170,14 @@ void Emulator::unhalt() {
     m_state.halted = false;
 }
 
+void Emulator::reset_state() {
+    m_state.reset();
+    // Reset all subcomponents which have mutable state that is relevant for emulation or which have side effects on
+    // destruction (such as serial port printing received data).
+    // Resetting RAM does not matter, since the game should not rely on its state on boot anyway.
+    m_serial_port = std::make_shared<SerialPort>(this);
+}
+
 const EmulatorOptions& Emulator::get_options() const {
     return m_options;
 }
@@ -206,10 +212,6 @@ void Emulator::draw() {
 
 void Emulator::set_draw_function(std::function<void()> f) {
     m_draw_function = std::move(f);
-}
-
-size_t Emulator::get_cycle_count() {
-    return m_cpu->cycle_duration_previous_instruction();
 }
 
 void Emulator::set_debug_function(std::function<void()> f) {

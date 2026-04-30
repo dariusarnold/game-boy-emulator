@@ -3,15 +3,10 @@
 #include "framebuffer.hpp"
 #include "graphics.hpp"
 #include <memory>
-#include <vector>
-#include <cstdint>
-#include <cstddef>
-#include <cassert>
 
 #include "SDL_render.h"
-#include "SDL_surface.h"
-class SDL_Texture;
-class SDL_Renderer;
+struct SDL_Texture;
+struct SDL_Renderer;
 template <typename PixelType, size_t Width, size_t Height>
 class Framebuffer;
 
@@ -48,7 +43,7 @@ public:
 
     [[nodiscard]] SDL_Texture* get_texture() const;
 
-    void save_as_bitmap(std::string_view filename) const;
+    void save_as_bitmap(std::string filename) const;
 };
 
 #include "image.tpp"

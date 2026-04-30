@@ -1,23 +1,31 @@
-# [Choice] bionic (18.04), focal (20.04)
-ARG VARIANT="focal"
-FROM mcr.microsoft.com/devcontainers/base:ubuntu
+# Ubuntu version codename.
+# Examples: "noble", "jammy"
+# For full tag list, see https://mcr.microsoft.com/v2/devcontainers/base/tags/list
+ARG VARIANT="noble"
+FROM mcr.microsoft.com/devcontainers/base:${VARIANT}
 
 # Docker resets ARGs after every FROM statement, making previous ones unavailable.
 # Restate the variant to use it later on in the llvm and cmake installations.
 ARG VARIANT
 
 # Install necessary packages available from standard repos
-RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
+RUN apt-get update -qq \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends \
         # General programs
         software-properties-common wget apt-utils file zip \
-        openssh-client gpg-agent socat rsync \
+        openssh-client gpg-agent socat rsync pkg-config nano \
         # Development tools
-        git \
+        git ccache cppcheck \
         # Build tools \
-        make ninja-build \
+        make ninja-build cmake \
         # Python
-        python3 python3-pip pipx
+        python3 python3-pip pipx \
+        # Dependencies
+        libgtk-3-dev libsdl2-dev \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # By default, anything you run in Docker is done as superuser.
 # Conan runs some install commands as superuser, and will prepend `sudo` to
@@ -28,28 +36,28 @@ ENV CONAN_SYSREQUIRES_SUDO=0
 # leaving this flag undefined can cause some installation failures.
 ENV CONAN_SYSREQUIRES_MODE=enabled
 
-# User-settable versions:
-# This Dockerfile should support gcc-[7, 8, 9, 10, 11] and clang-[10, 11, 12, 13]
-# Earlier versions of clang will require significant modifications to the IWYU section
-ARG GCC_VER="11"
+# User-settable compiler versions. The repo profiles currently target gcc-14 and clang-20.
+ARG GCC_VER="14"
 # Add gcc-${GCC_VER}
-RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
-    apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test \
+    && apt-get update -qq \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends \
         gcc-${GCC_VER} g++-${GCC_VER} gdb
 
 # Set gcc-${GCC_VER} as default gcc
 RUN update-alternatives --install /usr/bin/gcc gcc $(which gcc-${GCC_VER}) 100
 RUN update-alternatives --install /usr/bin/g++ g++ $(which g++-${GCC_VER}) 100
 
-ARG LLVM_VER="13"
+ARG LLVM_VER="20"
 # Add clang-${LLVM_VER}
 ARG LLVM_URL="http://apt.llvm.org/${VARIANT}/"
 ARG LLVM_PKG="llvm-toolchain-${VARIANT}-${LLVM_VER}"
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - 2>/dev/null && \
-    add-apt-repository -y "deb ${LLVM_URL} ${LLVM_PKG} main" && \
-    apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - 2>/dev/null \
+    && add-apt-repository -y "deb ${LLVM_URL} ${LLVM_PKG} main" \
+    && apt-get update -qq \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends \
         clang-${LLVM_VER} lldb-${LLVM_VER} lld-${LLVM_VER} clangd-${LLVM_VER} \
         llvm-${LLVM_VER}-dev libclang-${LLVM_VER}-dev clang-tidy-${LLVM_VER}
 
@@ -60,51 +68,27 @@ RUN update-alternatives --install /usr/bin/clang-tidy clang-tidy $(which clang-t
 RUN update-alternatives --install /usr/bin/clang clang $(which clang-${LLVM_VER}) 100
 RUN update-alternatives --install /usr/bin/clang++ clang++ $(which clang++-${LLVM_VER}) 100
 
-# Add current cmake/ccmake, from Kitware
-ARG CMAKE_URL="https://apt.kitware.com/ubuntu/"
-ARG CMAKE_PKG=${VARIANT}
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null \
-        | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
-    apt-add-repository -y "deb ${CMAKE_URL} ${CMAKE_PKG} main" && \
-    apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends cmake cmake-curses-gui
+## Install include-what-you-use
+#ENV IWYU=/home/iwyu
+#ENV IWYU_BUILD=${IWYU}/build
+#ENV IWYU_SRC=${IWYU}/include-what-you-use
+#RUN mkdir -p ${IWYU_BUILD} && \
+#    git clone --branch clang_${LLVM_VER} \
+#        https://github.com/include-what-you-use/include-what-you-use.git \
+#        ${IWYU_SRC}
+#RUN CC=clang-${LLVM_VER} CXX=clang++-${LLVM_VER} cmake -S ${IWYU_SRC} \
+#        -B ${IWYU_BUILD} \
+#        -G "Unix Makefiles" -DCMAKE_PREFIX_PATH=/usr/lib/llvm-${LLVM_VER} && \
+#    cmake --build ${IWYU_BUILD} -j && \
+#    cmake --install ${IWYU_BUILD}
 
-# Install editors
-RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
-        neovim emacs nano
-
-# Install optional dependecies
-RUN apt-get update -qq && export DEBIAN_FRONTEND=noninteractive && \
-    apt-get install -y --no-install-recommends \
-        doxygen graphviz ccache cppcheck
-
-# Install include-what-you-use
-ENV IWYU=/home/iwyu
-ENV IWYU_BUILD=${IWYU}/build
-ENV IWYU_SRC=${IWYU}/include-what-you-use
-RUN mkdir -p ${IWYU_BUILD} && \
-    git clone --branch clang_${LLVM_VER} \
-        https://github.com/include-what-you-use/include-what-you-use.git \
-        ${IWYU_SRC}
-RUN CC=clang-${LLVM_VER} CXX=clang++-${LLVM_VER} cmake -S ${IWYU_SRC} \
-        -B ${IWYU_BUILD} \
-        -G "Unix Makefiles" -DCMAKE_PREFIX_PATH=/usr/lib/llvm-${LLVM_VER} && \
-    cmake --build ${IWYU_BUILD} -j && \
-    cmake --install ${IWYU_BUILD}
-
-# Per https://github.com/include-what-you-use/include-what-you-use#how-to-install:
-# `You need to copy the Clang include directory to the expected location before
-#  running (similarly, use include-what-you-use -print-resource-dir to learn
-#  exactly where IWYU wants the headers).`
-RUN mkdir -p $(include-what-you-use -print-resource-dir 2>/dev/null)
-RUN ln -s $(readlink -f /usr/lib/clang/${LLVM_VER}/include) \
-    $(include-what-you-use -print-resource-dir 2>/dev/null)/include
-
-## Cleanup cached apt data we don't need anymore
-RUN apt-get autoremove -y && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
+## Per https://github.com/include-what-you-use/include-what-you-use#how-to-install:
+## `You need to copy the Clang include directory to the expected location before
+##  running (similarly, use include-what-you-use -print-resource-dir to learn
+##  exactly where IWYU wants the headers).`
+#RUN mkdir -p $(include-what-you-use -print-resource-dir 2>/dev/null)
+#RUN ln -s $(readlink -f /usr/lib/clang/${LLVM_VER}/include) \
+#    $(include-what-you-use -print-resource-dir 2>/dev/null)/include
 # Allow the user to set compiler defaults
 ARG USE_CLANG=0
 # if --build-arg USE_CLANG=1, set CC to 'clang' or set to null otherwise.
@@ -121,12 +105,12 @@ RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhisto
     && touch /commandhistory/.bash_history \
     && chown -R $USERNAME /commandhistory \
     && echo "$SNIPPET" >> "/home/$USERNAME/.bashrc"
-
-
+ 
 USER vscode
 # Install conan for vscode user
-RUN pipx install \
-    conan \
+RUN pipx install conan \
     && pipx ensurepath
-
+COPY --chown=vscode:vscode profiles /tmp/conan-config/profiles
+RUN /home/vscode/.local/bin/conan config install /tmp/conan-config \
+    && rm -rf /tmp/conan-config
 CMD ["/bin/bash"]

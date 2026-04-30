@@ -1,5 +1,6 @@
 #include "exceptions.hpp"
 
+#include <string>
 #include <utility>
 
 

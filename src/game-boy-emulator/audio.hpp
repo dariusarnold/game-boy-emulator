@@ -18,7 +18,7 @@ public:
     [[nodiscard]] SDL_AudioDeviceID get() const;
 
     AudioRessource() = default;
-    AudioRessource(const char* device, const SDL_AudioSpec& audio_spec);
+    explicit AudioRessource(const SDL_AudioSpec& audio_spec);
     ~AudioRessource();
     // Since we handle a ressource in this class delete copy operators.
     AudioRessource(const AudioRessource&) = delete;
@@ -42,4 +42,5 @@ public:
     explicit Audio(Emulator& emulator);
     void callback(SampleFrame sample);
     [[nodiscard]] bool is_working() const;
+    void clear_queued_samples();
 };

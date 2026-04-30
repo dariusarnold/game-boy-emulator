@@ -1,13 +1,9 @@
 #pragma once
 
-#include "constants.h"
 #include "options.hpp"
 #include "graphics.hpp"
 #include "apu.hpp"
-#include <array>
-#include <cstdint>
 #include <memory>
-#include <vector>
 #include <functional>
 #include <filesystem>
 
@@ -21,13 +17,13 @@ class Apu;
 class Ppu;
 class AddressBus;
 class BootRom;
-class Cartridge;
+namespace cartridge {
+    class Cartridge;
+}
 class Timer;
 class SerialPort;
 class InterruptHandler;
-namespace spdlog {
-class logger;
-}
+#include "spdlog/fwd.h"
 struct CpuDebugState;
 class Joypad;
 
@@ -46,6 +42,8 @@ struct EmulatorState {
     // When changing the game the new path is stored here before the new game is loaded.
     std::optional<std::filesystem::path> new_rom_file_path;
     std::string game_title;
+
+    void reset();
 };
 
 /**
@@ -72,6 +70,7 @@ public:
     void set_interrupts_enabled(bool enabled);
     void halt();
     void unhalt();
+    void reset_state();
 
     [[nodiscard]] std::string get_cpu_debug_state() const;
     [[nodiscard]] CpuDebugState get_debug_state() const;
@@ -88,7 +87,7 @@ public:
     [[nodiscard]] std::shared_ptr<BootRom> get_boot_rom() const;
     [[nodiscard]] std::shared_ptr<Ppu> get_ppu() const;
     [[nodiscard]] std::shared_ptr<Cpu> get_cpu() const;
-    [[nodiscard]] std::shared_ptr<Cartridge> get_cartridge() const;
+    [[nodiscard]] std::shared_ptr<cartridge::Cartridge> get_cartridge() const;
     [[nodiscard]] std::shared_ptr<InterruptHandler> get_interrupt_handler() const;
     [[nodiscard]] std::shared_ptr<Timer> get_timer() const;
     [[nodiscard]] std::shared_ptr<SerialPort> get_serial_port() const;
@@ -101,12 +100,10 @@ public:
     void set_debug_function(std::function<void()> f);
     void set_audio_function(std::function<void(SampleFrame s)> f);
 
-    size_t get_cycle_count();
-
 private:
     EmulatorState m_state;
     EmulatorOptions m_options;
-    std::shared_ptr<Cartridge> m_cartridge;
+    std::shared_ptr<cartridge::Cartridge> m_cartridge;
     std::shared_ptr<BootRom> m_boot_rom;
     std::shared_ptr<AddressBus> m_address_bus;
     std::shared_ptr<Ram> m_ram;

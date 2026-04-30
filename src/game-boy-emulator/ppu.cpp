@@ -1,17 +1,26 @@
 #include "ppu.hpp"
+#include "constants.h"
 #include "exceptions.hpp"
+#include "framebuffer.hpp"
 #include "memorymap.hpp"
 #include "emulator.hpp"
 #include "interrupthandler.hpp"
-#include "addressbus.hpp"
 #include "bitmanipulation.hpp"
 #include "graphics.hpp"
+#include "ppu_registers.hpp"
 
 #include "fmt/format.h"
 #include "spdlog/spdlog.h"
 #include "magic_enum.hpp"
 
+#include <algorithm>
+#include <cstdint>
+#include <cstddef>
+#include <cassert>
+#include <array>
+#include <ranges>
 #include <span>
+#include <vector>
 
 Ppu::Ppu(Emulator* emulator) :
         m_registers(emulator->get_options().stub_ly_value),
@@ -107,6 +116,9 @@ void Ppu::cycle_elapsed_callback(size_t cycles_m_num) {
         break;
     case PpuMode::VBlank_1:
         do_mode1_vblank();
+        break;
+    default:
+        assert(false && "Invalid PpuMode value");
         break;
     }
 
@@ -244,7 +256,7 @@ std::span<uint8_t, constants::BYTES_PER_TILE> Ppu::get_tile(uint8_t tile_index) 
     if (static_cast<int8_t>(tile_index) >= 0) {
         // Skip the first 256 sprites (block 0 and 1) and index into block 2.
         size_t const index_begin
-            = 256 * constants::BYTES_PER_TILE + tile_index * constants::BYTES_PER_TILE;
+            = (256 * constants::BYTES_PER_TILE) + (tile_index * constants::BYTES_PER_TILE);
         return std::span<uint8_t, constants::BYTES_PER_TILE>{m_tile_data.data() + index_begin,
                                                              constants::BYTES_PER_TILE};
     }
@@ -268,8 +280,10 @@ Ppu::get_tile_from_map(TileType tile_type, uint8_t tile_map_x, uint8_t tile_map_
             address_offset = memmap::TileMap1Size;
         }
         break;
+    default:
+        assert(false && "Invalid TileType");
     }
-    auto tile_map_index = address_offset + tile_map_x + tile_map_y * 32;
+    auto tile_map_index = address_offset + tile_map_x + (tile_map_y * 32);
     auto tile_index = m_tile_maps[tile_map_index];
     return get_tile(tile_index);
 }
@@ -336,38 +350,34 @@ void Ppu::draw_sprites_line() {
     // coordinates, the object located first in OAM has the higher priority.
     // Initially visible_sprites is ordered by OAM order. Sort by x coordinate but use stable_sort
     // to keep the relative order from OAM for the same x coordinates.
-    std::stable_sort(
-        visible_sprites.begin(), visible_sprites.end(),
-        [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
+    std::ranges::stable_sort(visible_sprites, [](const OamEntry& a, const OamEntry& b) {
+        return a.m_x_position < b.m_x_position;
+    });
     // Reverse order so the objects first in OAM stay (because they have higher priority).
-    // std::ranges::reverse_view doesn't work in clang 15, so we use the iterator alternative. To
-    // stop clang-tidy from complaining, disable just that warning.
-    // NOLINTNEXTLINE(modernize-loop-convert)
-    for (auto oam_entry = visible_sprites.rbegin(); oam_entry != visible_sprites.rend();
-         ++oam_entry) {
+    for (const auto& oam_entry: std::ranges::reverse_view(visible_sprites)) {
         // Skip offscreen sprites
-        if (oam_entry->m_y_position == 0 || oam_entry->m_y_position >= 160
-            || oam_entry->m_x_position == 0 || oam_entry->m_x_position >= 168) {
+        if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
+            || oam_entry.m_x_position == 0 || oam_entry.m_x_position >= 168) {
             continue;
         }
 
-        auto sprite_data = get_sprite_tile(oam_entry->m_tile_index);
+        auto sprite_data = get_sprite_tile(oam_entry.m_tile_index);
         auto tile = graphics::gb::tile_to_gb_color(sprite_data);
-        auto palette_bit = bitmanip::is_bit_set(oam_entry->m_flags, 4);
+        auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
         auto palette = palette_bit ? obj_palette_1 : obj_palette_0;
 
         // Y position in sprite (0...15)
-        const auto sprite_y = screen_y - (oam_entry->m_y_position - 16);
+        const auto sprite_y = screen_y - (oam_entry.m_y_position - 16);
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
-            auto x = static_cast<int>(oam_entry->m_x_position + sprite_x) - 8;
-            auto y = static_cast<int>(oam_entry->m_y_position + sprite_y) - 16;
+            auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
+            auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
             if (x < 0 || y < 0 || x >= static_cast<int>(m_game_framebuffer.width())
                 || y >= static_cast<int>(m_game_framebuffer.height())) {
                 // This pixel of the sprite is hidden
                 continue;
             }
             auto pixel_index
-                = calculate_pixel_index(*oam_entry, sprite_x, static_cast<size_t>(sprite_y), 8);
+                = calculate_pixel_index(oam_entry, sprite_x, static_cast<size_t>(sprite_y), 8);
             auto pixel_color = tile[pixel_index];
             if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
                 // Color 0 is transparent for sprites, so those pixels are not drawn.
@@ -380,7 +390,7 @@ void Ppu::draw_sprites_line() {
             // For this comparison the unmapped color should be used.
             auto existing_color
                 = m_game_framebuffer.get_pixel(static_cast<size_t>(x), static_cast<size_t>(y));
-            if (bg_window_over_sprite(*oam_entry)
+            if (bg_window_over_sprite(oam_entry)
                 && existing_color != graphics::gb::ColorScreen::White) {
                 continue;
             }
@@ -410,38 +420,36 @@ void Ppu::draw_tall_sprites_line() {
     // coordinates, the object located first in OAM has the higher priority.
     // Initially visible_sprites is ordered by OAM order. Sort by x coordinate but use stable_sort
     // to keep the relative order from OAM for the same x coordinates.
-    std::stable_sort(
-        visible_sprites.begin(), visible_sprites.end(),
-        [](const OamEntry& a, const OamEntry& b) { return a.m_x_position < b.m_x_position; });
+    std::ranges::stable_sort(visible_sprites, [](const OamEntry& a, const OamEntry& b) {
+        return a.m_x_position < b.m_x_position;
+    });
     // Reverse order so the objects first in OAM stay (because they have higher priority).
-    // NOLINTNEXTLINE(modernize-loop-convert)
-    for (auto oam_entry = visible_sprites.rbegin(); oam_entry != visible_sprites.rend();
-         ++oam_entry) {
+    for (auto oam_entry: std::ranges::reverse_view(visible_sprites)) {
         // Skip sprites which are completly offscreen
-        if (oam_entry->m_y_position == 0 || oam_entry->m_y_position >= 160
-            || oam_entry->m_x_position == 0 || oam_entry->m_x_position >= 168) {
+        if (oam_entry.m_y_position == 0 || oam_entry.m_y_position >= 160
+            || oam_entry.m_x_position == 0 || oam_entry.m_x_position >= 168) {
             continue;
         }
 
-        auto tile_index = oam_entry->m_tile_index & 0xFE;
+        auto tile_index = oam_entry.m_tile_index & 0xFE;
         auto sprite_data = get_tall_sprite_tile(tile_index);
         // TODO Only convert the required line from the tile (accounting for x-flip/y-flip).
         auto tile = graphics::gb::tile_to_gb_color(sprite_data);
-        auto palette_bit = bitmanip::is_bit_set(oam_entry->m_flags, 4);
+        auto palette_bit = bitmanip::is_bit_set(oam_entry.m_flags, 4);
         auto palette = palette_bit ? obj_palette_1 : obj_palette_0;
 
         // Y position in sprite (0...15)
-        const auto sprite_y = screen_y - (oam_entry->m_y_position - 16);
+        const auto sprite_y = screen_y - (oam_entry.m_y_position - 16);
         for (unsigned sprite_x = 0; sprite_x < 8; ++sprite_x) {
-            auto x = static_cast<int>(oam_entry->m_x_position + sprite_x) - 8;
-            auto y = static_cast<int>(oam_entry->m_y_position + sprite_y) - 16;
+            auto x = static_cast<int>(oam_entry.m_x_position + sprite_x) - 8;
+            auto y = static_cast<int>(oam_entry.m_y_position + sprite_y) - 16;
             if (x < 0 || y < 0 || x >= static_cast<int>(m_game_framebuffer.width())
                 || y >= static_cast<int>(m_game_framebuffer.height())) {
                 // This pixel of the sprite is hidden
                 continue;
             }
             auto pixel_index
-                = calculate_pixel_index(*oam_entry, sprite_x, static_cast<size_t>(sprite_y), 16);
+                = calculate_pixel_index(oam_entry, sprite_x, static_cast<size_t>(sprite_y), 16);
             auto pixel_color = tile[pixel_index];
             if (pixel_color == graphics::gb::UnmappedColorGb::Color0) {
                 // Color 0 is transparent for sprites, so those pixels are not drawn.
@@ -454,7 +462,7 @@ void Ppu::draw_tall_sprites_line() {
             // For this comparison the unmapped color should be used.
             auto existing_color
                 = m_game_framebuffer.get_pixel(static_cast<size_t>(x), static_cast<size_t>(y));
-            if (bg_window_over_sprite(*oam_entry)
+            if (bg_window_over_sprite(oam_entry)
                 && existing_color != graphics::gb::ColorScreen::White) {
                 continue;
             }
@@ -513,7 +521,7 @@ void Ppu::draw_window_line() {
         auto tile_pixel_x = in_window_x % constants::PIXELS_PER_TILE;
         auto tile_pixel_y = m_window_internal_line_counter % constants::PIXELS_PER_TILE;
         auto tile_line
-            = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[tile_pixel_y * 2 + 1]);
+            = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[(tile_pixel_y * 2) + 1]);
         auto color_index = tile_line[tile_pixel_x];
         auto color = palette[static_cast<size_t>(color_index)];
         auto screencolor = graphics::gb::to_screen_color(color);
@@ -554,7 +562,7 @@ void Ppu::draw_background_line() {
         auto tile = get_tile_from_map(TileType::Background, tile_index_x, tile_index_y);
         // The tile provides an 8 pixel line from 2 bytes
         auto tile_line
-            = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[tile_pixel_y * 2 + 1]);
+            = graphics::gb::convert_tile_line(tile[tile_pixel_y * 2], tile[(tile_pixel_y * 2) + 1]);
         auto color_index = tile_line[tile_pixel_x];
         auto color_gb = palette[magic_enum::enum_integer(color_index)];
         auto screen_color = graphics::gb::to_screen_color(color_gb);
@@ -564,12 +572,12 @@ void Ppu::draw_background_line() {
 
 std::span<uint8_t, constants::BYTES_PER_TILE> Ppu::get_sprite_tile(uint8_t tile_index) {
     return std::span<uint8_t, constants::BYTES_PER_TILE>{
-        m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE, constants::BYTES_PER_TILE};
+        m_tile_data.begin() + (tile_index * constants::BYTES_PER_TILE), constants::BYTES_PER_TILE};
 }
 
 std::span<uint8_t, constants::BYTES_PER_TILE * 2> Ppu::get_tall_sprite_tile(uint8_t tile_index) {
     return std::span<uint8_t, constants::BYTES_PER_TILE * 2>{
-        m_tile_data.begin() + tile_index * constants::BYTES_PER_TILE,
+        m_tile_data.begin() + (tile_index * constants::BYTES_PER_TILE),
         constants::BYTES_PER_TILE * 2};
 };
 
@@ -586,11 +594,11 @@ void Ppu::draw_background_debug() {
             auto tile = get_tile_from_map(TileType::Background, tile_x, tile_y);
             // The tile provides an 8 pixel line from 2 bytes
             auto tile_line
-                = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[in_tile_y * 2 + 1]);
+                = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[(in_tile_y * 2) + 1]);
             // Map the colors using the current palette and transfer this tiles line to the buffer
             for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
                 auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
-                auto screen_x = tile_x * 8 + tile_line_x;
+                auto screen_x = (tile_x * 8) + tile_line_x;
                 m_background_framebuffer.set_pixel(screen_x, screen_y,
                                                    graphics::gb::to_screen_color(pixel));
             }
@@ -614,11 +622,11 @@ void Ppu::draw_window_debug() {
             size_t const in_tile_y = screen_y % 8;
             // The tile provides an 8 pixel line from 2 bytes
             auto tile_line
-                = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[in_tile_y * 2 + 1]);
+                = graphics::gb::convert_tile_line(tile[in_tile_y * 2], tile[(in_tile_y * 2) + 1]);
             // Map the colors using the current palette and transfer this tiles line to the buffer
             for (unsigned tile_line_x = 0; tile_line_x < 8; tile_line_x++) {
                 auto pixel = palette[magic_enum::enum_integer(tile_line[tile_line_x])];
-                auto screen_x = tile_x * 8 + tile_line_x;
+                auto screen_x = (tile_x * 8) + tile_line_x;
                 m_window_framebuffer.set_pixel(screen_x, screen_y,
                                                graphics::gb::to_screen_color(pixel));
             }
@@ -642,17 +650,17 @@ void Ppu::draw_vram_debug() {
     for (unsigned block = 0; block < 3; ++block) {
         for (unsigned tile_x = 0; tile_x < 16; ++tile_x) {
             for (unsigned tile_y = 0; tile_y < 8; ++tile_y) {
-                auto tile_index = tile_x + tile_y * 16;
+                auto tile_index = tile_x + (tile_y * 16);
                 auto tile = get_tile(block, tile_index);
                 auto tile_color = graphics::gb::tile_to_gb_color(tile);
                 // Transfer the tile to the framebuffer.
                 // The framebuffer is 16x8 tiles or 128x64 pixels
                 for (unsigned in_tile_x = 0; in_tile_x < 8; ++in_tile_x) {
                     for (unsigned in_tile_y = 0; in_tile_y < 8; ++in_tile_y) {
-                        auto in_tile_index = in_tile_y * 8 + in_tile_x;
+                        auto in_tile_index = (in_tile_y * 8) + in_tile_x;
                         auto color = tile_color[in_tile_index];
-                        auto x = tile_x * 8 + in_tile_x;
-                        auto y = tile_y * 8 + in_tile_y;
+                        auto x = (tile_x * 8) + in_tile_x;
+                        auto y = (tile_y * 8) + in_tile_y;
                         auto screen_color = graphics::gb::to_screen_color(
                             static_cast<graphics::gb::ColorGb>(color));
                         buffers[block]->set_pixel(x, y, screen_color);
@@ -672,7 +680,7 @@ Ppu::get_tiledata() {
 }
 
 std::span<uint8_t, 16> Ppu::get_tile(unsigned int block, unsigned int index_in_block) {
-    auto start = index_in_block * 16 + block * 128 * 16;
+    auto start = (index_in_block * 16) + (block * 128 * 16);
     auto end = start + 16;
     return std::span<uint8_t, 16>{m_tile_data.data() + start, m_tile_data.data() + end};
 }

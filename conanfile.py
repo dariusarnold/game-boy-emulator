@@ -3,12 +3,19 @@ from conan.tools.cmake import cmake_layout, CMakeDeps, CMakeToolchain, CMake
 from conan.tools.files import copy
 import pathlib
 
+
 class GameBoyEmulatorConan(ConanFile):
     name = "game_boy_emulator"
+    version = "0.1.0"
+    package_type = "application"
     settings = "os", "compiler", "build_type", "arch"
+    required_conan_version = ">=2.0"
+
     license = "GPL-3.0-or-later"
     author = "Darius Arnold"
-    version = "0.1.0"
+    default_options = {
+        "boost/*:header_only": True,
+    }
 
     def requirements(self):
         self.requires("fmt/11.2.0")
@@ -17,42 +24,39 @@ class GameBoyEmulatorConan(ConanFile):
         self.requires("spdlog/1.15.3")
         self.requires("argparse/2.9")
         self.requires("boost/1.80.0")
-        self.requires("catch2/2.13.10")
-        self.requires("portable-file-dialogs/0.1.0")
+
+    def build_requirements(self):
+        self.test_requires("catch2/2.13.10")
 
     def export_sources(self):
-        self.copy("*", excludes=("build*", "cmake-build*"))
+        for pattern in (
+            "CMakeLists.txt",
+            "COPYING",
+            "cmake/*",
+            "src/*",
+        ):
+            copy(self, pattern, src=self.recipe_folder, dst=self.export_sources_folder)
 
     def layout(self):
         cmake_layout(self)
-        self.folders.build_folder_vars = ["settings.compiler", "settings.build_type"]
-
-    def configure(self):
-        self.options["boost"].header_only = True
 
     def generate(self):
         # Copy the imgui bindings to bindings directory for CMake build
         imgui = self.dependencies["imgui"]
         source_dir = pathlib.Path(imgui.package_folder) / "res" / "bindings"
-        target_dir = pathlib.Path(self.source_path) / "bindings"
+        target_dir = pathlib.Path(self.source_folder) / "bindings"
         copy(self, pattern="imgui_impl_sdl*", src=source_dir, dst=target_dir)
 
-        tc = CMakeToolchain(self, generator="Ninja")
+        tc = CMakeToolchain(self)
         tc.generate()
-        # Workaround to be able to build the consumer (game_boy_emulator) with both Debug and Release while the
-        # dependencies are built with whatever built type (most likely Release) and still be able to use find_package
-        # to find the dependencies.
         deps = CMakeDeps(self)
-        deps.configuration = "Release"
-        deps.generate()
-        deps.configuration = "Debug"
         deps.generate()
 
     def build(self):
         cmake = CMake(self)
         # Since conan is mostly used for releases, we dont want sanitizers enabled and we dont want to run clang-tidy
         # during the build since it is slow (and was run in CI for the commit already).
-        cmake.configure(variables={"SANITIZE": "OFF", "CLANG_TIDY": "OFF", "CMAKE_GENERATOR": "Ninja"})
+        cmake.configure(variables={"SANITIZE": "OFF", "CLANG_TIDY": "OFF"})
         cmake.build()
 
     def package(self):
@@ -61,4 +65,4 @@ class GameBoyEmulatorConan(ConanFile):
 
     def deploy(self):
         # Copy just the executable from the cache to the local filesystem
-        self.copy("game_boy_emulator*", dst="", src="bin")
+        copy(self, "game_boy_emulator*", src=str(pathlib.Path(self.package_folder) / "bin"), dst=self.deploy_folder)

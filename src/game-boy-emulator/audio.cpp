@@ -42,8 +42,11 @@ void Audio::callback(SampleFrame sample) {
     // queuing data involves locks on SDLs side.
     if (m_resampler.available_samples() >= BUFFER_SIZE) {
         std::array<SampleFrame, BUFFER_SIZE> buffer;
-        [[maybe_unused]] auto resample_rc = m_resampler.get_resampled_data(buffer);
-        assert(resample_rc == 4096 && fmt::format("Audio resampler returned {}", resample_rc));
+        auto resample_rc = m_resampler.get_resampled_data(buffer);
+        if (resample_rc != BUFFER_SIZE) {
+            spdlog::error("Audio resampler returned {}", resample_rc);
+        }
+        assert(resample_rc == BUFFER_SIZE && "Audio resampler returned unexpected sample count");
         auto volume
             = calc_volume_log(m_emulator.get_options().volume) * constants::FIXED_VOLUME_SCALE;
         std::ranges::for_each(buffer, [volume](SampleFrame& sf) {
